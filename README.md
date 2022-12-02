@@ -1,6 +1,6 @@
 ﻿# Our.Umbraco.BlockPreview
 
-**Our.Umbraco.BlockPreview** enables automatic rich HTML previews for the Umbraco Block List and Block Grid editors.
+**Our.Umbraco.BlockPreview** enables easy to use rich HTML previews for the Umbraco Block List and Block Grid editors.
 
 ## Installation
 The Umbraco 10.4+ version of this package is [available via NuGet](https://www.nuget.org/packages/Our.Umbraco.BlockPreview).
