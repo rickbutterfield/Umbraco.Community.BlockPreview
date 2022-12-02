@@ -40,7 +40,7 @@ When using the new Block Grid, any reference to
 ```
 should be replaced with
 ```
-@await Html.Get**Preview**BlockGridItemAreasHtmlAsync(Model)
+@await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)
 ```
 which can be found in `Our.Umbraco.BlockPreview.Extensions`. This ensures that the grid editors correctly load in the back office.
 
