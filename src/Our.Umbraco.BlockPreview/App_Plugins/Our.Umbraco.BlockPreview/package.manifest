@@ -1,0 +1,11 @@
+﻿{
+  "name": "Our.Umbraco.BlockPreview",
+  "version": "1.0.0-alpha001",
+  "allowPackageTelemetry": true,
+  "javascript": [
+    "~/App_Plugins/Our.Umbraco.BlockPreview/js/resources/preview.resource.js",
+    "~/App_Plugins/Our.Umbraco.BlockPreview/js/directives/published-check.directive.js",
+    "~/App_Plugins/Our.Umbraco.BlockPreview/js/controllers/block-grid-preview.controller.js",
+    "~/App_Plugins/Our.Umbraco.BlockPreview/js/controllers/block-list-preview.controller.js"
+  ]
+}

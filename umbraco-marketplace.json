@@ -1,0 +1,40 @@
+{
+	"$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
+	"AlternatePackageNames": [
+		"BlockPreview"
+	],
+	"AuthorDetails": {
+		"Description": "A full stack lead software engineer from the UK.",
+		"Url": "https://rickbutterfield.dev",
+		"ImageUrl": "https://github.com/rickbutterfield.png",
+		"Contributors": [ "Dave Woestenborghs" ]
+	},
+	"Category": "Editor Tools",
+	"DiscussionForumUrl": "https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/discussions",
+	"LicenseTypes": [ "Free" ],
+	"IssueTrackerUrl": "https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/issues",
+	"PackageType": "Package",
+	"PackagesByAuthor": [],
+	"RelatedPackages": [],
+	"Screenshots": [],
+	"Tags": [
+		"backoffice",
+		"block editor",
+		"block grid",
+		"block list",
+		"content blocks",
+		"editorial experience",
+		"property editor"
+	],
+	"Title": "Our.Umbraco.BlockPreview",
+	"VersionSpecificPackageIds": [
+		{
+			"UmbracoMajorVersion": 10,
+			"PackageId": "Our.Umbraco.BlockPreview"
+		},
+		{
+			"UmbracoMajorVersion": 11,
+			"PackageId": "Our.Umbraco.BlockPreview"
+		}
+	]
+}
