@@ -13,6 +13,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Our.Umbraco.BlockPreview.Models;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
@@ -64,12 +66,13 @@ namespace Our.Umbraco.BlockGridPreview.Controllers
         /// <summary>
         /// Renders a preview for a block using the associated razor view.
         /// </summary>
-        /// <param name="data">The JSON data of the block.</param>
+        /// <param name="content">The JSON content data of the block.</param>
+        /// <param name="settings">The JSON settings data of the block.</param>
         /// <param name="pageId">The current page id.</param>
         /// <param name="culture">The culture</param>
         /// <returns>The markup to render in the preview.</returns>
         [HttpPost]
-        public async Task<IActionResult> PreviewMarkup([FromBody] BlockItemData data, [FromQuery] int pageId = 0, [FromQuery] string culture = "")
+        public async Task<IActionResult> PreviewMarkup([FromBody] BlockData blockData, [FromQuery] int pageId = 0, [FromQuery] string culture = "")
         {
             string markup;
 
@@ -91,7 +94,7 @@ namespace Our.Umbraco.BlockGridPreview.Controllers
 
                 await this.SetupPublishedRequest(culture, page);
 
-                markup = await this.GetMarkupForBlock(data);
+                markup = await this.GetMarkupForBlock(blockData.Content, blockData.Settings);
             }
             catch (Exception ex)
             {
@@ -102,27 +105,39 @@ namespace Our.Umbraco.BlockGridPreview.Controllers
             return Ok(this.CleanUpMarkup(markup));
         }
 
-        private async Task<string> GetMarkupForBlock(BlockItemData blockData)
+        private async Task<string> GetMarkupForBlock(BlockItemData contentBlockData, BlockItemData settingsBlockData)
         {
-            // convert the json data to a IPublishedElement (using the built-in conversion)
-            var element = this._blockEditorConverter.ConvertToElement(blockData, PropertyCacheLevel.None, true);
+            // convert the JSON data to a IPublishedElement (using the built-in conversion)
+            var contentElement = this._blockEditorConverter.ConvertToElement(contentBlockData, PropertyCacheLevel.None, true);
+            var settingsElement = settingsBlockData != null ? this._blockEditorConverter.ConvertToElement(settingsBlockData, PropertyCacheLevel.None, true) : default;
 
             // get the models builder type based on content type alias
-            var blockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
-                x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == element.ContentType.Alias);
+            Type contentBlockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+                x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == contentElement.ContentType.Alias);
+            Type settingsBlockType = settingsElement != null ? _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+                x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == settingsElement.ContentType.Alias) : default;
 
             // create instance of the models builder type based from the element
-            var blockInstance = Activator.CreateInstance(blockType, element, _publishedValueFallback);
+            var blockContentInstance = Activator.CreateInstance(contentBlockType, contentElement, _publishedValueFallback);
+            var blockSettingsInstance = settingsBlockType != default ? Activator.CreateInstance(settingsBlockType, settingsElement, _publishedValueFallback) : default;
 
             // get a generic block grid item type based on the models builder type
-            var blockGridItemType = typeof(BlockGridItem<>).MakeGenericType(blockType);
+            Type blockGridItemType = null;
+            if (settingsBlockType != default)
+            {
+                blockGridItemType = typeof(BlockGridItem<,>).MakeGenericType(contentBlockType, settingsBlockType);
+            }
+            else
+            {
+                blockGridItemType = typeof(BlockGridItem<>).MakeGenericType(contentBlockType);
+            }
 
             // create instance of the block grid item
             // if you want to use settings this will need to be changed.
-            var blockGridItem = (BlockGridItem)Activator.CreateInstance(blockGridItemType, blockData.Udi, blockInstance, null, null);
+            var blockGridItem = (BlockGridItem)Activator.CreateInstance(blockGridItemType, contentBlockData.Udi, blockContentInstance, settingsBlockData?.Udi, blockSettingsInstance);
 
             // render the partial view for the block.
-            var partialName = $"/Views/Partials/blockgrid/Components/{element.ContentType.Alias}.cshtml";
+            var partialName = $"/Views/Partials/blockgrid/Components/{contentElement.ContentType.Alias}.cshtml";
 
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
             viewData.Model = blockGridItem;
@@ -134,6 +149,7 @@ namespace Our.Umbraco.BlockGridPreview.Controllers
 
             if (viewResult?.View != null)
             {
+                viewData["blockGridPreview"] = true;
                 var viewContext = new ViewContext(actionContext, viewResult.View, viewData, new TempDataDictionary(actionContext.HttpContext, _tempDataProvider), sw, new HtmlHelperOptions());
                 await viewResult.View.RenderAsync(viewContext);
             }

@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+using Our.Umbraco.BlockPreview.Models;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
@@ -69,7 +70,7 @@ namespace Our.Umbraco.BlockGridPreview.Controllers
         /// <param name="culture">The culture</param>
         /// <returns>The markup to render in the preview.</returns>
         [HttpPost]
-        public async Task<IActionResult> PreviewMarkup([FromBody] BlockItemData data, [FromQuery] int pageId = 0, [FromQuery] string culture = "")
+        public async Task<IActionResult> PreviewMarkup([FromBody] BlockData blockData, [FromQuery] int pageId = 0, [FromQuery] string culture = "")
         {
             string markup;
 
@@ -91,7 +92,7 @@ namespace Our.Umbraco.BlockGridPreview.Controllers
 
                 await this.SetupPublishedRequest(culture, page);
 
-                markup = await this.GetMarkupForBlock(data);
+                markup = await this.GetMarkupForBlock(blockData.Content, blockData.Settings);
             }
             catch (Exception ex)
             {
@@ -102,27 +103,39 @@ namespace Our.Umbraco.BlockGridPreview.Controllers
             return Ok(this.CleanUpMarkup(markup));
         }
 
-        private async Task<string> GetMarkupForBlock(BlockItemData blockData)
+        private async Task<string> GetMarkupForBlock(BlockItemData contentBlockData, BlockItemData settingsBlockData)
         {
             // convert the json data to a IPublishedElement (using the built-in conversion)
-            var element = this._blockEditorConverter.ConvertToElement(blockData, PropertyCacheLevel.None, true);
+            var contentElement = this._blockEditorConverter.ConvertToElement(contentBlockData, PropertyCacheLevel.None, true);
+            var settingsElement = settingsBlockData != null ? this._blockEditorConverter.ConvertToElement(settingsBlockData, PropertyCacheLevel.None, true) : default;
 
             // get the models builder type based on content type alias
-            var blockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
-                x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == element.ContentType.Alias);
+            Type contentBlockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+                x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == contentElement.ContentType.Alias);
+            Type settingsBlockType = settingsElement != null ? _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+                x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == settingsElement.ContentType.Alias) : default;
 
             // create instance of the models builder type based from the element
-            var blockInstance = Activator.CreateInstance(blockType, element, _publishedValueFallback);
+            var blockContentInstance = Activator.CreateInstance(contentBlockType, contentElement, _publishedValueFallback);
+            var blockSettingsInstance = settingsBlockType != default ? Activator.CreateInstance(settingsBlockType, settingsElement, _publishedValueFallback) : default;
 
             // Get a generic block list item type based on the models builder type
-            var blockListItemType = typeof(BlockListItem<>).MakeGenericType(blockType);
+            Type blockListItemType = null;
+            if (settingsBlockType != default)
+            {
+                blockListItemType = typeof(BlockListItem<,>).MakeGenericType(contentBlockType, settingsBlockType);
+            }
+            else
+            {
+                blockListItemType = typeof(BlockListItem<>).MakeGenericType(contentBlockType);
+            }
 
             // Create instance of the block list item
             // If you want to use settings this will need to be changed.
-            var blockListItem = (BlockListItem)Activator.CreateInstance(blockListItemType, blockData.Udi, blockInstance, null, null);
+            var blockListItem = (BlockListItem)Activator.CreateInstance(blockListItemType, contentBlockData.Udi, blockContentInstance, settingsBlockData?.Udi, blockSettingsInstance);
 
             // render the partial view for the block.
-            var partialName = $"/Views/Partials/blocklist/Components/{element.ContentType.Alias}.cshtml";
+            var partialName = $"/Views/Partials/blocklist/Components/{contentElement.ContentType.Alias}.cshtml";
 
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
             viewData.Model = blockListItem;

@@ -8,7 +8,7 @@
 		<Title>Our.Umbraco.BlockPreview</Title>
 
 		<VersionPrefix>1.0.0</VersionPrefix>
-		<VersionSuffix>alpha002</VersionSuffix>
+		<VersionSuffix>alpha003</VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs</Authors>
 
 		<PackageProjectUrl>https://github.com/rickbutterfield/Our.Umbraco.BlockPreview</PackageProjectUrl>
@@ -17,7 +17,7 @@
 		
 		<RepositoryUrl>https://github.com/rickbutterfield/Our.Umbraco.BlockPreview</RepositoryUrl>
 
-		<Description>Automatic rich HTML previews for the Umbraco Block List and Block Grid editors</Description>
+		<Description>Automatic easy to use HTML previews for the Umbraco Block List and Block Grid editors</Description>
 
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<IncludeSymbols>false</IncludeSymbols>
@@ -28,8 +28,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.4.0,12.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.4.0,12.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[10.4.0,12.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.4.0,12.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>

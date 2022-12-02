@@ -2,10 +2,12 @@
     .directive('publicationCheck', [function () {
 
         function setStyle(scope, element) {
-            if (scope.settings.hideBlock === '1') {
-                element[0].style.opacity = 0.25;
-                return;
-            }
+            //if (typeof scope.settings["hideBlock"] !== "undefined") {
+            //    if (scope.settings.hideBlock === '1') {
+            //        element[0].style.opacity = 0.25;
+            //        return;
+            //    }
+            //}
 
             element[0].style.opacity = 1;
             return;

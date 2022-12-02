@@ -15,11 +15,16 @@
             $scope.loading = true;
             $scope.markup = $sce.trustAsHtml('Loading preview');
 
-            function loadPreview(blockData) {
+            function loadPreview() {
                 $scope.markup = $sce.trustAsHtml('Loading preview');
                 $scope.loading = true;
 
-                previewResource.getListPreview(blockData, $scope.id, $scope.language).then(function (data) {
+                var formattedBlockData = {
+                    content: $scope.block.data,
+                    settings: $scope.block.settingsData
+                };
+
+                previewResource.getGridPreview(formattedBlockData, $scope.id, $scope.language).then(function (data) {
                     $scope.markup = $sce.trustAsHtml(data);
                     $scope.loading = false;
                 });
@@ -27,11 +32,11 @@
 
             var timeoutPromise;
 
-            $scope.$watch('block.data', function (newValue, oldValue) {
+            $scope.$watch('block.content', function (newValue, oldValue) {
                 $timeout.cancel(timeoutPromise);
 
                 timeoutPromise = $timeout(function () {   //Set timeout
-                    loadPreview(newValue);
+                    loadPreview();
                 }, 500);
             }, true);
         }
