@@ -17,7 +17,7 @@
 		
 		<RepositoryUrl>https://github.com/rickbutterfield/Our.Umbraco.BlockPreview</RepositoryUrl>
 
-		<Description>Rich previews for the Umbraco Block List and Block Grid editors</Description>
+		<Description>Automatic rich HTML previews for the Umbraco Block List and Block Grid editors</Description>
 
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<IncludeSymbols>false</IncludeSymbols>
