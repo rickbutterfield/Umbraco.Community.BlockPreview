@@ -8,7 +8,7 @@
 		<Title>Our.Umbraco.BlockPreview</Title>
 
 		<VersionPrefix>1.0.0</VersionPrefix>
-		<VersionSuffix>alpha001</VersionSuffix>
+		<VersionSuffix>alpha002</VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs</Authors>
 
 		<PackageProjectUrl>https://github.com/rickbutterfield/Our.Umbraco.BlockPreview</PackageProjectUrl>
