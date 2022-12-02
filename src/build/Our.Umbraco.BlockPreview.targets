@@ -1,6 +1,6 @@
 ﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
     <PropertyGroup>
-        <OurUmbracoBlockPreviewContentFilesPath>$(MSBuildThisFileDirectory)..\src\App_Plugins\Our.Umbraco.BlockPreview\**\*.*</OurUmbracoBlockPreviewContentFilesPath>
+        <OurUmbracoBlockPreviewContentFilesPath>$(MSBuildThisFileDirectory)..\App_Plugins\Our.Umbraco.BlockPreview\**\*.*</OurUmbracoBlockPreviewContentFilesPath>
     </PropertyGroup>
 
     <Target Name="CopyOurUmbracoBlockPreviewAssets" BeforeTargets="Build">
