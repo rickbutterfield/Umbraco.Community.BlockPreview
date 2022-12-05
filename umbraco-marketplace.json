@@ -1,21 +1,26 @@
 {
 	"$schema": "https://marketplace.umbraco.com/umbraco-marketplace-schema.json",
-	"AlternatePackageNames": [
-		"BlockPreview"
-	],
+	"AlternatePackageNames": [ "BlockPreview" ],
 	"AuthorDetails": {
 		"Description": "A full stack lead software engineer from the UK.",
 		"Url": "https://rickbutterfield.dev",
 		"ImageUrl": "https://github.com/rickbutterfield.png",
-		"Contributors": [ "Dave Woestenborghs" ]
+		"Contributors": [
+			{
+				"Name": "Dave Woestenborghs",
+				"Url": "https://github.com/dawoe"
+			},
+			{
+				"Name": "Matthew Wise",
+				"Url": "https://github.com/matthew-wise"
+			}
+		]
 	},
 	"Category": "Editor Tools",
 	"DiscussionForumUrl": "https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/discussions",
 	"LicenseTypes": [ "Free" ],
 	"IssueTrackerUrl": "https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/issues",
 	"PackageType": "Package",
-	"PackagesByAuthor": [],
-	"RelatedPackages": [],
 	"Screenshots": [],
 	"Tags": [
 		"backoffice",

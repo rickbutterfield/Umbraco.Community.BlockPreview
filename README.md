@@ -13,13 +13,13 @@ The Umbraco 10.4+ version of this package is [available via NuGet](https://www.n
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Our.Umbraco.BlockPreview --version 1.0.0-alpha003
+dotnet add package Our.Umbraco.BlockPreview --version 1.0.0-alpha004
 ```
 
 or the older NuGet Package Manager:
 
 ```
-Install-Package Our.Umbraco.BlockPreview -Version 1.0.0-alpha003
+Install-Package Our.Umbraco.BlockPreview -Version 1.0.0-alpha004
 ```
 
 ## Usage
@@ -44,5 +44,12 @@ should be replaced with
 ```
 which can be found in `Our.Umbraco.BlockPreview.Extensions`. This ensures that the grid editors correctly load in the back office.
 
-## Thanks
-This package is entirely based on the amazing work done by [Dave Woestenborghs for 24days in Umbraco 2021](https://archive.24days.in/umbraco-cms/2021/advanced-blocklist-editor/). His code has been extended to support the new Block Grid editor in v10.4/v11 and turned into this package.
+## Credits
+This package is entirely based on the amazing work done by [Dave Woestenborghs](https://github.com/dawoe) for [24days in Umbraco 2021](https://archive.24days.in/umbraco-cms/2021/advanced-blocklist-editor/). His code has been extended to support the new Block Grid editor in v10.4/v11 and turned into this package.
+
+[Matthew Wise](https://github.com/Matthew-Wise) also wrote a great article for [24days in Umbraco 2022](https://24days.in/umbraco-cms/2022/more-blocklist-editor/) which added the ability to surface `ViewComponents` and has allowed his code to be contributed.
+
+## License
+Copyright &copy; 2022 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
+
+Licensed under the [MIT License](https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/blob/main/LICENSE.md).

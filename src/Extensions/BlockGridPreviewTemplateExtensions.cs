@@ -12,9 +12,9 @@ namespace Our.Umbraco.BlockPreview.Extensions
 
         public static async Task<IHtmlContent> GetPreviewBlockGridItemAreasHtmlAsync(this IHtmlHelper html, BlockGridItem item, string template = DefaultItemAreasTemplate)
         {
-            if (html.ViewData.ContainsKey("blockGridPreview"))
+            if (html.ViewData.ContainsKey("blockPreview"))
             {
-                if ((bool)html.ViewData["blockGridPreview"] == true)
+                if ((bool)html.ViewData["blockPreview"] == true)
                 {
                     return await Task.FromResult<IHtmlContent>(
                         new HtmlContentBuilder()

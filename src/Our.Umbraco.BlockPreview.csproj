@@ -8,8 +8,8 @@
 		<Title>Our.Umbraco.BlockPreview</Title>
 
 		<VersionPrefix>1.0.0</VersionPrefix>
-		<VersionSuffix>alpha003</VersionSuffix>
-		<Authors>Rick Butterfield, Dave Woestenborghs</Authors>
+		<VersionSuffix>alpha004</VersionSuffix>
+		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 
 		<PackageProjectUrl>https://github.com/rickbutterfield/Our.Umbraco.BlockPreview</PackageProjectUrl>
 		
@@ -42,5 +42,9 @@
 			<Pack>true</Pack>
 			<PackagePath>buildTransitive</PackagePath>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Remove="App_Plugins\Our.Umbraco.BlockPreview\js\directives\bind-compile.directive.js" />
 	</ItemGroup>
 </Project>

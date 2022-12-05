@@ -3,29 +3,19 @@
 
     function previewResource($http, umbRequestHelper) {
 
-        var gridApiUrl = "/umbraco/backoffice/api/BlockGridPreviewApi/PreviewMarkup";
-        var listApiUrl = "/umbraco/backoffice/api/BlockListPreviewApi/PreviewMarkup";
+        var apiUrl = Umbraco.Sys.ServerVariables.OurUmbracoBlockPreview.PreviewApi;
 
         var resource = {
-            getGridPreview: getGridPreview,
-            getListPreview: getListPreview
+            getPreview: getPreview,
         };
 
         return resource;
 
-        function getGridPreview(data, pageId, culture) {
+        function getPreview(data, pageId, isGrid, culture) {
 
             return umbRequestHelper.resourcePromise(
-                $http.post(gridApiUrl + '?pageId=' + pageId + '&culture=' + culture, data),
-                'Failed getting block grid preview markup'
-            );
-        };
-
-        function getListPreview(data, pageId, culture) {
-
-            return umbRequestHelper.resourcePromise(
-                $http.post(listApiUrl + '?pageId=' + pageId + '&culture=' + culture, data),
-                'Failed getting block list preview markup'
+                $http.post(apiUrl + '?pageId=' + pageId + '&isGrid=' + isGrid + '&culture=' + culture, data),
+                'Failed getting block preview markup'
             );
         };
     }
