@@ -1,10 +1,5 @@
 ﻿using Microsoft.AspNetCore.Routing;
-using Our.Umbraco.BlockGridPreview.Controllers;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Our.Umbraco.BlockPreview.Controllers;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Extensions;
