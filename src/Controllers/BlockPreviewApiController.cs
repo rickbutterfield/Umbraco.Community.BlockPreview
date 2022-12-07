@@ -14,7 +14,7 @@ using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Extensions;
 
-namespace Our.Umbraco.BlockGridPreview.Controllers
+namespace Our.Umbraco.BlockPreview.Controllers
 {
     /// <summary>
     /// Represents the Block Preview API controller.

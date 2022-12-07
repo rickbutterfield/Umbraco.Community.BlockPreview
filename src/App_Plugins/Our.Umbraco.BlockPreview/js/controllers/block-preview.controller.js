@@ -30,22 +30,28 @@
                 });
             }
 
+            loadPreview($scope.block.data, $scope.block.settingsData);
+
             var timeoutPromise;
 
             $scope.$watch('block.data', function (newValue, oldValue) {
-                $timeout.cancel(timeoutPromise);
+                if (newValue !== oldValue) {
+                    $timeout.cancel(timeoutPromise);
 
-                timeoutPromise = $timeout(function () {   //Set timeout
-                    loadPreview(newValue, null);
-                }, 500);
+                    timeoutPromise = $timeout(function () {   //Set timeout
+                        loadPreview(newValue, null);
+                    }, 500);
+                }
             }, true);
 
             $scope.$watch('block.settingsData', function (newValue, oldValue) {
-                $timeout.cancel(timeoutPromise);
+                if (newValue !== oldValue) {
+                    $timeout.cancel(timeoutPromise);
 
-                timeoutPromise = $timeout(function () {   //Set timeout
-                    loadPreview(null, newValue);
-                }, 500);
+                    timeoutPromise = $timeout(function () {   //Set timeout
+                        loadPreview(null, newValue);
+                    }, 500);
+                }
             }, true);
         }
     ]);
