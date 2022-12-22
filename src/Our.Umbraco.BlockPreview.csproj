@@ -8,7 +8,7 @@
 		<Title>Our.Umbraco.BlockPreview</Title>
 
 		<VersionPrefix>1.0.0</VersionPrefix>
-		<VersionSuffix>alpha005</VersionSuffix>
+		<VersionSuffix>rc1</VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 
 		<PackageProjectUrl>https://github.com/rickbutterfield/Our.Umbraco.BlockPreview</PackageProjectUrl>
@@ -28,9 +28,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.4.0,12.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[10.4.0,12.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.4.0,12.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.4.0-rc,12.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[10.4.0-rc,12.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.4.0-rc,12.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>
