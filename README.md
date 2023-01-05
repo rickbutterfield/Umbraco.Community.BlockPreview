@@ -5,6 +5,9 @@
 
 **Our.Umbraco.BlockPreview** enables easy to use rich HTML previews for the Umbraco Block List and Block Grid editors.
 
+<img src="https://raw.githubusercontent.com/umbraco/Our.Umbraco.BlockPreview/main/.github/readme-assets/icon.png" alt="Our.Umbraco.BlockPreview icon" height="150" align="right">
+
+
 ## Todo
 - [x] Support for BlockList or BlockGrid with settings models
 - [ ] Add support for ModelsBuilder modes other than `SourceCodeManual`/`SourceCodeAuto`
@@ -16,13 +19,13 @@ The Umbraco 10.4+ version of this package is [available via NuGet](https://www.n
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Our.Umbraco.BlockPreview --version 1.0.0-rc1
+dotnet add package Our.Umbraco.BlockPreview --version 1.0.0-rc2
 ```
 
 or the older NuGet Package Manager:
 
 ```
-Install-Package Our.Umbraco.BlockPreview -Version 1.0.0-rc1
+Install-Package Our.Umbraco.BlockPreview -Version 1.0.0-rc2
 ```
 
 ## Usage
