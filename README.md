@@ -5,7 +5,7 @@
 
 **Our.Umbraco.BlockPreview** enables easy to use rich HTML previews for the Umbraco Block List and Block Grid editors.
 
-<img src="https://raw.githubusercontent.com/umbraco/Our.Umbraco.BlockPreview/main/.github/readme-assets/icon.png" alt="Our.Umbraco.BlockPreview icon" height="150" align="right">
+<img src="https://raw.githubusercontent.com/rickbutterfield/Our.Umbraco.BlockPreview/main/.github/readme-assets/icon.png" alt="Our.Umbraco.BlockPreview icon" height="150" align="right">
 
 
 ## Todo
