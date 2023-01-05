@@ -1,5 +1,6 @@
 # Our.Umbraco.BlockPreview
 [![Platform](https://img.shields.io/badge/Umbraco-10.3+-%233544B1?style=flat&logo=umbraco)](https://umbraco.com/products/umbraco-cms/)
+[![NuGet](https://img.shields.io/nuget/v/Our.Umbraco.BlockPreview.svg)](https://www.nuget.org/packages/Our.Umbraco.BlockPreview/)
 [![GitHub](https://img.shields.io/github/license/rickbutterfield/Our.Umbraco.BlockPreview)](https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/blob/main/LICENSE)
 
 **Our.Umbraco.BlockPreview** enables easy to use rich HTML previews for the Umbraco Block List and Block Grid editors.
