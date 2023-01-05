@@ -22,5 +22,10 @@
 	"LicenseTypes": [ "Free" ],
 	"IssueTrackerUrl": "https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/issues",
 	"PackageType": "Package",
-	"Screenshots": []
+	"Screenshots": [
+		{
+			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/Our.Umbraco.BlockPreview/main/screenshots/screenshot1.png",
+			"Caption": "The Umbraco backoffice showing a panel titled 'Select view', with two HTML files in a list available for selection"
+		}
+	]
 }
