@@ -52,6 +52,6 @@ This package is entirely based on the amazing work done by [Dave Woestenborghs](
 [Matthew Wise](https://github.com/Matthew-Wise) also wrote a great article for [24days in Umbraco 2022](https://24days.in/umbraco-cms/2022/more-blocklist-editor/) which added the ability to surface `ViewComponents` and has allowed his code to be contributed.
 
 ## License
-Copyright &copy; 2022 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
+Copyright &copy; 2022-2023 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
 
 Licensed under the [MIT License](https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/blob/main/LICENSE.md).
