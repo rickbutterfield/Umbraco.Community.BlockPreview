@@ -34,21 +34,20 @@ This package installs a custom Angular preview for both the Block List and Block
 When setting up a block to be part of the List or Grid, setting the 'Custom View' property to the appropriate `block-[grid|list]-preview.html` file will generate preview HTML based on the respective partial view found in `/Views/Partials/blocklist/Components` or `/Views/Partials/blockgrid/Components`.
 
 How to select the custom views when creating a Block List/Grid:
-![Screenshot](https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/blob/main/screenshots/screenshot1.png "The Umbraco backoffice showing a panel titled 'Select view', with two HTML files in a list available for selection")
+![Screenshot](https://raw.githubusercontent.com/rickbutterfield/Our.Umbraco.BlockPreview/main/screenshots/screenshot1.png "The Umbraco backoffice showing a panel titled 'Select view', with two HTML files in a list available for selection")
 
 Before and after of how components look within the Block Grid:
-![Screenshot2](https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/blob/main/screenshots/screenshot2.png "Before and after of how components look within the Block Grid")
+![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/Our.Umbraco.BlockPreview/main/screenshots/screenshot2.png "Before and after of how components look within the Block Grid")
 
 ### Grid-specific setup
-When using the new Block Grid, any reference to
-```
-@await Html.GetBlockGridItemAreasHtmlAsync(Model)
-```
-should be replaced with
-```
-@await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)
-```
-which can be found in `Our.Umbraco.BlockPreview.Extensions`. This ensures that the grid editors correctly load in the back office.
+When using the new Block Grid, replace the references below in your Grid template partial views
+
+| Default Umbraco usage | BlockPreview usage |
+| --------------------- | ------------------ |
+| @await Html.GetBlockGridItemAreasHtmlAsync(Model) | @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model) |
+| @await GetBlockGridItemAreaHtmlAsync(Model) | @await GetPreviewBlockGridItemAreaHtmlAsync(Model) |
+| @await GetBlockGridItemsHtmlAsync(Model) | @await GetPreviewBlockGridItemsHtmlAsync(Model) |
+All of these extensions can be found in the namespace `Our.Umbraco.BlockPreview.Extensions`. This ensures that the grid editors correctly load in the back office.
 
 ## Credits
 This package is entirely based on the amazing work done by [Dave Woestenborghs](https://github.com/dawoe) for [24days in Umbraco 2021](https://archive.24days.in/umbraco-cms/2021/advanced-blocklist-editor/). His code has been extended to support the new Block Grid editor in v10.4/v11 and turned into this package.
