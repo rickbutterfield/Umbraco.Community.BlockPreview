@@ -47,6 +47,7 @@ When using the new Block Grid, replace the references below in your Grid templat
 | @await Html.GetBlockGridItemAreasHtmlAsync(Model) | @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model) |
 | @await GetBlockGridItemAreaHtmlAsync(Model) | @await GetPreviewBlockGridItemAreaHtmlAsync(Model) |
 | @await GetBlockGridItemsHtmlAsync(Model) | @await GetPreviewBlockGridItemsHtmlAsync(Model) |
+
 All of these extensions can be found in the namespace `Our.Umbraco.BlockPreview.Extensions`. This ensures that the grid editors correctly load in the back office.
 
 ## Credits
