@@ -104,6 +104,7 @@ namespace Our.Umbraco.BlockPreview.Controllers
             var requestBuilder = await _publishedRouter.CreateRequestAsync(new Uri(Request.GetDisplayUrl()));
             requestBuilder.SetPublishedContent(page);
             context.PublishedRequest = requestBuilder.Build();
+            context.ForcedPreview(true);
 
             // if in a culture variant setup also set the correct language.
             var currentCulture = string.IsNullOrWhiteSpace(culture)
