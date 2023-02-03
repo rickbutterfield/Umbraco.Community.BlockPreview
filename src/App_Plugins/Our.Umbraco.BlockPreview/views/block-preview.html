@@ -1,4 +1,11 @@
-﻿<div ng-click="block.edit(); $event.stopPropagation()" ng-focus="block.focus" class="blockelement__draggable-element" ng-controller="Our.Umbraco.BlockPreview.Controllers.BlockPreviewController">
+﻿<style>
+    .block-preview-spacing {
+        margin-top: 4px;
+        border: 1px solid #e9e9eb;
+        color: #1b264f;
+    }
+</style>
+<div ng-click="block.edit(); $event.stopPropagation()" ng-focus="block.focus" class="blockelement__draggable-element block-preview-spacing" ng-controller="Our.Umbraco.BlockPreview.Controllers.BlockPreviewController">
 
     <div ng-if="loading === false"
          ng-bind-compile="markup"

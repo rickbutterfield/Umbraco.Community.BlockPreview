@@ -48,6 +48,7 @@
 			<Pack>true</Pack>
 			<PackagePath>buildTransitive</PackagePath>
 		</None>
+		<None Remove="App_Plugins\Our.Umbraco.BlockPreview\css\blockpreview.css" />
 		<None Include="..\.github\readme-assets\icon.png">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>

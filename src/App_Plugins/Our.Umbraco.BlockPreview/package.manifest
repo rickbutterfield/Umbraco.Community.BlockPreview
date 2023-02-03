@@ -7,5 +7,8 @@
     "~/App_Plugins/Our.Umbraco.BlockPreview/js/directives/published-check.directive.js",
     "~/App_Plugins/Our.Umbraco.BlockPreview/js/directives/bind-compile.directive.js",
     "~/App_Plugins/Our.Umbraco.BlockPreview/js/controllers/block-preview.controller.js"
+  ],
+  "css": [
+    "~/App_Plugins/Our.Umbraco.BlockPreview/css/blockpreview.css"
   ]
 }
