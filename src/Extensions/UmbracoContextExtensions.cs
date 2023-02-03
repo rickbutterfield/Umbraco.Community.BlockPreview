@@ -9,11 +9,7 @@ namespace Our.Umbraco.BlockPreview.Extensions
         public static bool IsBlockPreview(this IUmbracoContext _, HttpContext httpContext)
         {
             var requestControllerName = (string)httpContext.Request.RouteValues["controller"] + "Controller";
-            if (requestControllerName.Equals	(nameof(BlockPreviewApiController)) && httpContext.Request.RouteValues["action"].Equals	(nameof(BlockPreviewApiController.PreviewMarkup)))
-            {
-                return true;
-            }
-            return false;
+            return requestControllerName.Equals	(nameof(BlockPreviewApiController)) && httpContext.Request.RouteValues["action"].Equals	(nameof(BlockPreviewApiController.PreviewMarkup));
         }
     }
 }
