@@ -23,9 +23,9 @@ Install-Package Our.Umbraco.BlockPreview -Version 1.0.1
 ```
 
 ## Usage
-This package installs a custom Angular preview for both the Block List and Block Grid editors.
+This package installs a custom Angular preview for both the Block List and Block Grid editors in the backoffice.
 
-When setting up a block to be part of the List or Grid, setting the 'Custom View' property to the appropriate `block-[grid|list]-preview.html` file will generate preview HTML based on the respective partial view found in `/Views/Partials/blocklist/Components` or `/Views/Partials/blockgrid/Components`.
+When setting up a block to be part of the List or Grid, setting the 'Custom View' property to `block-preview.html` will generate preview HTML based on the respective partial view found in `/Views/Partials/blocklist/Components` or `/Views/Partials/blockgrid/Components`.
 
 How to select the custom views when creating a Block List/Grid:
 ![Screenshot](https://raw.githubusercontent.com/rickbutterfield/Our.Umbraco.BlockPreview/main/screenshots/screenshot1.png "The Umbraco backoffice showing a panel titled 'Select view', with two HTML files in a list available for selection")
@@ -39,8 +39,8 @@ When using the new Block Grid, replace the references below in your Grid templat
 | Default Umbraco usage | BlockPreview usage |
 | --------------------- | ------------------ |
 | @await Html.GetBlockGridItemAreasHtmlAsync(Model) | @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model) |
-| @await GetBlockGridItemAreaHtmlAsync(Model) | @await GetPreviewBlockGridItemAreaHtmlAsync(Model) |
-| @await GetBlockGridItemsHtmlAsync(Model) | @await GetPreviewBlockGridItemsHtmlAsync(Model) |
+| @await Html.GetBlockGridItemAreaHtmlAsync(Model) | @await Html.GetPreviewBlockGridItemAreaHtmlAsync(Model) |
+| @await Html.GetBlockGridItemsHtmlAsync(Model) | @await Html.GetPreviewBlockGridItemsHtmlAsync(Model) |
 
 All of these extensions can be found in the namespace `Our.Umbraco.BlockPreview.Extensions`. This ensures that the grid editors correctly load in the back office.
 
