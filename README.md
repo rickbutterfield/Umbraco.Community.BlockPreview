@@ -33,6 +33,14 @@ How to select the custom views when creating a Block List/Grid:
 Before and after of how components look within the Block Grid:
 ![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/Our.Umbraco.BlockPreview/main/screenshots/screenshot2.png "Before and after of how components look within the Block Grid")
 
+## Preview detection
+This package detects requests from the backoffice as InPreviewMode, this means that if you are using the `IsVisible` extension method you can combine with `UmbracoContext.InPreviewMode` and keep the blocks visible within the backoffice.
+
+For example you can wrap your blocks like this:
+
+`if (content.IsVisible() && !UmbracoContext.InPreviewMode) { ... }`
+
+
 ### Grid-specific setup
 When using the new Block Grid, replace the references below in your Grid template partial views
 
