@@ -1,6 +1,6 @@
 ﻿using Umbraco.Cms.Core.Models.Blocks;
 
-namespace Our.Umbraco.BlockPreview.Models
+namespace Umbraco.Community.BlockPreview.Models
 {
     public class BlockData
     {

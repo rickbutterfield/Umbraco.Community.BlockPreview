@@ -1,16 +1,16 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.Extensions.DependencyInjection;
-using Our.Umbraco.BlockPreview.Helpers;
-using Our.Umbraco.BlockPreview.Interfaces;
-using Our.Umbraco.BlockPreview.NotificationHandlers;
-using Our.Umbraco.BlockPreview.Services;
+using Umbraco.Community.BlockPreview.Helpers;
+using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.NotificationHandlers;
+using Umbraco.Community.BlockPreview.Services;
 using System;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Notifications;
 
-namespace Our.Umbraco.BlockPreview
+namespace Umbraco.Community.BlockPreview
 {
     public class Startup : IComposer
     {

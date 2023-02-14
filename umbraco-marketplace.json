@@ -18,13 +18,13 @@
 		]
 	},
 	"Category": "Editor Tools",
-	"DocumentationUrl": "https://github.com/rickbutterfield/Our.Umbraco.BlockPreview",
+	"DocumentationUrl": "https://github.com/rickbutterfield/Umbraco.Community.BlockPreview",
 	"LicenseTypes": [ "Free" ],
-	"IssueTrackerUrl": "https://github.com/rickbutterfield/Our.Umbraco.BlockPreview/issues",
+	"IssueTrackerUrl": "https://github.com/rickbutterfield/Umbraco.Community.BlockPreview/issues",
 	"PackageType": "Package",
 	"Screenshots": [
 		{
-			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/Our.Umbraco.BlockPreview/main/screenshots/screenshot1.png",
+			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/main/screenshots/screenshot1.png",
 			"Caption": "The Umbraco backoffice showing a panel titled 'Select view', with two HTML files in a list available for selection"
 		}
 	]

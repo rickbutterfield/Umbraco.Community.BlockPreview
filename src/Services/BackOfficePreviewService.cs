@@ -17,10 +17,10 @@ using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Extensions;
-using Our.Umbraco.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.Interfaces;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 
-namespace Our.Umbraco.BlockPreview.Services
+namespace Umbraco.Community.BlockPreview.Services
 {
     public sealed class BackOfficePreviewService : IBackOfficePreviewService
     {

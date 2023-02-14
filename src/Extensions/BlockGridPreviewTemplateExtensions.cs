@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Extensions;
 
-namespace Our.Umbraco.BlockPreview.Extensions
+namespace Umbraco.Community.BlockPreview.Extensions
 {
     public static class BlockGridPreviewTemplateExtensions
     {

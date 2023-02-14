@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using Our.Umbraco.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.Interfaces;
 
-namespace Our.Umbraco.BlockPreview.Helpers
+namespace Umbraco.Community.BlockPreview.Helpers
 {
     [ExcludeFromCodeCoverage(Justification = $"This is a wrapper class to avoid setting up a {nameof(DefaultViewComponentHelper)}")]
     public sealed class ViewComponentHelperWrapper<T> : IViewComponentHelperWrapper where T : IViewComponentHelper, IViewContextAware

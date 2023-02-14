@@ -1,5 +1,5 @@
-﻿angular.module('umbraco').controller('Our.Umbraco.BlockPreview.Controllers.BlockPreviewController',
-    ['$scope', '$sce', '$element', '$compile', '$timeout', 'editorState', 'Our.Umbraco.BlockPreview.Resources.PreviewResource',
+﻿angular.module('umbraco').controller('Umbraco.Community.BlockPreview.Controllers.BlockPreviewController',
+    ['$scope', '$sce', '$element', '$compile', '$timeout', 'editorState', 'Umbraco.Community.BlockPreview.Resources.PreviewResource',
         function ($scope, $sce, $element, $compile, $timeout, editorState, previewResource) {
             var active = editorState.getCurrent().variants.find(function (v) {
                 return v.active;

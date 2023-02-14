@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Umbraco.Cms.Core.Models.Blocks;
 
-namespace Our.Umbraco.BlockPreview.Interfaces
+namespace Umbraco.Community.BlockPreview.Interfaces
 {
     public interface IBackOfficePreviewService
     {

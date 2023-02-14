@@ -20,6 +20,6 @@
         };
     }
 
-    angular.module('umbraco.resources').factory('Our.Umbraco.BlockPreview.Resources.PreviewResource', previewResource);
+    angular.module('umbraco.resources').factory('Umbraco.Community.BlockPreview.Resources.PreviewResource', previewResource);
 
 })();

@@ -3,19 +3,19 @@
 		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
 		<ContentTargetFolders>.</ContentTargetFolders>
 
-		<Product>Our.Umbraco.BlockPreview</Product>
-		<PackageId>Our.Umbraco.BlockPreview</PackageId>
-		<Title>Our.Umbraco.BlockPreview</Title>
+		<Product>Umbraco.Community.BlockPreview</Product>
+		<PackageId>Umbraco.Community.BlockPreview</PackageId>
+		<Title>Umbraco.Community.BlockPreview</Title>
 
-		<VersionPrefix>1.0.1</VersionPrefix>
+		<VersionPrefix>1.1.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 
-		<PackageProjectUrl>https://github.com/rickbutterfield/Our.Umbraco.BlockPreview</PackageProjectUrl>
+		<PackageProjectUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</PackageProjectUrl>
 		<PackageIcon>icon.png</PackageIcon>
 		<PackageTags>umbraco plugin package block list grid umbraco-marketplace</PackageTags>		
 		
-		<RepositoryUrl>https://github.com/rickbutterfield/Our.Umbraco.BlockPreview</RepositoryUrl>
+		<RepositoryUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</RepositoryUrl>
 
 		<Description>Easy to use rich HTML previews for the Umbraco Block List and Block Grid editors</Description>
 
@@ -40,7 +40,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="App_Plugins\Our.Umbraco.BlockPreview\**">
+		<Content Include="App_Plugins\Umbraco.Community.BlockPreview\**">
 			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
 			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
 		</Content>

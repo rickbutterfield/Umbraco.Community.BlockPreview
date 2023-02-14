@@ -1,11 +1,11 @@
 ﻿{
-  "name": "Our.Umbraco.BlockPreview",
-  "version": "1.0.1",
+  "name": "Umbraco.Community.BlockPreview",
+  "version": "1.1.0",
   "allowPackageTelemetry": true,
   "javascript": [
-    "~/App_Plugins/Our.Umbraco.BlockPreview/js/resources/preview.resource.js",
-    "~/App_Plugins/Our.Umbraco.BlockPreview/js/directives/published-check.directive.js",
-    "~/App_Plugins/Our.Umbraco.BlockPreview/js/directives/bind-compile.directive.js",
-    "~/App_Plugins/Our.Umbraco.BlockPreview/js/controllers/block-preview.controller.js"
+    "~/App_Plugins/Umbraco.Community.BlockPreview/js/resources/preview.resource.js",
+    "~/App_Plugins/Umbraco.Community.BlockPreview/js/directives/published-check.directive.js",
+    "~/App_Plugins/Umbraco.Community.BlockPreview/js/directives/bind-compile.directive.js",
+    "~/App_Plugins/Umbraco.Community.BlockPreview/js/controllers/block-preview.controller.js"
   ]
 }

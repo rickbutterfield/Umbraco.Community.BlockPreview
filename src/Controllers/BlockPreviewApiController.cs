@@ -6,15 +6,15 @@ using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Our.Umbraco.BlockPreview.Interfaces;
-using Our.Umbraco.BlockPreview.Models;
+using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Extensions;
 
-namespace Our.Umbraco.BlockPreview.Controllers
+namespace Umbraco.Community.BlockPreview.Controllers
 {
     /// <summary>
     /// Represents the Block Preview API controller.

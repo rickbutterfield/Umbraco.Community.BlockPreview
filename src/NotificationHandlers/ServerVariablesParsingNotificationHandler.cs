@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Routing;
-using Our.Umbraco.BlockPreview.Controllers;
+using Umbraco.Community.BlockPreview.Controllers;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Extensions;
 
-namespace Our.Umbraco.BlockPreview.NotificationHandlers
+namespace Umbraco.Community.BlockPreview.NotificationHandlers
 {
     internal class ServerVariablesParsingNotificationHandler : INotificationHandler<ServerVariablesParsingNotification>
     {
