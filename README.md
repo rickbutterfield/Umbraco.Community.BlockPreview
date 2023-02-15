@@ -1,6 +1,6 @@
 # Umbraco.Community.BlockPreview
 [![Platform](https://img.shields.io/badge/Umbraco-10.4+-%233544B1?style=flat&logo=umbraco)](https://umbraco.com/products/umbraco-cms/)
-[![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.BlockPreview.svg)](https://www.nuget.org/packages/Umbraco.Community.BlockPreview/)
+[![NuGet](https://img.shields.io/nuget/v/Our.Umbraco.BlockPreview.svg)](https://www.nuget.org/packages/Our.Umbraco.BlockPreview/)
 [![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.BlockPreview)](https://github.com/rickbutterfield/Umbraco.Community.BlockPreview/blob/main/LICENSE)
 
 **Umbraco.Community.BlockPreview** enables easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors.
