@@ -44,6 +44,20 @@ When using the new Block Grid, replace the references below in your Grid templat
 
 All of these extensions can be found in the namespace `Umbraco.Community.BlockPreview.Extensions`. This ensures that the grid editors correctly load in the back office.
 
+### Preview mode
+This package adds an `IsBlockPreviewRequest()` extension to `HttpContext.Request`, similar to `IsBackOfficeRequest()` and `IsFrontEndRequest()` so you can add custom code to your views that only appears in the back office.
+
+For example:
+```razor
+@using Umbraco.Community.BlockPreview.Extensions
+@inherits UmbracoViewPage<BlockGridItem>
+
+@if (Context.Request.IsBlockPreviewRequest())
+{
+    <p>This content will only be shown to content editors in the back office!</p>
+}
+```
+
 ## Credits
 This package is entirely based on the amazing work done by [Dave Woestenborghs](https://github.com/dawoe) for [24days in Umbraco 2021](https://archive.24days.in/umbraco-cms/2021/advanced-blocklist-editor/). His code has been extended to support the new Block Grid editor in v10.4/v11 and turned into this package.
 
