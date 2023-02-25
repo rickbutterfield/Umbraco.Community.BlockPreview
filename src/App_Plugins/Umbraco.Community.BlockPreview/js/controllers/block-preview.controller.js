@@ -53,5 +53,19 @@
                     }, 500);
                 }
             }, true);
+
+            $scope.editBlock = function ($event, block) {
+                var target = $event.target;
+                var actions = target.closest('.umb-block-grid__block--actions');
+
+                if (!actions) {
+                    block.edit();
+                    $event.preventDefault();
+                    $event.stopPropagation();
+                    $event.stopImmediatePropagation();
+                    $event.cancelBubble = true;
+                    return;
+                }
+            }
         }
     ]);
