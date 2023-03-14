@@ -72,35 +72,43 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement settingsElement = settingsData != null ? _blockEditorConverter.ConvertToElement(settingsData, PropertyCacheLevel.None, true) : default;
 
-            // get the models builder type based on content type alias
             Type contentBlockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
                 x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == contentElement.ContentType.Alias);
-
-            if (contentBlockType == null)
-            {
-                throw new InvalidOperationException($"Unable to find BlockType {contentElement.ContentType.Alias}");
-            }
 
             Type settingsBlockType = settingsElement != null ? _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
                 x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == settingsElement.ContentType.Alias) : default;
 
-            // create instance of the models builder type based from the element
-            var contentInstance = Activator.CreateInstance(contentBlockType, contentElement, _publishedValueFallback);
-            var settingsInstance = settingsBlockType != default ? Activator.CreateInstance(settingsBlockType, settingsElement, _publishedValueFallback) : default;
+            object blockInstance = null;
 
-            // get a generic block grid item type based on the models builder type
-            Type blockItemType = null;
-            if (settingsBlockType != default)
+            if (contentBlockType != null)
             {
-                blockItemType = isGrid ? typeof(BlockGridItem<,>).MakeGenericType(contentBlockType, settingsBlockType) : typeof(BlockListItem<,>).MakeGenericType(contentBlockType, settingsBlockType);
+                var contentInstance = Activator.CreateInstance(contentBlockType, contentElement, _publishedValueFallback);
+
+                var settingsInstance = settingsBlockType != default ? Activator.CreateInstance(settingsBlockType, settingsElement, _publishedValueFallback) : default;
+
+                Type blockItemType = null;
+                if (settingsBlockType != default)
+                {
+                    blockItemType = isGrid ? typeof(BlockGridItem<,>).MakeGenericType(contentBlockType, settingsBlockType) : typeof(BlockListItem<,>).MakeGenericType(contentBlockType, settingsBlockType);
+                }
+                else
+                {
+                    blockItemType = isGrid ? typeof(BlockGridItem<>).MakeGenericType(contentBlockType) : typeof(BlockListItem<>).MakeGenericType(contentBlockType);
+                }
+
+                blockInstance = Activator.CreateInstance(blockItemType, contentData.Udi, contentInstance, settingsData?.Udi, settingsInstance);
             }
             else
             {
-                blockItemType = isGrid ? typeof(BlockGridItem<>).MakeGenericType(contentBlockType) : typeof(BlockListItem<>).MakeGenericType(contentBlockType);
+                if (settingsElement != null)
+                {
+                    blockInstance = isGrid ? new BlockGridItem(contentData.Udi, contentElement, settingsData.Udi, settingsElement) : new BlockListItem(contentData.Udi, contentElement, settingsData.Udi, settingsElement);
+                }
+                else
+                {
+                    blockInstance = isGrid ? new BlockGridItem(contentData.Udi, contentElement, null, null) : new BlockListItem(contentData.Udi, contentElement, null, null);
+                }
             }
-
-            // create instance of the models builder type based from the element
-            var blockInstance = Activator.CreateInstance(blockItemType, contentData.Udi, contentInstance, settingsData?.Udi, settingsInstance);
 
             ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
             viewData.Model = blockInstance;

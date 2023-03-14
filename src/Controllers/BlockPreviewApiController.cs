@@ -13,6 +13,7 @@ using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Extensions;
+using Umbraco.Cms.Core.Services;
 
 namespace Umbraco.Community.BlockPreview.Controllers
 {
@@ -26,6 +27,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
         private readonly IVariationContextAccessor _variationContextAccessor;
         private readonly IBackOfficePreviewService _backOfficePreviewService;
+        private readonly ILocalizationService _localizationService;
         private readonly ISiteDomainMapper _siteDomainMapper;
 
         /// <summary>
@@ -37,6 +39,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IUmbracoContextAccessor umbracoContextAccessor,
             IVariationContextAccessor variationContextAccessor,
             IBackOfficePreviewService backOfficePreviewService,
+            ILocalizationService localizationService,
             ISiteDomainMapper siteDomainMapper)
         {
             _publishedRouter = publishedRouter;
@@ -44,6 +47,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _umbracoContextAccessor = umbracoContextAccessor;
             _variationContextAccessor = variationContextAccessor;
             _backOfficePreviewService = backOfficePreviewService;
+            _localizationService = localizationService;
             _siteDomainMapper = siteDomainMapper;
         }
 
@@ -111,12 +115,17 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 ? page.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
                 : culture;
 
-            if (currentCulture == null || !page.Cultures.ContainsKey(currentCulture))
+            if (currentCulture == "undefined")
+            {
+                currentCulture = _localizationService.GetDefaultLanguageIsoCode();
+            }
+
+            if (currentCulture == null)
             {
                 return;
             }
 
-            var cultureInfo = new CultureInfo(page.Cultures[currentCulture].Culture);
+            var cultureInfo = new CultureInfo(currentCulture);
 
             Thread.CurrentThread.CurrentCulture = cultureInfo;
             Thread.CurrentThread.CurrentUICulture = cultureInfo;
