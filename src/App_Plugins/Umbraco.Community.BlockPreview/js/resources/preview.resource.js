@@ -12,6 +12,7 @@
         return resource;
 
         function getPreview(data, pageId, isGrid, culture) {
+            culture = culture || '';
 
             return umbRequestHelper.resourcePromise(
                 $http.post(apiUrl + '?pageId=' + pageId + '&isGrid=' + isGrid + '&culture=' + culture, data),
