@@ -13,13 +13,27 @@ The Umbraco 10.4+ version of this package is [available via NuGet](https://www.n
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 1.1.2
+dotnet add package Umbraco.Community.BlockPreview --version 1.2.0
 ```
 
 or the older NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 1.1.2
+Install-Package Umbraco.Community.BlockPreview -Version 1.2.0
+```
+
+## Setup
+Once installed, you'll need to add `AddBlockPreview()` to your `Startup.cs` file, before `AddWebsite()`.
+```diff
+ public void ConfigureServices(IServiceCollection services)
+ {
+     services.AddUmbraco(_env, _config)
+         .AddBackOffice()
++        .AddBlockPreview()
+         .AddWebsite()
+         .AddComposers()
+         .Build();
+ }
 ```
 
 ## Usage
@@ -59,7 +73,7 @@ For example:
 ```
 
 ## Credits
-This package is entirely based on the amazing work done by [Dave Woestenborghs](https://github.com/dawoe) for [24days in Umbraco 2021](https://archive.24days.in/umbraco-cms/2021/advanced-blocklist-editor/). His code has been extended to support the new Block Grid editor in v10.4/v11 and turned into this package.
+This package is entirely based on the amazing work done by [Dave Woestenborghs](https://github.com/dawoe) for [24days in Umbraco 2021](https://archive.24days.in/umbraco-cms/2021/advanced-blocklist-editor/). His code has been extended to support the new Block Grid editor in v10.4+ and turned into this package.
 
 [Matthew Wise](https://github.com/Matthew-Wise) also wrote a great article for [24days in Umbraco 2022](https://24days.in/umbraco-cms/2022/more-blocklist-editor/) which added the ability to surface `ViewComponents` and has allowed his code to be contributed.
 

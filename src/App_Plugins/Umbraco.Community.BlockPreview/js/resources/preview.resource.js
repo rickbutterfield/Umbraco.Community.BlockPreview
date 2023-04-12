@@ -3,7 +3,7 @@
 
     function previewResource($http, umbRequestHelper) {
 
-        var apiUrl = Umbraco.Sys.ServerVariables.OurUmbracoBlockPreview.PreviewApi;
+        var apiUrl = Umbraco.Sys.ServerVariables.UmbracoCommunityBlockPreview.PreviewApi;
 
         var resource = {
             getPreview: getPreview,

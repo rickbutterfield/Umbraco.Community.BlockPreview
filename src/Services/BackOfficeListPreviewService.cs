@@ -1,0 +1,120 @@
+﻿using System.Linq;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Umbraco.Cms.Core.PropertyEditors;
+using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Umbraco.Cms.Core.Composing;
+using Umbraco.Cms.Core.Models.Blocks;
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
+using Umbraco.Extensions;
+using Umbraco.Community.BlockPreview.Interfaces;
+using System.Globalization;
+using System.Threading;
+
+namespace Umbraco.Community.BlockPreview.Services
+{
+    public sealed class BackOfficeListPreviewService : BackOfficePreviewService, IBackOfficeListPreviewService
+    {
+        private readonly BlockEditorConverter _blockEditorConverter;
+
+        private readonly ITypeFinder _typeFinder;
+
+        private readonly IPublishedValueFallback _publishedValueFallback;
+
+        private readonly IViewComponentSelector _viewComponentSelector;
+
+        public BackOfficeListPreviewService(
+            BlockEditorConverter blockEditorConverter,
+            ITempDataProvider tempDataProvider,
+            ITypeFinder typeFinder,
+            IPublishedValueFallback publishedValueFallback,
+            IViewComponentHelperWrapper viewComponentHelperWrapper,
+            IViewComponentSelector viewComponentSelector,
+            IRazorViewEngine razorViewEngine) : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine)
+        {
+            _blockEditorConverter = blockEditorConverter;
+            _typeFinder = typeFinder;
+            _publishedValueFallback = publishedValueFallback;
+            _viewComponentSelector = viewComponentSelector;
+        }
+
+        public async Task<string> GetMarkupForBlock(
+            BlockValue blockValue,
+            ControllerContext controllerContext,
+            string culture)
+        {
+            SetCulture(culture);
+
+            var contentData = blockValue.ContentData.FirstOrDefault();
+            var settingsData = blockValue.SettingsData.FirstOrDefault();
+
+            // convert the JSON data to a IPublishedElement (using the built-in conversion)
+            IPublishedElement contentElement = _blockEditorConverter.ConvertToElement(contentData, PropertyCacheLevel.None, true);
+
+            if (contentElement == null)
+            {
+                throw new InvalidOperationException($"Unable to find Element {contentData.ContentTypeAlias}");
+            }
+
+            IPublishedElement settingsElement = settingsData != null ? _blockEditorConverter.ConvertToElement(settingsData, PropertyCacheLevel.None, true) : default;
+
+            Type contentBlockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+                x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == contentElement.ContentType.Alias);
+
+            Type settingsBlockType = settingsElement != null ? _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+                x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == settingsElement.ContentType.Alias) : default;
+
+            object blockInstance = null;
+
+            if (contentBlockType != null)
+            {
+                var contentInstance = Activator.CreateInstance(contentBlockType, contentElement, _publishedValueFallback);
+
+                var settingsInstance = settingsBlockType != default ? Activator.CreateInstance(settingsBlockType, settingsElement, _publishedValueFallback) : default;
+
+                Type blockItemType = null;
+                if (settingsBlockType != default)
+                {
+                    blockItemType = typeof(BlockListItem<,>).MakeGenericType(contentBlockType, settingsBlockType);
+                }
+                else
+                {
+                    blockItemType = typeof(BlockListItem<>).MakeGenericType(contentBlockType);
+                }
+
+                blockInstance = Activator.CreateInstance(blockItemType, contentData.Udi, contentInstance, settingsData?.Udi, settingsInstance);
+            }
+            else
+            {
+                if (settingsElement != null)
+                {
+                    blockInstance = new BlockListItem(contentData.Udi, contentElement, settingsData.Udi, settingsElement);
+                }
+                else
+                {
+                    blockInstance = new BlockListItem(contentData.Udi, contentElement, null, null);
+                }
+            }
+
+            ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            viewData.Model = blockInstance;
+            viewData["blockPreview"] = true;
+
+            string contentAlias = contentElement.ContentType.Alias.ToFirstUpper();
+            ViewComponentDescriptor viewComponent = _viewComponentSelector.SelectComponent(contentAlias);
+
+            if (viewComponent != null)
+            {
+                return await GetMarkupFromViewComponent(controllerContext, viewData, viewComponent);
+            }
+
+            return await GetMarkupFromPartial(controllerContext, viewData, contentAlias);
+        }
+    }
+}
+

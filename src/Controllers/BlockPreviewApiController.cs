@@ -7,13 +7,14 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Umbraco.Community.BlockPreview.Interfaces;
-using Umbraco.Community.BlockPreview.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Extensions;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Models.Blocks;
+using System.Linq;
 
 namespace Umbraco.Community.BlockPreview.Controllers
 {
@@ -26,7 +27,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly ILogger<BlockPreviewApiController> _logger;
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
         private readonly IVariationContextAccessor _variationContextAccessor;
-        private readonly IBackOfficePreviewService _backOfficePreviewService;
+        private readonly IBackOfficeListPreviewService _backOfficeListPreviewService;
+        private readonly IBackOfficeGridPreviewService _backOfficeGridPreviewService;
         private readonly ILocalizationService _localizationService;
         private readonly ISiteDomainMapper _siteDomainMapper;
 
@@ -38,7 +40,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             ILogger<BlockPreviewApiController> logger,
             IUmbracoContextAccessor umbracoContextAccessor,
             IVariationContextAccessor variationContextAccessor,
-            IBackOfficePreviewService backOfficePreviewService,
+            IBackOfficeListPreviewService backOfficeListPreviewService,
+            IBackOfficeGridPreviewService backOfficeGridPreviewService,
             ILocalizationService localizationService,
             ISiteDomainMapper siteDomainMapper)
         {
@@ -46,7 +49,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _logger = logger;
             _umbracoContextAccessor = umbracoContextAccessor;
             _variationContextAccessor = variationContextAccessor;
-            _backOfficePreviewService = backOfficePreviewService;
+            _backOfficeListPreviewService = backOfficeListPreviewService;
+            _backOfficeGridPreviewService = backOfficeGridPreviewService;
             _localizationService = localizationService;
             _siteDomainMapper = siteDomainMapper;
         }
@@ -61,7 +65,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <returns>The markup to render in the preview.</returns>
         [HttpPost]
         public async Task<IActionResult> PreviewMarkup(
-            [FromBody] BlockData data,
+            [FromBody] BlockValue data,
             [FromQuery] int pageId = 0,
             [FromQuery] bool isGrid = false,
             [FromQuery] string culture = "")
@@ -83,20 +87,24 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     return Ok("The page is not saved yet, so we can't create a preview. Save the page first.");
                 }
 
-                await SetupPublishedRequest(culture, page);
+                await SetupPublishedRequest(page, culture);
 
-                markup = await _backOfficePreviewService.GetMarkupForBlock(data.Content, data.Settings, isGrid, ControllerContext);
+                if (isGrid)
+                {
+                    markup = await _backOfficeGridPreviewService.GetMarkupForBlock(data, ControllerContext, culture);
+                }
+                else markup = await _backOfficeListPreviewService.GetMarkupForBlock(data, ControllerContext, culture);
             }
             catch (Exception ex)
             {
                 markup = "Something went wrong rendering a preview.";
-                _logger.LogError(ex, "Error rendering preview for block {ContentTypeAlias}", data.Content.ContentTypeAlias);
+                _logger.LogError(ex, "Error rendering preview for block {ContentTypeAlias}", data.ContentData.FirstOrDefault()?.ContentTypeAlias);
             }
 
             return Ok(CleanUpMarkup(markup));
         }
 
-        private async Task SetupPublishedRequest(string culture, IPublishedContent page)
+        private async Task SetupPublishedRequest(IPublishedContent page, string culture)
         {
             // set the published request for the page we are editing in the back office
             if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext context))
@@ -116,14 +124,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 : culture;
 
             if (currentCulture == "undefined")
-            {
                 currentCulture = _localizationService.GetDefaultLanguageIsoCode();
-            }
 
             if (currentCulture == null)
-            {
                 return;
-            }
 
             var cultureInfo = new CultureInfo(currentCulture);
 
@@ -135,9 +139,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private IPublishedContent GetPublishedContentForPage(int pageId)
         {
             if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext context))
-            {
                 return null;
-            }
 
             // Get page from published cache.
             // If unpublished, then get it from preview
@@ -147,9 +149,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private string CleanUpMarkup(string markup)
         {
             if (string.IsNullOrWhiteSpace(markup))
-            {
                 return markup;
-            }
 
             var content = new HtmlDocument();
             content.LoadHtml(markup);

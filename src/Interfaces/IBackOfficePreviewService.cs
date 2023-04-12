@@ -6,10 +6,5 @@ namespace Umbraco.Community.BlockPreview.Interfaces
 {
     public interface IBackOfficePreviewService
     {
-        Task<string> GetMarkupForBlock(
-            BlockItemData contentData,
-            BlockItemData settingsData,
-            bool isGrid,
-            ControllerContext controllerContext);
     }
 }

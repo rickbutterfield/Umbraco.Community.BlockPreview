@@ -1,6 +1,6 @@
 ﻿angular.module('umbraco').controller('Umbraco.Community.BlockPreview.Controllers.BlockPreviewController',
-    ['$scope', '$sce', '$element', '$compile', '$timeout', 'editorState', 'Umbraco.Community.BlockPreview.Resources.PreviewResource',
-        function ($scope, $sce, $element, $compile, $timeout, editorState, previewResource) {
+    ['$scope', '$sce', '$element', '$compile', '$timeout', 'editorState', 'Umbraco.Community.BlockPreview.Resources.PreviewResource', 'blockEditorService',
+        function ($scope, $sce, $element, $compile, $timeout, editorState, previewResource, blockEditorService) {
             var active = editorState.getCurrent().variants.find(function (v) {
                 return v.active;
             });
@@ -20,8 +20,9 @@
                 $scope.loading = true;
 
                 var formattedBlockData = {
-                    content: content ?? $scope.block.data,
-                    settings: settings ?? $scope.block.settingsData
+                    layout: $scope.block.layout,
+                    contentData: [content ?? $scope.block.data],
+                    settingsData: [settings ?? $scope.block.settingsData]
                 };
 
                 previewResource.getPreview(formattedBlockData, $scope.id, $scope.model.constructor.name == 'BlockGridBlockController', $scope.language).then(function (data) {

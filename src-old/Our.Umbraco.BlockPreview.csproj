@@ -7,13 +7,13 @@
     <PackageId>Our.Umbraco.BlockPreview</PackageId>
     <Title>Our.Umbraco.BlockPreview</Title>
 
-    <VersionPrefix>1.1.2</VersionPrefix>
+    <VersionPrefix>1.2.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 
     <PackageProjectUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</PackageProjectUrl>
     <PackageIcon>icon.png</PackageIcon>
-    <PackageTags>umbraco plugin package block list grid umbraco-marketplace</PackageTags>
+    <PackageTags>umbraco plugin package block list grid</PackageTags>
 
     <RepositoryUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</RepositoryUrl>
 
@@ -28,11 +28,11 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="Umbraco.Community.BlockPreview" Version="1.1.2" />
+    <PackageReference Include="Umbraco.Community.BlockPreview" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-    <PackageReference Include="Umbraco.Community.BlockPreview" Version="1.1.2" />
+    <PackageReference Include="Umbraco.Community.BlockPreview" Version="1.2.0" />
   </ItemGroup>
 
   <ItemGroup>
