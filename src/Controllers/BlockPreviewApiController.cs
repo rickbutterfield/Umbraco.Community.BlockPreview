@@ -87,13 +87,15 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     return Ok("The page is not saved yet, so we can't create a preview. Save the page first.");
                 }
 
-                await SetupPublishedRequest(page, culture);
+                var currentCulture = GetCurrentCulture(page, culture);
+
+                await SetupPublishedRequest(page, currentCulture);
 
                 if (isGrid)
                 {
-                    markup = await _backOfficeGridPreviewService.GetMarkupForBlock(data, ControllerContext, culture);
+                    markup = await _backOfficeGridPreviewService.GetMarkupForBlock(data, ControllerContext, currentCulture);
                 }
-                else markup = await _backOfficeListPreviewService.GetMarkupForBlock(data, ControllerContext, culture);
+                else markup = await _backOfficeListPreviewService.GetMarkupForBlock(data, ControllerContext, currentCulture);
             }
             catch (Exception ex)
             {
@@ -102,6 +104,19 @@ namespace Umbraco.Community.BlockPreview.Controllers
             }
 
             return Ok(CleanUpMarkup(markup));
+        }
+
+        private string GetCurrentCulture(IPublishedContent page, string culture)
+        {
+            // if in a culture variant setup also set the correct language.
+            var currentCulture = string.IsNullOrWhiteSpace(culture)
+                ? page.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
+                : culture;
+
+            if (currentCulture == "undefined")
+                currentCulture = _localizationService.GetDefaultLanguageIsoCode();
+
+            return currentCulture;
         }
 
         private async Task SetupPublishedRequest(IPublishedContent page, string culture)
@@ -118,18 +133,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
             context.PublishedRequest = requestBuilder.Build();
             context.ForcedPreview(true);
 
-            // if in a culture variant setup also set the correct language.
-            var currentCulture = string.IsNullOrWhiteSpace(culture)
-                ? page.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
-                : culture;
-
-            if (currentCulture == "undefined")
-                currentCulture = _localizationService.GetDefaultLanguageIsoCode();
-
-            if (currentCulture == null)
+            if (culture == null)
                 return;
 
-            var cultureInfo = new CultureInfo(currentCulture);
+            var cultureInfo = new CultureInfo(culture);
 
             Thread.CurrentThread.CurrentCulture = cultureInfo;
             Thread.CurrentThread.CurrentUICulture = cultureInfo;

@@ -21,8 +21,8 @@
 
                 var formattedBlockData = {
                     layout: $scope.block.layout,
-                    contentData: [content ?? $scope.block.data],
-                    settingsData: [settings ?? $scope.block.settingsData]
+                    contentData: [content || $scope.block.data],
+                    settingsData: [settings || $scope.block.settingsData]
                 };
 
                 previewResource.getPreview(formattedBlockData, $scope.id, $scope.model.constructor.name == 'BlockGridBlockController', $scope.language).then(function (data) {
