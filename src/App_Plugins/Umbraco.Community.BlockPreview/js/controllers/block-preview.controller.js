@@ -59,8 +59,10 @@
                 var target = $event.target;
                 var blockActions = target.closest('.umb-block-grid__block--actions');
                 var areaCreate = target.closest('.umb-block-grid__create-button');
+                var blockCreateButton = target.closest('.umb-block-grid__block--inline-create-button');
+                var blockCreateButtonLast = target.closest('.umb-block-grid__block--last-inline-create-button');
 
-                if (!blockActions && !areaCreate) {
+                if (!blockActions && !areaCreate && !blockCreateButton && !blockCreateButtonLast) {
                     block.edit();
                     $event.preventDefault();
                     $event.stopPropagation();
