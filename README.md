@@ -25,6 +25,8 @@ Install-Package Umbraco.Community.BlockPreview -Version 1.2.2
 ## Setup
 Once installed, you'll need to add `AddBlockPreview()` to your `Startup.cs` file, before `AddWebsite()`.
 ```diff
++ @using Umbraco.Community.BlockPreview;
+ 
  public void ConfigureServices(IServiceCollection services)
  {
      services.AddUmbraco(_env, _config)
