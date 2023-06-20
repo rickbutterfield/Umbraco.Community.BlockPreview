@@ -29,6 +29,8 @@ bld/
 [Oo]bj/
 [Ll]og/
 [Ll]ogs/
+src-old/App_Plugins
+src-old/App_Plugins/**
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/
