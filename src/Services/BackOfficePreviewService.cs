@@ -1,17 +1,17 @@
-﻿using System.IO;
-using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
+using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
-using Umbraco.Community.BlockPreview.Interfaces;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
 using System.Globalization;
+using System.IO;
+using System.Text.Encodings.Web;
 using System.Threading;
+using System.Threading.Tasks;
+using Umbraco.Community.BlockPreview.Interfaces;
 
 namespace Umbraco.Community.BlockPreview.Services
 {
@@ -43,9 +43,12 @@ namespace Umbraco.Community.BlockPreview.Services
         public virtual async Task<string> GetMarkupFromPartial(
             ControllerContext controllerContext,
             ViewDataDictionary viewData,
-            string contentAlias)
+            string contentAlias,
+            bool isGrid = false)
         {
-            ViewEngineResult viewResult = _razorViewEngine.FindView(controllerContext, contentAlias, false);
+            string viewPath = isGrid ? Constants.ViewLocations.BlockGrid : Constants.ViewLocations.BlockList;
+            string formattedViewPath = string.Format($"~{viewPath}", contentAlias);
+            ViewEngineResult viewResult = _razorViewEngine.GetView("" , formattedViewPath, false);
 
             if (viewResult.Success)
             {

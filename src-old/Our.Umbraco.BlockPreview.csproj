@@ -7,7 +7,7 @@
     <PackageId>Our.Umbraco.BlockPreview</PackageId>
     <Title>Our.Umbraco.BlockPreview</Title>
 
-    <VersionPrefix>1.3.0</VersionPrefix>
+    <VersionPrefix>1.3.1</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 
@@ -28,11 +28,11 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <PackageReference Include="Umbraco.Community.BlockPreview" Version="1.3.0" />
+    <PackageReference Include="Umbraco.Community.BlockPreview" Version="1.3.1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-    <PackageReference Include="Umbraco.Community.BlockPreview" Version="1.3.0" />
+    <PackageReference Include="Umbraco.Community.BlockPreview" Version="1.3.1" />
   </ItemGroup>
 
   <ItemGroup>

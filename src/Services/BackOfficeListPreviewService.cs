@@ -113,7 +113,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 return await GetMarkupFromViewComponent(controllerContext, viewData, viewComponent);
             }
 
-            return await GetMarkupFromPartial(controllerContext, viewData, contentAlias);
+            return await GetMarkupFromPartial(controllerContext, viewData, contentAlias, false);
         }
     }
 }

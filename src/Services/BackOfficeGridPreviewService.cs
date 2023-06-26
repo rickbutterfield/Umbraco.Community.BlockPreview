@@ -63,7 +63,7 @@ namespace Umbraco.Community.BlockPreview.Services
             var settingsData = blockValue.SettingsData.FirstOrDefault();
 
             var references = new List<ContentAndSettingsReference>() { new ContentAndSettingsReference(contentData?.Udi, settingsData?.Udi) };
-            BlockEditorData blockEditorData = new BlockEditorData(Constants.PropertyEditors.Aliases.BlockGrid, references, blockValue);
+            BlockEditorData blockEditorData = new BlockEditorData(Cms.Core.Constants.PropertyEditors.Aliases.BlockGrid, references, blockValue);
 
             // convert the JSON data to a IPublishedElement (using the built-in conversion)
             IPublishedElement contentElement = _blockEditorConverter.ConvertToElement(contentData, PropertyCacheLevel.None, true);
@@ -129,7 +129,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 return await GetMarkupFromViewComponent(controllerContext, viewData, viewComponent);
             }
 
-            return await GetMarkupFromPartial(controllerContext, viewData, contentAlias);
+            return await GetMarkupFromPartial(controllerContext, viewData, contentAlias, true);
         }
     }
 }

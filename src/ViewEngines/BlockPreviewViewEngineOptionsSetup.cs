@@ -28,8 +28,8 @@ namespace Umbraco.Community.BlockPreview.ViewEngines
             {
                 string[] blockViewLocations =
                 {
-                    "/Views/Partials/blockgrid/Components/{0}.cshtml",
-                    "/Views/Partials/blocklist/Components/{0}.cshtml"
+                    Constants.ViewLocations.BlockGrid,
+                    Constants.ViewLocations.BlockList
                 };
 
                 viewLocations = blockViewLocations.Concat(viewLocations);
