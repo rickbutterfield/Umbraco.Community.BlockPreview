@@ -1,0 +1,31 @@
+<style>
+    .hero {
+        cursor: pointer;
+        user-select: none;
+    }
+    slot {
+        cursor: initial;
+        user-select: auto;
+
+        --umb-block-grid--text-color: #fff;
+        --umb-block-grid--text-color-hover: #9fbfff;
+    }
+</style>
+<div 
+    class="hero"
+    ng-click="block.edit()"
+    ng-focus="block.focus"
+    ng-style="{'background-color': '#' + block.data.backgroundColor.value}"
+    ng-attr-bright-contrast="{{block.data.contrast.value === 'ffffff' || undefined}}">
+
+    <div 
+        class="hero-background"
+        ng-style="{
+            'background-image': 'url('+(block.data.image[0].mediaKey | mediaItemResolver).mediaLink+'?width=3840)'
+        }">
+    </div>
+    <div class="hero-content">
+        <h1>{{block.data.headline}}</h1>
+        <umb-block-grid-render-area-slots ng-click="$event.stopPropagation()"></umb-block-grid-render-area-slots>
+    </div>
+</div>

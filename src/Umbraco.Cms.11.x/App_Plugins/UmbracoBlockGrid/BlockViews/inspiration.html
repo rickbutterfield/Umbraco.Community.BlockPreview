@@ -1,0 +1,12 @@
+<section 
+    class="inspiration"
+    ng-style="{'background-color': '#' + block.settingsData.backgroundColor.value}"
+    ng-attr-bright-contrast="{{block.settingsData.contrast.value === 'ffffff' || undefined}}">
+
+    <div class="area-container">
+        <slot name="leftArea" class="left-area"></slot>
+        <slot name="rightArea" class="right-area"></slot>
+        <slot name="contentArea" class="content-area"></slot>
+    </div>
+
+</section>

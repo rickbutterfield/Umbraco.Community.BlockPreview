@@ -1,0 +1,23 @@
+﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem<CardBlock>>
+
+<div class="card @(Model.ColumnSpan == 6 ? "--medium" : null)">
+
+    <div class="card-media">
+        @{
+            var image = Model.Content.Image;
+            if (image is not null)
+            {
+                <img src="@image.GetCropUrl(width:Model.ColumnSpan == 6 ? 720 : 360)"/>
+            }
+            else
+            {
+                <p>Missing image</p>
+            }
+        }
+    </div>
+    <div class="card-content">
+        <h4>@Model.Content.Headline</h4>
+        <div>@Model.Content.RichText</div>
+    </div>
+
+</div>

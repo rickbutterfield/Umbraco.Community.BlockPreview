@@ -1,0 +1,8 @@
+<style>
+    :host {
+        cursor: pointer;
+        user-select: none;
+    }
+</style>
+<div class="rich-text" ng-click="block.edit()" ng-focus="block.focus" ng-bind-html="block.data.richText" style="--my-text-columns: {{block.layout.columnSpan === 12 ? 2 : 1}}">
+</div>
