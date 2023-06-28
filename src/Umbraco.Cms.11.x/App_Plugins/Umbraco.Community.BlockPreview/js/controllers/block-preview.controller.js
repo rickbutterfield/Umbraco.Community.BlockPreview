@@ -13,10 +13,10 @@
 
             $scope.id = editorState.getCurrent().id;
             $scope.loading = true;
-            $scope.markup = $sce.trustAsHtml('Loading preview');
+            $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
 
             function loadPreview(content, settings) {
-                $scope.markup = $sce.trustAsHtml('Loading preview');
+                $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
                 $scope.loading = true;
 
                 var formattedBlockData = {

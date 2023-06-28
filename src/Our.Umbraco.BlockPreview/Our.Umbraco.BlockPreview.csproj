@@ -25,6 +25,8 @@
 
     <IncludeBuildOutput>true</IncludeBuildOutput>
 
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
@@ -40,15 +42,15 @@
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>
     </Content>
-    <None Include="build\**">
+    <None Include="..\..\build\**">
       <Pack>true</Pack>
       <PackagePath>buildTransitive</PackagePath>
     </None>
-    <None Include="..\.github\readme-assets\icon.png">
+    <None Include="..\..\.github\readme-assets\icon.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>
-    <None Include="..\README.md">
+    <None Include="..\..\README.md">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

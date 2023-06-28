@@ -84,7 +84,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                 if (page == null)
                 {
-                    return Ok("The page is not saved yet, so we can't create a preview. Save the page first.");
+                    return Ok("<div class=\"alert alert-warning\">The page is not saved yet, so we can't create a preview. Save the page first.</div>");
                 }
 
                 var currentCulture = GetCurrentCulture(page, culture);
@@ -99,7 +99,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             }
             catch (Exception ex)
             {
-                markup = "Something went wrong rendering a preview.";
+                markup = $"<div class=\"alert alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{ex.Message}</pre></div>";
                 _logger.LogError(ex, "Error rendering preview for block {ContentTypeAlias}", data.ContentData.FirstOrDefault()?.ContentTypeAlias);
             }
 
