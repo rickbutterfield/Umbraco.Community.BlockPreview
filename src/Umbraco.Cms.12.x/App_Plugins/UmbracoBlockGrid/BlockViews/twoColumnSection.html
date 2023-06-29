@@ -1,0 +1,6 @@
+<section
+    ng-style="{'background-color': '#' + block.settingsData.backgroundColor.value}"
+    ng-attr-nobackgroundcolor="{{block.settingsData.backgroundColor.value === '' || undefined}}"
+    ng-attr-bright-contrast="{{block.settingsData.contrast.value === 'ffffff' || undefined}}">
+    <umb-block-grid-render-area-slots></umb-block-grid-render-area-slots>
+</section>

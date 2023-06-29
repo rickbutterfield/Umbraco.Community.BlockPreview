@@ -1,0 +1,10 @@
+﻿<link rel="stylesheet" href="/umbraco/assets/css/umbraco.min.css" />
+
+<div ng-click="editBlock($event, block)" ng-focus="block.focus" class="blockelement__draggable-element" ng-class="{ '--active': block.active, '--error': parentForm.$invalid && valFormManager.isShowingValidation() }" ng-controller="Umbraco.Community.BlockPreview.Controllers.BlockPreviewController">
+
+    <div ng-if="loading === false"
+         ng-bind-compile="markup"
+         publication-check
+         settings="block.settingsData"></div>
+
+</div>
