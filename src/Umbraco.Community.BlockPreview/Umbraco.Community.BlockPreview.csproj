@@ -7,7 +7,7 @@
 		<PackageId>Umbraco.Community.BlockPreview</PackageId>
 		<Title>Umbraco.Community.BlockPreview</Title>
 
-		<VersionPrefix>1.4.0</VersionPrefix>
+		<VersionPrefix>1.4.1</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 
@@ -61,9 +61,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Update="App_Plugins\Umbraco.Community.BlockPreview\views\block-preview.html">
-	    <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-	    <CopyToPublishDirectory>Always</CopyToPublishDirectory>
-	  </Content>
+	  <None Update="build\Umbraco.Community.BlockPreview.targets">
+	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+	  </None>
 	</ItemGroup>
 </Project>
