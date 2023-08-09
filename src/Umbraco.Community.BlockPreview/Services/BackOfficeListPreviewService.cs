@@ -13,23 +13,20 @@ using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
-using System.Globalization;
-using System.Threading;
 
 namespace Umbraco.Community.BlockPreview.Services
 {
     public sealed class BackOfficeListPreviewService : BackOfficePreviewService, IBackOfficeListPreviewService
     {
         private readonly BlockEditorConverter _blockEditorConverter;
-
         private readonly ITypeFinder _typeFinder;
-
         private readonly IPublishedValueFallback _publishedValueFallback;
-
         private readonly IViewComponentSelector _viewComponentSelector;
+        private readonly ContextCultureService _contextCultureService;
 
         public BackOfficeListPreviewService(
             BlockEditorConverter blockEditorConverter,
+            ContextCultureService contextCultureService,
             ITempDataProvider tempDataProvider,
             ITypeFinder typeFinder,
             IPublishedValueFallback publishedValueFallback,
@@ -41,6 +38,7 @@ namespace Umbraco.Community.BlockPreview.Services
             _typeFinder = typeFinder;
             _publishedValueFallback = publishedValueFallback;
             _viewComponentSelector = viewComponentSelector;
+            _contextCultureService = contextCultureService;
         }
 
         public async Task<string> GetMarkupForBlock(
@@ -48,7 +46,7 @@ namespace Umbraco.Community.BlockPreview.Services
             ControllerContext controllerContext,
             string culture)
         {
-            SetCulture(culture);
+            _contextCultureService.SetCulture(culture);
 
             var contentData = blockValue.ContentData.FirstOrDefault();
             var settingsData = blockValue.SettingsData.FirstOrDefault();
@@ -117,4 +115,3 @@ namespace Umbraco.Community.BlockPreview.Services
         }
     }
 }
-

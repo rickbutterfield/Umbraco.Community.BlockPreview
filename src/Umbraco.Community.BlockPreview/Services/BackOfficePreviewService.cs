@@ -6,10 +6,8 @@ using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
-using System.Globalization;
 using System.IO;
 using System.Text.Encodings.Web;
-using System.Threading;
 using System.Threading.Tasks;
 using Umbraco.Community.BlockPreview.Interfaces;
 
@@ -18,9 +16,7 @@ namespace Umbraco.Community.BlockPreview.Services
     public class BackOfficePreviewService : IBackOfficePreviewService
     {
         private readonly ITempDataProvider _tempDataProvider;
-
         private readonly IViewComponentHelperWrapper _viewComponentHelperWrapper;
-
         private readonly IRazorViewEngine _razorViewEngine;
 
         public BackOfficePreviewService(
@@ -31,13 +27,6 @@ namespace Umbraco.Community.BlockPreview.Services
             _tempDataProvider = tempDataProvider;
             _viewComponentHelperWrapper = viewComponentHelperWrapper;
             _razorViewEngine = razorViewEngine;
-        }
-
-        public virtual void SetCulture(string culture)
-        {
-            var cultureInfo = new CultureInfo(culture);
-            Thread.CurrentThread.CurrentCulture = cultureInfo;
-            Thread.CurrentThread.CurrentUICulture = cultureInfo;
         }
 
         public virtual async Task<string> GetMarkupFromPartial(
