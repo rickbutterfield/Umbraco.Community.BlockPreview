@@ -11,6 +11,14 @@ namespace Umbraco.Community.BlockPreview.ViewEngines
     /// </summary>
     public class BlockViewEngineOptionsSetup : IConfigureOptions<RazorViewEngineOptions>
     {
+        private readonly BlockPreviewOptions _options;
+
+        public BlockViewEngineOptionsSetup(IOptions<BlockPreviewOptions> options)
+        {
+            _options = options.Value;
+        }
+
+
         public void Configure(RazorViewEngineOptions options)
         {
             if (options == null)
@@ -18,23 +26,22 @@ namespace Umbraco.Community.BlockPreview.ViewEngines
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.ViewLocationExpanders.Add(new BlockViewLocationExpander());
+            options.ViewLocationExpanders.Add(new BlockViewLocationExpander(_options));
         }
 
         private class BlockViewLocationExpander : IViewLocationExpander
         {
+            private readonly BlockPreviewOptions _options;
+
+            public BlockViewLocationExpander(BlockPreviewOptions options)
+            {
+                _options = options;
+            }
+
             public IEnumerable<string> ExpandViewLocations(
                 ViewLocationExpanderContext context, IEnumerable<string> viewLocations)
             {
-                string[] blockViewLocations =
-                {
-                    Constants.ViewLocations.BlockGrid,
-                    Constants.ViewLocations.BlockList
-                };
-
-                viewLocations = blockViewLocations.Concat(viewLocations);
-
-                return viewLocations;
+                return _options.ViewLocations.GetAll().Concat(viewLocations);
             }
 
             // not a dynamic expander

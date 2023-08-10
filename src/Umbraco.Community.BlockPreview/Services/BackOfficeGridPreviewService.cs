@@ -14,6 +14,7 @@ using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
 using System.Collections.Generic;
+using Microsoft.Extensions.Options;
 
 namespace Umbraco.Community.BlockPreview.Services
 {
@@ -33,7 +34,8 @@ namespace Umbraco.Community.BlockPreview.Services
             IPublishedValueFallback publishedValueFallback,
             IViewComponentHelperWrapper viewComponentHelperWrapper,
             IViewComponentSelector viewComponentSelector,
-            IRazorViewEngine razorViewEngine) : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine)
+            IOptions<BlockPreviewOptions> options,
+            IRazorViewEngine razorViewEngine) : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine, options)
         {
             _blockEditorConverter = blockEditorConverter;
             _typeFinder = typeFinder;

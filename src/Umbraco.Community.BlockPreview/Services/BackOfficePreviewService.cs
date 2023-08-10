@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
 using System.IO;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -18,15 +19,18 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly ITempDataProvider _tempDataProvider;
         private readonly IViewComponentHelperWrapper _viewComponentHelperWrapper;
         private readonly IRazorViewEngine _razorViewEngine;
+        private readonly BlockPreviewOptions _options;
 
         public BackOfficePreviewService(
             ITempDataProvider tempDataProvider,
             IViewComponentHelperWrapper viewComponentHelperWrapper,
-            IRazorViewEngine razorViewEngine)
+            IRazorViewEngine razorViewEngine,
+            IOptions<BlockPreviewOptions> options)
         {
             _tempDataProvider = tempDataProvider;
             _viewComponentHelperWrapper = viewComponentHelperWrapper;
             _razorViewEngine = razorViewEngine;
+            _options = options.Value;
         }
 
         public virtual async Task<string> GetMarkupFromPartial(
@@ -35,21 +39,26 @@ namespace Umbraco.Community.BlockPreview.Services
             string contentAlias,
             bool isGrid = false)
         {
-            string viewPath = isGrid ? Constants.ViewLocations.BlockGrid : Constants.ViewLocations.BlockList;
-            string formattedViewPath = string.Format($"~{viewPath}", contentAlias);
-            ViewEngineResult viewResult = _razorViewEngine.GetView("" , formattedViewPath, false);
+            var viewPaths = isGrid ? _options.ViewLocations.BlockGrid : _options.ViewLocations.BlockList;
 
-            if (viewResult.Success)
+            foreach (var viewPath in viewPaths)
             {
-                var actionContext = new ActionContext(controllerContext.HttpContext, new RouteData(), new ActionDescriptor());
-                await using var sw = new StringWriter();
-                if (viewResult?.View != null)
-                {
-                    var viewContext = new ViewContext(actionContext, viewResult.View, viewData,
-                        new TempDataDictionary(actionContext.HttpContext, _tempDataProvider), sw, new HtmlHelperOptions());
+                string formattedViewPath = string.Format($"~{viewPath}", contentAlias);
+                ViewEngineResult viewResult = _razorViewEngine.GetView("", formattedViewPath, false);
 
-                    await viewResult.View.RenderAsync(viewContext);
-                }
+                if (!viewResult.Success)
+                    continue;
+
+                var actionContext = new ActionContext(controllerContext.HttpContext, new RouteData(), new ActionDescriptor());
+                if (viewResult?.View == null)
+                    continue;
+
+                await using var sw = new StringWriter();
+
+                var viewContext = new ViewContext(actionContext, viewResult.View, viewData,
+                    new TempDataDictionary(actionContext.HttpContext, _tempDataProvider), sw, new HtmlHelperOptions());
+
+                await viewResult.View.RenderAsync(viewContext);
 
                 return sw.ToString();
             }
