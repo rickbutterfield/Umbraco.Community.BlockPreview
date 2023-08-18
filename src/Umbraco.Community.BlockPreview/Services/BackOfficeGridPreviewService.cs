@@ -1,55 +1,47 @@
-﻿using System.IO;
-using System.Linq;
-using System.Text.Encodings.Web;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Umbraco.Cms.Core.PropertyEditors;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Routing;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Umbraco.Cms.Core;
-using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Globalization;
-using System.Threading;
+using Microsoft.Extensions.Options;
 
 namespace Umbraco.Community.BlockPreview.Services
 {
     public sealed class BackOfficeGridPreviewService : BackOfficePreviewService, IBackOfficeGridPreviewService
     {
         private readonly BlockEditorConverter _blockEditorConverter;
-
         private readonly ITypeFinder _typeFinder;
-
         private readonly IPublishedValueFallback _publishedValueFallback;
-
         private readonly IViewComponentSelector _viewComponentSelector;
+        private readonly ContextCultureService _contextCultureService;
 
         public BackOfficeGridPreviewService(
             BlockEditorConverter blockEditorConverter,
+            ContextCultureService contextCultureService,
             ITempDataProvider tempDataProvider,
             ITypeFinder typeFinder,
             IPublishedValueFallback publishedValueFallback,
             IViewComponentHelperWrapper viewComponentHelperWrapper,
             IViewComponentSelector viewComponentSelector,
-            IRazorViewEngine razorViewEngine) : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine)
+            IOptions<BlockPreviewOptions> options,
+            IRazorViewEngine razorViewEngine) : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine, options)
         {
             _blockEditorConverter = blockEditorConverter;
             _typeFinder = typeFinder;
             _publishedValueFallback = publishedValueFallback;
             _viewComponentSelector = viewComponentSelector;
+            _contextCultureService = contextCultureService;
         }
 
         public async Task<string> GetMarkupForBlock(
@@ -57,7 +49,7 @@ namespace Umbraco.Community.BlockPreview.Services
             ControllerContext controllerContext,
             string culture)
         {
-            SetCulture(culture);
+            _contextCultureService.SetCulture(culture);
 
             var contentData = blockValue.ContentData.FirstOrDefault();
             var settingsData = blockValue.SettingsData.FirstOrDefault();
@@ -117,12 +109,8 @@ namespace Umbraco.Community.BlockPreview.Services
             viewData.Model = blockInstance;
             viewData["blockPreview"] = true;
 
-            string contentAlias = contentElement.ContentType.Alias.ToFirstUpper();
+            string contentAlias = contentElement.ContentType.Alias;
             ViewComponentDescriptor viewComponent = _viewComponentSelector.SelectComponent(contentAlias);
-
-            var cultureInfo = new CultureInfo(culture);
-            Thread.CurrentThread.CurrentCulture = cultureInfo;
-            Thread.CurrentThread.CurrentUICulture = cultureInfo;
 
             if (viewComponent != null)
             {
