@@ -7,7 +7,7 @@
 		<PackageId>Umbraco.Community.BlockPreview</PackageId>
 		<Title>Umbraco.Community.BlockPreview</Title>
 
-		<VersionPrefix>1.4.1</VersionPrefix>
+		<VersionPrefix>1.5.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 
