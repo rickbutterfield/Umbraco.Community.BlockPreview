@@ -61,6 +61,7 @@
                 var areaCreate = target.closest('.umb-block-grid__create-button');
                 var blockCreateButton = target.closest('.umb-block-grid__block--inline-create-button');
                 var blockCreateButtonLast = target.closest('.umb-block-grid__block--last-inline-create-button');
+                var blockScaling = target.closest('.umb-block-grid__scale-handler') || target.closest('.--scale-mode');
 
                 if (!blockActions && !areaCreate && !blockCreateButton && !blockCreateButtonLast) {
                     block.edit();
