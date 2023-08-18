@@ -109,7 +109,7 @@ namespace Umbraco.Community.BlockPreview.Services
             viewData.Model = blockInstance;
             viewData["blockPreview"] = true;
 
-            string contentAlias = contentElement.ContentType.Alias.ToFirstUpper();
+            string contentAlias = contentElement.ContentType.Alias;
             ViewComponentDescriptor viewComponent = _viewComponentSelector.SelectComponent(contentAlias);
 
             if (viewComponent != null)
