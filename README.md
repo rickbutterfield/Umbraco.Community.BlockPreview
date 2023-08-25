@@ -13,13 +13,13 @@ The Umbraco 10.4+ version of this package is [available via NuGet](https://www.n
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 1.4.1
+dotnet add package Umbraco.Community.BlockPreview --version 1.5.0
 ```
 
 or the older NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 1.4.1
+Install-Package Umbraco.Community.BlockPreview -Version 1.5.0
 ```
 
 ## Setup
@@ -71,6 +71,18 @@ For example:
 @if (Context.Request.IsBlockPreviewRequest())
 {
     <p>This content will only be shown to content editors in the back office!</p>
+}
+```
+
+### Custom View locations
+If your block partials are not in the usual `/Views/Partials/block[grid|list]/Components/` paths, you can add custom locations in your `appsettings.json`:
+
+```
+"BlockPreview": {
+  "ViewLocations": {
+    "BlockList": ["/path/to/block/list/views/{0}.cshtml"],
+    "BlockGrid": ["/path/to/block/grid/views/{0}.cshtml"]
+  }
 }
 ```
 

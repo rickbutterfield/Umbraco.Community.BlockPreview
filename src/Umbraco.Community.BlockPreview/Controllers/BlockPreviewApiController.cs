@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Globalization;
-using System.Threading;
 using System.Threading.Tasks;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Http.Extensions;
@@ -15,6 +13,7 @@ using Umbraco.Extensions;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Models.Blocks;
 using System.Linq;
+using Umbraco.Community.BlockPreview.Services;
 
 namespace Umbraco.Community.BlockPreview.Controllers
 {
@@ -26,7 +25,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly IPublishedRouter _publishedRouter;
         private readonly ILogger<BlockPreviewApiController> _logger;
         private readonly IUmbracoContextAccessor _umbracoContextAccessor;
-        private readonly IVariationContextAccessor _variationContextAccessor;
+        private readonly ContextCultureService _contextCultureService;
         private readonly IBackOfficeListPreviewService _backOfficeListPreviewService;
         private readonly IBackOfficeGridPreviewService _backOfficeGridPreviewService;
         private readonly ILocalizationService _localizationService;
@@ -39,7 +38,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IPublishedRouter publishedRouter,
             ILogger<BlockPreviewApiController> logger,
             IUmbracoContextAccessor umbracoContextAccessor,
-            IVariationContextAccessor variationContextAccessor,
+            ContextCultureService contextCultureSwitcher,
             IBackOfficeListPreviewService backOfficeListPreviewService,
             IBackOfficeGridPreviewService backOfficeGridPreviewService,
             ILocalizationService localizationService,
@@ -48,7 +47,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _publishedRouter = publishedRouter;
             _logger = logger;
             _umbracoContextAccessor = umbracoContextAccessor;
-            _variationContextAccessor = variationContextAccessor;
+            _contextCultureService = contextCultureSwitcher;
             _backOfficeListPreviewService = backOfficeListPreviewService;
             _backOfficeGridPreviewService = backOfficeGridPreviewService;
             _localizationService = localizationService;
@@ -137,11 +136,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             if (culture == null)
                 return;
 
-            var cultureInfo = new CultureInfo(culture);
-
-            Thread.CurrentThread.CurrentCulture = cultureInfo;
-            Thread.CurrentThread.CurrentUICulture = cultureInfo;
-            _variationContextAccessor.VariationContext = new VariationContext(cultureInfo.Name);
+            _contextCultureService.SetCulture(culture);
         }
 
         private IPublishedContent GetPublishedContentForPage(int pageId)
