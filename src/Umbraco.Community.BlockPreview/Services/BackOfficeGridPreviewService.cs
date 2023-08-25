@@ -1,29 +1,22 @@
-﻿using System.IO;
-using System.Linq;
-using System.Text.Encodings.Web;
+﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Umbraco.Cms.Core.PropertyEditors;
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Routing;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
-using Microsoft.AspNetCore.Mvc.ViewEngines;
-using Umbraco.Cms.Core;
-using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Threading;
+using Newtonsoft.Json;
 
 namespace Umbraco.Community.BlockPreview.Services
 {
@@ -53,7 +46,9 @@ namespace Umbraco.Community.BlockPreview.Services
         }
 
         public async Task<string> GetMarkupForBlock(
+            IPublishedContent page,
             BlockValue blockValue,
+            string blockEditorAlias,
             ControllerContext controllerContext,
             string culture)
         {
@@ -61,6 +56,8 @@ namespace Umbraco.Community.BlockPreview.Services
 
             var contentData = blockValue.ContentData.FirstOrDefault();
             var settingsData = blockValue.SettingsData.FirstOrDefault();
+
+            var layoutData = JsonConvert.DeserializeObject<BlockGridLayoutItem>(JsonConvert.SerializeObject(blockValue.Layout));
 
             var references = new List<ContentAndSettingsReference>() { new ContentAndSettingsReference(contentData?.Udi, settingsData?.Udi) };
             BlockEditorData blockEditorData = new BlockEditorData(Cms.Core.Constants.PropertyEditors.Aliases.BlockGrid, references, blockValue);
@@ -113,8 +110,20 @@ namespace Umbraco.Community.BlockPreview.Services
                 }
             }
 
-            ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
-            viewData.Model = blockInstance;
+            // Get block config from Umbraco
+            var contentProperty = page.Properties.FirstOrDefault(x => x.Alias.Equals(blockEditorAlias));
+            if (contentProperty == null) return string.Empty;
+
+            var config = contentProperty.PropertyType.DataType.Configuration as BlockGridConfiguration;
+            if (config == null || config.BlockGroups == null) return string.Empty;
+
+            // Return a fully typed version of the block
+            var typedBlockInstance = blockInstance as BlockGridItem;
+
+            ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            {
+                Model = blockInstance
+            };
             viewData["blockPreview"] = true;
 
             string contentAlias = contentElement.ContentType.Alias.ToFirstUpper();

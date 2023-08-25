@@ -15,6 +15,9 @@
             $scope.loading = true;
             $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
 
+            // There must be a better way to do this...
+            $scope.blockEditorAlias = $scope.$parent.$parent.$parent.$parent.$parent.$parent.vm.model.editor;
+
             function loadPreview(content, settings) {
                 $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
                 $scope.loading = true;
@@ -25,7 +28,7 @@
                     settingsData: [settings || $scope.block.settingsData]
                 };
 
-                previewResource.getPreview(formattedBlockData, $scope.id, $scope.model.constructor.name == 'BlockGridBlockController', $scope.language).then(function (data) {
+                previewResource.getPreview(formattedBlockData, $scope.id, $scope.blockEditorAlias, $scope.model.constructor.name == 'BlockGridBlockController', $scope.language).then(function (data) {
                     $scope.markup = $sce.trustAsHtml(data);
                     $scope.loading = false;
                 });
