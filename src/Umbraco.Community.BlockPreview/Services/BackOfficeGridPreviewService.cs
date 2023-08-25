@@ -13,10 +13,7 @@ using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Threading;
-using Newtonsoft.Json;
+using Microsoft.Extensions.Options;
 
 namespace Umbraco.Community.BlockPreview.Services
 {
@@ -57,11 +54,6 @@ namespace Umbraco.Community.BlockPreview.Services
 
             var contentData = blockValue.ContentData.FirstOrDefault();
             var settingsData = blockValue.SettingsData.FirstOrDefault();
-
-            var layoutData = JsonConvert.DeserializeObject<BlockGridLayoutItem>(JsonConvert.SerializeObject(blockValue.Layout));
-
-            var references = new List<ContentAndSettingsReference>() { new ContentAndSettingsReference(contentData?.Udi, settingsData?.Udi) };
-            BlockEditorData blockEditorData = new BlockEditorData(Cms.Core.Constants.PropertyEditors.Aliases.BlockGrid, references, blockValue);
 
             // convert the JSON data to a IPublishedElement (using the built-in conversion)
             IPublishedElement contentElement = _blockEditorConverter.ConvertToElement(contentData, PropertyCacheLevel.None, true);
@@ -111,19 +103,25 @@ namespace Umbraco.Community.BlockPreview.Services
                 }
             }
 
-            // Get block config from Umbraco
-            var contentProperty = page.Properties.FirstOrDefault(x => x.Alias.Equals(blockEditorAlias));
+            IPublishedProperty contentProperty = page.Properties.FirstOrDefault(x => x.PropertyType.EditorAlias.Equals(blockEditorAlias));
             if (contentProperty == null) return string.Empty;
 
-            var config = contentProperty.PropertyType.DataType.Configuration as BlockGridConfiguration;
-            if (config == null || config.BlockGroups == null) return string.Empty;
+            BlockGridModel typedBlockGridModel = contentProperty.GetValue() as BlockGridModel;
+            if (typedBlockGridModel == null) return string.Empty;
+            
+            BlockGridItem blockGridItem = typedBlockGridModel.FirstOrDefault(x => x.ContentUdi == contentData.Udi);
+            if (blockGridItem == null) return string.Empty;
 
-            // Return a fully typed version of the block
-            var typedBlockInstance = blockInstance as BlockGridItem;
+            BlockGridItem typedBlockInstance = blockInstance as BlockGridItem;
+            typedBlockInstance.RowSpan = blockGridItem.RowSpan;
+            typedBlockInstance.ColumnSpan = blockGridItem.ColumnSpan;
+            typedBlockInstance.AreaGridColumns = blockGridItem.AreaGridColumns;
+            typedBlockInstance.GridColumns = blockGridItem.GridColumns;
+            typedBlockInstance.Areas = blockGridItem.Areas;
 
             ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
-                Model = blockInstance
+                Model = typedBlockInstance
             };
             viewData["blockPreview"] = true;
 

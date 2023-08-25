@@ -103,16 +103,6 @@ namespace Umbraco.Community.BlockPreview.Services
                 }
             }
 
-            // Get block config from Umbraco
-            var contentProperty = page.Properties.FirstOrDefault(x => x.Alias.Equals(blockEditorAlias));
-            if (contentProperty == null) return string.Empty;
-
-            var config = contentProperty.PropertyType.DataType.Configuration as BlockListConfiguration;
-            if (config == null || config.Blocks == null) return string.Empty;
-
-            // Return a fully typed version of the block
-            var typedBlockInstance = blockInstance as BlockListItem;
-
             ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
                 Model = blockInstance

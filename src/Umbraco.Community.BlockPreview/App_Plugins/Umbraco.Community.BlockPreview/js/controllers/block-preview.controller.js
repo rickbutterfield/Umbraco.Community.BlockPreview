@@ -16,7 +16,7 @@
             $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
 
             // There must be a better way to do this...
-            $scope.blockEditorAlias = $scope.$parent.$parent.$parent.$parent.$parent.$parent.vm.model.editor;
+            $scope.blockEditorAlias = $scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.vm.model.editor;
 
             function loadPreview(content, settings) {
                 $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
