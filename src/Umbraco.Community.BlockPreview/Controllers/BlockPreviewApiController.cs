@@ -83,7 +83,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                 if (page == null)
                 {
-                    return Ok("<div class=\"alert alert-warning\">The page is not saved yet, so we can't create a preview. Save the page first.</div>");
+                    return Ok("<div class=\"alert alert-warning\"><strong>Cannot create a preview:</strong> the page must be saved before a preview can be created</div>");
                 }
 
                 var currentCulture = GetCurrentCulture(page, culture);

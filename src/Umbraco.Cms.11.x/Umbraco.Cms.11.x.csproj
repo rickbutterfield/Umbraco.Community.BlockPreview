@@ -6,6 +6,10 @@
     <RootNamespace>Umbraco.Cms._11.x</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
+    <Content Include="App_Plugins\Umbraco.Community.BlockPreview\css\block-preview.css">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+      <CopyToPublishDirectory>Always</CopyToPublishDirectory>
+    </Content>
     <Content Include="App_Plugins\Umbraco.Community.BlockPreview\js\controllers\block-preview.controller.js">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>Always</CopyToPublishDirectory>

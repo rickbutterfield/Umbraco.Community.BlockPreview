@@ -1,7 +1,8 @@
 ﻿angular.module('umbraco').controller('Umbraco.Community.BlockPreview.Controllers.BlockPreviewController',
-    ['$scope', '$sce', '$element', '$compile', '$timeout', 'editorState', 'Umbraco.Community.BlockPreview.Resources.PreviewResource', 'blockEditorService',
-        function ($scope, $sce, $element, $compile, $timeout, editorState, previewResource, blockEditorService) {
-            var active = editorState.getCurrent().variants.find(function (v) {
+    ['$scope', '$timeout', 'editorState', 'Umbraco.Community.BlockPreview.Resources.PreviewResource',
+        function ($scope, $timeout, editorState, previewResource) {
+            var current = editorState.getCurrent()
+            var active = current.variants.find(function (v) {
                 return v.active;
             });
 
@@ -11,12 +12,17 @@
                 }
             }
 
-            $scope.id = editorState.getCurrent().id;
+            $scope.cacheBuster = Umbraco.Sys.ServerVariables.application.cacheBuster;
+
+            $scope.id = current.id;
             $scope.loading = true;
-            $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
+            $scope.markup = '<div class="alert alert-info">Loading preview</div>';
+
+            // There must be a better way to do this...
+            $scope.blockEditorAlias = $scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.vm.model.editor;
 
             function loadPreview(content, settings) {
-                $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
+                $scope.markup = '<div class="alert alert-info">Loading preview</div>';
                 $scope.loading = true;
 
                 var formattedBlockData = {
@@ -25,7 +31,7 @@
                     settingsData: [settings || $scope.block.settingsData]
                 };
 
-                previewResource.getPreview(formattedBlockData, $scope.id, $scope.model.constructor.name == 'BlockGridBlockController', $scope.language).then(function (data) {
+                previewResource.getPreview(formattedBlockData, $scope.id, $scope.blockEditorAlias, $scope.model.constructor.name == 'BlockGridBlockController', $scope.language).then(function (data) {
                     $scope.markup = $sce.trustAsHtml(data);
                     $scope.loading = false;
                 });
@@ -63,7 +69,7 @@
                 var blockCreateButtonLast = target.closest('.umb-block-grid__block--last-inline-create-button');
                 var blockScaling = target.closest('.umb-block-grid__scale-handler') || target.closest('.--scale-mode');
 
-                if (!blockActions && !areaCreate && !blockCreateButton && !blockCreateButtonLast) {
+                if (!blockActions && !areaCreate && !blockCreateButton && !blockCreateButtonLast && !blockScaling) {
                     block.edit();
                     $event.preventDefault();
                     $event.stopPropagation();
