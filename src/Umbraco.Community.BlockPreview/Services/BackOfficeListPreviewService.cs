@@ -44,7 +44,9 @@ namespace Umbraco.Community.BlockPreview.Services
         }
 
         public async Task<string> GetMarkupForBlock(
+            IPublishedContent page,
             BlockValue blockValue,
+            string blockEditorAlias,
             ControllerContext controllerContext,
             string culture)
         {
@@ -101,8 +103,10 @@ namespace Umbraco.Community.BlockPreview.Services
                 }
             }
 
-            ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
-            viewData.Model = blockInstance;
+            ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            {
+                Model = blockInstance
+            };
             viewData["blockPreview"] = true;
 
             string contentAlias = contentElement.ContentType.Alias;

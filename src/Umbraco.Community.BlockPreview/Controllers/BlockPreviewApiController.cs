@@ -66,6 +66,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         public async Task<IActionResult> PreviewMarkup(
             [FromBody] BlockValue data,
             [FromQuery] int pageId = 0,
+            [FromQuery] string blockEditorAlias = "",
             [FromQuery] bool isGrid = false,
             [FromQuery] string culture = "")
         {
@@ -92,9 +93,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                 if (isGrid)
                 {
-                    markup = await _backOfficeGridPreviewService.GetMarkupForBlock(data, ControllerContext, currentCulture);
+                    markup = await _backOfficeGridPreviewService.GetMarkupForBlock(page, data, blockEditorAlias, ControllerContext, currentCulture);
                 }
-                else markup = await _backOfficeListPreviewService.GetMarkupForBlock(data, ControllerContext, currentCulture);
+                else markup = await _backOfficeListPreviewService.GetMarkupForBlock(page, data, blockEditorAlias, ControllerContext, currentCulture);
             }
             catch (Exception ex)
             {
@@ -148,7 +149,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             return context.Content?.GetById(pageId) ?? context.Content?.GetById(true, pageId);
         }
 
-        private string CleanUpMarkup(string markup)
+        private static string CleanUpMarkup(string markup)
         {
             if (string.IsNullOrWhiteSpace(markup))
                 return markup;
