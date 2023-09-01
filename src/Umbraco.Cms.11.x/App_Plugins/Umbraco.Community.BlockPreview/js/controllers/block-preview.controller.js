@@ -21,6 +21,9 @@
             // There must be a better way to do this...
             $scope.blockEditorAlias = $scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.vm.model.editor;
 
+            // There must be a better way to do this...
+            $scope.blockEditorAlias = $scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.vm.model.editor;
+
             function loadPreview(content, settings) {
                 $scope.markup = '<div class="alert alert-info">Loading preview</div>';
                 $scope.loading = true;

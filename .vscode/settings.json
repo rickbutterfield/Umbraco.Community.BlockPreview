@@ -1,3 +1,3 @@
 {
-  "dotnet.defaultSolution": "src\\Umbraco.Community.BlockPreview.sln"
+  "dotnet.defaultSolution": "src/Umbraco.Community.BlockPreview.sln"
 }
