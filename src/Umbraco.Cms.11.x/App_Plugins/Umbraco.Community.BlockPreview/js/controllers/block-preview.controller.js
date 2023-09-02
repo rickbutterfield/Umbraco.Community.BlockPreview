@@ -1,6 +1,6 @@
 ﻿angular.module('umbraco').controller('Umbraco.Community.BlockPreview.Controllers.BlockPreviewController',
-    ['$scope', '$timeout', 'editorState', 'Umbraco.Community.BlockPreview.Resources.PreviewResource',
-        function ($scope, $timeout, editorState, previewResource) {
+    ['$scope', '$sce', '$timeout', 'editorState', 'Umbraco.Community.BlockPreview.Resources.PreviewResource',
+        function ($scope, $sce, $timeout, editorState, previewResource) {
             var current = editorState.getCurrent()
             var active = current.variants.find(function (v) {
                 return v.active;
@@ -19,13 +19,22 @@
             $scope.markup = '<div class="alert alert-info">Loading preview</div>';
 
             // There must be a better way to do this...
-            $scope.blockEditorAlias = $scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.vm.model.editor;
+            $scope.blockEditorAlias = '';
+            var parent = $scope.$parent;
 
-            // There must be a better way to do this...
-            $scope.blockEditorAlias = $scope.$parent.$parent.$parent.$parent.$parent.$parent.$parent.$parent.vm.model.editor;
+            while (parent.$parent) {
+                if (parent.vm) {
+                    if (parent.vm.constructor.name == 'BlockGridController') {
+                        $scope.blockEditorAlias = parent.vm.model.editor;
+                        break;
+                    }
+                }
+
+                parent = parent.$parent;
+            }
 
             function loadPreview(content, settings) {
-                $scope.markup = '<div class="alert alert-info">Loading preview</div>';
+                $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
                 $scope.loading = true;
 
                 var formattedBlockData = {

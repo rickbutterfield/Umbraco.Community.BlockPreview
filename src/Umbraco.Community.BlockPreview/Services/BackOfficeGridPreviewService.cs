@@ -56,14 +56,14 @@ namespace Umbraco.Community.BlockPreview.Services
             var settingsData = blockValue.SettingsData.FirstOrDefault();
 
             // convert the JSON data to a IPublishedElement (using the built-in conversion)
-            IPublishedElement contentElement = _blockEditorConverter.ConvertToElement(contentData, PropertyCacheLevel.None, true);
+            IPublishedElement contentElement = _blockEditorConverter.ConvertToElement(contentData, PropertyCacheLevel.Element, true);
 
             if (contentElement == null)
             {
                 throw new InvalidOperationException($"Unable to find Element {contentData.ContentTypeAlias}");
             }
 
-            IPublishedElement settingsElement = settingsData != null ? _blockEditorConverter.ConvertToElement(settingsData, PropertyCacheLevel.None, true) : default;
+            IPublishedElement settingsElement = settingsData != null ? _blockEditorConverter.ConvertToElement(settingsData, PropertyCacheLevel.Element, true) : default;
 
             Type contentBlockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
                 x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == contentElement.ContentType.Alias);
@@ -103,21 +103,23 @@ namespace Umbraco.Community.BlockPreview.Services
                 }
             }
 
-            IPublishedProperty contentProperty = page.Properties.FirstOrDefault(x => x.PropertyType.EditorAlias.Equals(blockEditorAlias));
-            if (contentProperty == null) return string.Empty;
-
-            BlockGridModel typedBlockGridModel = contentProperty.GetValue() as BlockGridModel;
-            if (typedBlockGridModel == null) return string.Empty;
-            
-            BlockGridItem blockGridItem = typedBlockGridModel.FirstOrDefault(x => x.ContentUdi == contentData.Udi);
-            if (blockGridItem == null) return string.Empty;
 
             BlockGridItem typedBlockInstance = blockInstance as BlockGridItem;
-            typedBlockInstance.RowSpan = blockGridItem.RowSpan;
-            typedBlockInstance.ColumnSpan = blockGridItem.ColumnSpan;
-            typedBlockInstance.AreaGridColumns = blockGridItem.AreaGridColumns;
-            typedBlockInstance.GridColumns = blockGridItem.GridColumns;
-            typedBlockInstance.Areas = blockGridItem.Areas;
+
+            IPublishedProperty contentProperty = page.Properties.FirstOrDefault(x => x.PropertyType.EditorAlias.Equals(blockEditorAlias));
+
+            BlockGridModel typedBlockGridModel = contentProperty?.GetValue() as BlockGridModel;
+
+            BlockGridItem blockGridItem = typedBlockGridModel?.FirstOrDefault(x => x.ContentUdi == contentData.Udi);
+
+            if (blockGridItem != null)
+            {
+                typedBlockInstance.RowSpan = blockGridItem.RowSpan;
+                typedBlockInstance.ColumnSpan = blockGridItem.ColumnSpan;
+                typedBlockInstance.AreaGridColumns = blockGridItem.AreaGridColumns;
+                typedBlockInstance.GridColumns = blockGridItem.GridColumns;
+                typedBlockInstance.Areas = blockGridItem.Areas;
+            }
 
             ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
