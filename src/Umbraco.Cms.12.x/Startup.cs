@@ -34,7 +34,6 @@ namespace Umbraco.Cms._12.x
             services.AddUmbraco(_env, _config)
                 .AddBackOffice()
                 .AddWebsite()
-                .AddBlockPreview()
                 .AddDeliveryApi()
                 .AddComposers()
                 .Build();

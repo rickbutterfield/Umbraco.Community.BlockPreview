@@ -10,6 +10,7 @@
 
         public static partial class Configuration
         {
+            public static string PackageName => "Umbraco.Community.BlockPreview";
             public static string AppSettingsRoot => "BlockPreview";
         }
     }

@@ -7,22 +7,23 @@
 
 <img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/main/.github/readme-assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
 
-## Installation
+## Getting started
+### Installation
 The Umbraco 10.4+ version of this package is [available via NuGet](https://www.nuget.org/packages/Umbraco.Community.BlockPreview).
 
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 1.6.1
+dotnet add package Umbraco.Community.BlockPreview --version 1.7.0
 ```
 
 or the older NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 1.6.1
+Install-Package Umbraco.Community.BlockPreview -Version 1.7.0
 ```
 
-## Setup
+### Setup
 Once installed, you'll need to add `AddBlockPreview()` to your `Startup.cs` file, before `AddWebsite()`.
 ```diff
 + @using Umbraco.Community.BlockPreview;
@@ -37,6 +38,10 @@ Once installed, you'll need to add `AddBlockPreview()` to your `Startup.cs` file
          .Build();
  }
 ```
+
+### Upgrading
+If you're upgrading from any version before `1.7.0`, you will need to remove the `App_Plugins/Umbraco.Community.BlockPreview` folder.
+
 
 ## Usage
 This package installs a custom Angular preview for both the Block List and Block Grid editors in the backoffice.
@@ -88,6 +93,14 @@ If your block partials are not in the usual `/Views/Partials/block[grid|list]/Co
 
 ## Contribution guidelines
 To raise a new bug, create an issue on the GitHub repository. To fix a bug or add new features, fork the repository and send a pull request with your changes. Feel free to add ideas to the repository's issues list if you would to discuss anything related to the library.
+
+### Using the test sites
+The repo comes with test sites for both Umbraco 11 and Umbraco 12. Both sites are configured with uSync out of the box to get you up and running with a test site quickly. Use the following credentials to log into the back office:
+
+```
+Username: admin@example.com
+Password: 1234567890
+```
 
 ### Who do I talk to?
 This project is maintained by [Rick Butterfield](https://rickbutterfield.dev) and contributors. If you have any questions about the project please get in touch on [Twitter](https://twitter.com/rickbutterfield), or by raising an issue on GitHub.
