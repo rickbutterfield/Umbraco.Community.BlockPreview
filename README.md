@@ -24,6 +24,10 @@ Install-Package Umbraco.Community.BlockPreview -Version 1.7.0
 ```
 
 ### Setup
+#### v1.7.0+
+If you are using a version prior to 1.7.0, you will likely have a reference to `AddBlockPreview()` in your `Startup.cs`. This can now be removed!
+
+#### Versions earlier than 1.7.0
 Once installed, you'll need to add `AddBlockPreview()` to your `Startup.cs` file, before `AddWebsite()`.
 ```diff
 + @using Umbraco.Community.BlockPreview;
