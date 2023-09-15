@@ -1,32 +1,32 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 	<PropertyGroup>
 		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
 		<ContentTargetFolders>.</ContentTargetFolders>
-
+		
 		<Product>Umbraco.Community.BlockPreview</Product>
 		<PackageId>Umbraco.Community.BlockPreview</PackageId>
 		<Title>Umbraco.Community.BlockPreview</Title>
+		<Description>Easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors</Description>
+		<PackageTags>umbraco plugin package block list grid umbraco-marketplace</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+		
+		<RootNamespace>Umbraco.Community.BlockPreview</RootNamespace>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
-		<VersionPrefix>1.6.1</VersionPrefix>
+		<VersionPrefix>1.7.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
-
+		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
+		
 		<PackageProjectUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</PackageProjectUrl>
-		<PackageIcon>icon.png</PackageIcon>
-		<PackageTags>umbraco plugin package block list grid umbraco-marketplace</PackageTags>		
-		
 		<RepositoryUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</RepositoryUrl>
+		<PackageIcon>icon.png</PackageIcon>
 
-		<Description>Easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors</Description>
-
-		<EmbedUntrackedSources>true</EmbedUntrackedSources>
-		<IncludeSymbols>false</IncludeSymbols>
-		<SymbolPackageFormat>snupkg</SymbolPackageFormat>
-
-		<IncludeBuildOutput>true</IncludeBuildOutput>
-
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-		
+		<RepositoryType>git</RepositoryType>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
@@ -42,14 +42,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Content Include="App_Plugins\Umbraco.Community.BlockPreview\**">
-			<ExcludeFromSingleFile>true</ExcludeFromSingleFile>
-			<CopyToPublishDirectory>Always</CopyToPublishDirectory>
-		</Content>
-		<None Include="..\..\build\**">
-			<Pack>true</Pack>
-			<PackagePath>buildTransitive</PackagePath>
-		</None>
 		<None Include="..\..\.github\readme-assets\icon.png">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
@@ -58,11 +50,5 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <None Update="build\Umbraco.Community.BlockPreview.targets">
-	    <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-	  </None>
 	</ItemGroup>
 </Project>
