@@ -8,9 +8,10 @@
 		
 		<Product>Umbraco.Community.BlockPreview</Product>
 		<PackageId>Umbraco.Community.BlockPreview</PackageId>
-		<Title>BlockPreview</Title>
+		<Title>Umbraco.Community.BlockPreview</Title>
 		<Description>Easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors</Description>
 		<PackageTags>umbraco plugin package block list grid umbraco-marketplace</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
 		
 		<RootNamespace>Umbraco.Community.BlockPreview</RootNamespace>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
