@@ -14,7 +14,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
 
         public static async Task<IHtmlContent> GetPreviewBlockGridItemAreasHtmlAsync(this IHtmlHelper html, BlockGridItem item, string template = BlockGridTemplateExtensions.DefaultItemAreasTemplate)
         {
-            if (html.ViewData.IsBlockPreview())
+            if (html.ViewData.IsBlockGridPreview())
             {
                 return await Task.FromResult<IHtmlContent>(
                         new HtmlContentBuilder()
@@ -27,7 +27,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
 
         public static async Task<IHtmlContent> GetPreviewBlockGridItemAreasHtmlAsync(this IHtmlHelper<dynamic> html, BlockGridItem item, string template = BlockGridTemplateExtensions.DefaultItemAreasTemplate)
         {
-            if (html.ViewData.IsBlockPreview())
+            if (html.ViewData.IsBlockGridPreview())
             {
                 return await Task.FromResult<IHtmlContent>(
                         new HtmlContentBuilder()
@@ -40,7 +40,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
 
         public static async Task<IHtmlContent> GetPreviewBlockGridItemAreaHtmlAsync(this IHtmlHelper html, BlockGridArea area, string template = BlockGridTemplateExtensions.DefaultItemAreaTemplate)
         {
-            if (html.ViewData.IsBlockPreview())
+            if (html.ViewData.IsBlockGridPreview())
             {
                 return await Task.FromResult<IHtmlContent>(
                         new HtmlContentBuilder()
@@ -53,7 +53,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
 
         public static async Task<IHtmlContent> GetPreviewBlockGridItemAreaHtmlAsync(this IHtmlHelper<dynamic> html, BlockGridArea area, string template = BlockGridTemplateExtensions.DefaultItemAreaTemplate)
         {
-            if (html.ViewData.IsBlockPreview())
+            if (html.ViewData.IsBlockGridPreview())
             {
                 return await Task.FromResult<IHtmlContent>(
                         new HtmlContentBuilder()
@@ -66,7 +66,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
 
         public static async Task<IHtmlContent> GetPreviewBlockGridItemAreaHtmlAsync(this IHtmlHelper html, BlockGridItem item, string template = BlockGridTemplateExtensions.DefaultItemAreaTemplate)
         {
-            if (html.ViewData.IsBlockPreview())
+            if (html.ViewData.IsBlockGridPreview())
             {
                 return await Task.FromResult<IHtmlContent>(
                         new HtmlContentBuilder()
@@ -79,7 +79,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
 
         public static async Task<IHtmlContent> GetPreviewBlockGridItemAreaHtmlAsync(this IHtmlHelper<dynamic> html, BlockGridItem item, string template = BlockGridTemplateExtensions.DefaultItemAreaTemplate)
         {
-            if (html.ViewData.IsBlockPreview())
+            if (html.ViewData.IsBlockGridPreview())
             {
                 return await Task.FromResult<IHtmlContent>(
                         new HtmlContentBuilder()
@@ -104,6 +104,14 @@ namespace Umbraco.Community.BlockPreview.Extensions
         {
             if (viewData.ContainsKey("blockPreview"))
                 if (bool.TryParse(viewData["blockPreview"].ToString(), out bool isBlockPreview))
+                    return isBlockPreview;
+
+            return false;
+        }
+        private static bool IsBlockGridPreview(this ViewDataDictionary viewData)
+        {
+            if (viewData.ContainsKey("blockGridPreview"))
+                if (bool.TryParse(viewData["blockGridPreview"].ToString(), out bool isBlockPreview))
                     return isBlockPreview;
 
             return false;
