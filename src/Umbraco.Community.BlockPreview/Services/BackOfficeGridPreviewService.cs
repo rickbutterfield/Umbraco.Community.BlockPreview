@@ -153,6 +153,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 Model = typedBlockInstance
             };
             viewData["blockPreview"] = true;
+            viewData["blockGridPreview"] = true;
 
             string contentAlias = contentElement.ContentType.Alias;
             ViewComponentDescriptor viewComponent = _viewComponentSelector.SelectComponent(contentAlias);
