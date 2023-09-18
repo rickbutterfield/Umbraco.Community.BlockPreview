@@ -12,6 +12,7 @@
         {
             public static string PackageName => "Umbraco.Community.BlockPreview";
             public static string AppSettingsRoot => "BlockPreview";
+            public static string AppPluginsRoot => $"App_Plugins/{PackageName}";
         }
     }
 }

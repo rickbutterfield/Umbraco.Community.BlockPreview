@@ -20,6 +20,7 @@ namespace Umbraco.Community.BlockPreview
             builder.AddBlockPreviewOptions();
 
             builder.AddNotificationHandler<ServerVariablesParsingNotification, ServerVariablesParsingNotificationHandler>();
+            builder.AddNotificationHandler<TreeNodesRenderingNotification, TreeRenderingNotificationHandler>();
 
             builder.Services.AddScoped<IViewComponentHelperWrapper>(sp =>
             {

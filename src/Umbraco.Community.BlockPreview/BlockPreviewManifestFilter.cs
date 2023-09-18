@@ -15,10 +15,10 @@ namespace Umbraco.Community.BlockPreview
                 AllowPackageTelemetry = true,
                 Scripts = new string[]
                 {
-                    "/App_Plugins/Umbraco.Community.BlockPreview/js/controllers/block-preview.controller.js",
-                    "/App_Plugins/Umbraco.Community.BlockPreview/js/directives/published-check.directive.js",
-                    "/App_Plugins/Umbraco.Community.BlockPreview/js/directives/bind-compile.directive.js",
-                    "/App_Plugins/Umbraco.Community.BlockPreview/js/resources/preview.resource.js"
+                    $"/{Constants.Configuration.AppPluginsRoot}/js/controllers/block-preview.controller.js",
+                    $"/{Constants.Configuration.AppPluginsRoot}/js/directives/published-check.directive.js",
+                    $"/{Constants.Configuration.AppPluginsRoot}/js/directives/bind-compile.directive.js",
+                    $"/{Constants.Configuration.AppPluginsRoot}/js/resources/preview.resource.js"
                 }
             });
         }

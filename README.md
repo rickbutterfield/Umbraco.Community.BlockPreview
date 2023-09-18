@@ -14,13 +14,13 @@ The Umbraco 10.4+ version of this package is [available via NuGet](https://www.n
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 1.7.0
+dotnet add package Umbraco.Community.BlockPreview --version 1.7.1
 ```
 
 or the older NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 1.7.0
+Install-Package Umbraco.Community.BlockPreview -Version 1.7.1
 ```
 
 ### Setup
@@ -53,7 +53,7 @@ This package installs a custom Angular preview for both the Block List and Block
 When setting up a block to be part of the List or Grid, setting the 'Custom View' property to `block-preview.html` will generate preview HTML based on the respective partial view found in `/Views/Partials/blocklist/Components` or `/Views/Partials/blockgrid/Components` or ViewComponents.
 
 How to select the custom views when creating a Block List/Grid:
-![Screenshot](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/main/screenshots/screenshot1.png "The Umbraco backoffice showing a panel titled 'Select view', with two HTML files in a list available for selection")
+![Screenshot](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/main/screenshots/screenshot1.png "The Umbraco backoffice showing a panel titled 'Select view', with a HTML file named `block-preview.html` available for selection")
 
 Before and after of how components look within the Block Grid:
 ![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/main/screenshots/screenshot2.png "Before and after of how components look within the Block Grid")

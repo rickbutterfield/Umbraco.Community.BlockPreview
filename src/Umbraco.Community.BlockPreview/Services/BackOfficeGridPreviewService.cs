@@ -110,15 +110,42 @@ namespace Umbraco.Community.BlockPreview.Services
 
             BlockGridModel typedBlockGridModel = contentProperty?.GetValue() as BlockGridModel;
 
-            BlockGridItem blockGridItem = typedBlockGridModel?.FirstOrDefault(x => x.ContentUdi == contentData.Udi);
-
-            if (blockGridItem != null)
+            if (typedBlockGridModel != null)
             {
-                typedBlockInstance.RowSpan = blockGridItem.RowSpan;
-                typedBlockInstance.ColumnSpan = blockGridItem.ColumnSpan;
-                typedBlockInstance.AreaGridColumns = blockGridItem.AreaGridColumns;
-                typedBlockInstance.GridColumns = blockGridItem.GridColumns;
-                typedBlockInstance.Areas = blockGridItem.Areas;
+                BlockGridItem blockGridItem = typedBlockGridModel?.FirstOrDefault(x => x.ContentUdi == contentData.Udi);
+
+                if (blockGridItem == null)
+                {
+                    bool breakLoop = false;
+                    foreach (BlockGridItem item in typedBlockGridModel)
+                    {
+                        foreach (BlockGridArea area in item.Areas)
+                        {
+                            foreach (BlockGridItem childItem in area)
+                            {
+                                if (childItem.ContentUdi == contentData.Udi)
+                                {
+                                    blockGridItem = childItem;
+                                    breakLoop = true;
+                                    break;
+                                }
+                            }
+
+                            if (breakLoop) break;
+                        }
+
+                        if (breakLoop) break;
+                    }
+                }
+
+                if (blockGridItem != null)
+                {
+                    typedBlockInstance.RowSpan = blockGridItem.RowSpan;
+                    typedBlockInstance.ColumnSpan = blockGridItem.ColumnSpan;
+                    typedBlockInstance.AreaGridColumns = blockGridItem.AreaGridColumns;
+                    typedBlockInstance.GridColumns = blockGridItem.GridColumns;
+                    typedBlockInstance.Areas = blockGridItem.Areas;
+                }
             }
 
             ViewDataDictionary viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
