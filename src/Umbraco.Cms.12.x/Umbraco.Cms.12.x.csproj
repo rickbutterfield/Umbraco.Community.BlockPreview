@@ -8,7 +8,7 @@
 
   <ItemGroup>
     <PackageReference Include="Umbraco.BlockGrid.Example.Website" Version="1.0.2" />
-    <PackageReference Include="Umbraco.Cms" Version="12.0.0" />
+    <PackageReference Include="Umbraco.Cms" Version="12.1.0" />
   </ItemGroup>
 
   <ItemGroup>
