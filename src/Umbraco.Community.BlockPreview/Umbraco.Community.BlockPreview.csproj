@@ -1,26 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0</TargetFrameworks>
+		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
 		<ContentTargetFolders>.</ContentTargetFolders>
-		
+
 		<Product>Umbraco.Community.BlockPreview</Product>
 		<PackageId>Umbraco.Community.BlockPreview</PackageId>
 		<Title>Umbraco.Community.BlockPreview</Title>
 		<Description>Easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors</Description>
 		<PackageTags>umbraco plugin package block list grid umbraco-marketplace</PackageTags>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-		
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+
 		<RootNamespace>Umbraco.Community.BlockPreview</RootNamespace>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
-		<VersionPrefix>1.7.1</VersionPrefix>
+		<VersionPrefix>1.8.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
-		
+
 		<PackageProjectUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</PackageProjectUrl>
 		<RepositoryUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</RepositoryUrl>
 		<PackageIcon>icon.png</PackageIcon>
@@ -39,6 +39,12 @@
 		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[11.0.0,13.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[11.0.0,13.0.0)" />
 		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[11.0.0,13.0.0)" />
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0,14.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0,14.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[13.0.0,14.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>

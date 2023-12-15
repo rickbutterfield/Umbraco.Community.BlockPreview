@@ -1,0 +1,364 @@
+.umb-block-grid__layout-container {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--umb-block-grid--grid-columns, 1), minmax(0, 1fr));
+    grid-auto-flow: row;
+    grid-auto-rows: minmax(50px, min-content);
+    column-gap: var(--umb-block-grid--column-gap, 0);
+    row-gap: var(--umb-block-grid--row-gap, 0);
+}
+
+.umb-block-grid__layout-item {
+    position: relative;
+    /* For small devices we scale columnSpan by three, to make everything bigger than 1/3 take full width: */
+    grid-column-end: span min(calc(var(--umb-block-grid--item-column-span, 1) * 3), var(--umb-block-grid--grid-columns));
+    grid-row: span var(--umb-block-grid--item-row-span, 1);
+}
+
+
+.umb-block-grid__area-container, .umb-block-grid__block--view::part(area-container) {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(var(--umb-block-grid--area-grid-columns, var(--umb-block-grid--grid-columns, 1)), minmax(0, 1fr));
+    grid-auto-flow: row;
+    grid-auto-rows: minmax(50px, min-content);
+    column-gap: var(--umb-block-grid--areas-column-gap, 0);
+    row-gap: var(--umb-block-grid--areas-row-gap, 0);
+}
+
+.umb-block-grid__area {
+    position: relative;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    /* For small devices we scale columnSpan by three, to make everything bigger than 1/3 take full width: */
+    grid-column-end: span min(calc(var(--umb-block-grid--area-column-span, 1) * 3), var(--umb-block-grid--grid-columns));
+    grid-row: span var(--umb-block-grid--area-row-span, 1);
+}
+
+@media (min-width:1024px) {
+    .umb-block-grid__layout-item {
+        grid-column-end: span min(var(--umb-block-grid--item-column-span, 1), var(--umb-block-grid--grid-columns));
+    }
+
+    .umb-block-grid__area {
+        grid-column-end: span var(--umb-block-grid--area-column-span, 1);
+    }
+}
+
+
+/**** Custom additions to the default Grid Layout Stylehseet: ****/
+
+
+/* additional CSS options for area-container and areas: */
+.umb-block-grid__area-container, .umb-block-grid__block--view::part(area-container) {
+    max-width: var(--my-container-max-width);
+    padding: var(--my-container-padding);
+    margin-left: auto;
+    margin-right: auto;
+    --umb-block-grid--areas-column-gap: 60px;
+    --umb-block-grid--areas-row-gap: 60px;
+}
+
+.umb-block-grid__area {
+    justify-content: center;
+}
+
+.umb-block-grid__layout-item[data-content-element-type-alias="oneColumnSectionBlock"] .umb-block-grid__layout-container {
+    --umb-block-grid--column-gap: 60px;
+    --umb-block-grid--row-gap: 60px;
+}
+
+
+
+
+
+/**** My custom website styles: ****/
+
+:root, :host, body {
+    font-family: 'Lato';
+    font-weight: 500;
+    font-size: 15px;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.umb-block-grid {
+    container-type: inline-size;
+    --my-container-max-width: 1200px;
+    --my-container-padding: 0 20px;
+}
+@container (min-width: 720px) {
+    .umb-block-grid__layout-container {
+        --my-container-padding: 0 60px;
+    }
+}
+
+section {
+    padding: var(--section-padding, 60px 0);
+}
+section[bright-contrast] {
+    color:white;
+    --my-bright-contrast: ;
+}
+
+
+/** only works on website. */
+.umb-block-grid__layout-item:has(section[nobackgroundcolor]) +
+.umb-block-grid__layout-item section[nobackgroundcolor] {
+    padding-top: 0;
+}
+
+h1 {
+    font-size: 60px;
+    font-weight: 300;
+    line-height: 0.96;
+    margin: 0;
+    margin-bottom: 20px;
+    color: inherit;
+}
+
+h2 {
+    font-size: 35px;
+    font-weight: 300;
+    line-height: 1.2;
+    margin: 0;
+    color: inherit;
+}
+
+/**umb_name:H3*/
+h3 {
+	font-size: 30px;
+	font-weight: 300;
+	line-height: 1.2;
+	margin:0;
+	color: inherit;
+}
+
+/**umb_name:H4*/
+h4 {
+	font-size: 21px;
+	font-weight: 300;
+	line-height: 1.2;
+	margin:0;
+	color: inherit;
+}
+
+
+
+
+
+/** Image */
+
+img.image {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+
+
+
+
+/** Rich Text */
+
+.rich-text {
+    font-weight: 300;
+    color: inherit;
+    /** Using CSS Calculation, which gives 1 for column spans of 1-11 and 2 for column span of 12. */
+    columns: clamp(1, calc(var(--umb-block-grid--item-column-span) - 10), 2);
+    column-gap: 60px;
+}
+
+.rich-text > p:first-child {
+    margin-top: 0;
+}
+
+/**umb_name:Lead Paragraph*/
+p.lead-paragraph {
+    font-size: 18px;
+}
+
+
+
+
+/** Hero */
+
+.umb-block-grid__layout-item[data-content-element-type-alias="heroBlock"] .umb-block-grid__area-container, 
+.umb-block-grid__layout-item[data-content-element-type-alias="heroBlock"] .umb-block-grid__block--view::part(area-container) {
+    padding: 0;
+}
+
+.hero {
+    position: relative;
+    height: 80vh;
+    width: 100%;
+    display: flex;
+    align-items: end;
+    padding: 60px 0;
+    box-sizing: border-box;
+}
+.hero[bright-contrast] {
+    color: white;
+    --my-bright-contrast: ;
+}
+
+.hero .hero-background {
+    position: absolute;
+    inset: 0;
+    background-position: 50% 50%;
+    background-size: cover;
+}
+
+.hero .hero-background:after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0,0,0,.22);
+    pointer-events: none;
+}
+
+.hero .hero-content {
+    position: relative;
+    width: 100%;
+    max-width: var(--my-container-max-width);
+    padding: var(--my-container-padding);
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.hero .hero-content > h1 {
+    max-width: 14em;
+}
+
+
+
+
+/** Call to action */
+
+.call-to-action {
+    display: inline-block;
+    --call-to-action--background-color--condition: var(--my-bright-contrast) white;
+    background-color: var(--call-to-action--background-color--condition, #3544b1);
+    --call-to-action--text-color--condition: var(--my-bright-contrast) black;
+    color: var(--call-to-action--text-color--condition, white);
+    font-weight: 500;
+    padding: 14px 28px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    margin-right: auto;
+    max-width: 180px;
+    text-decoration: none;
+}
+
+
+
+/** Inspiration */
+
+.inspiration[bright-contrast] {
+    --my-bright-contrast: ;
+}
+
+.inspiration .area-container {
+    max-width: var(--my-container-max-width);
+    padding: var(--my-container-padding);
+    margin-left: auto;
+    margin-right: auto;
+    
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    grid-auto-flow: row;
+    column-gap: 60px;
+}
+
+.inspiration .left-area {
+    grid-column-end: span 1;
+    display: block;
+    margin-bottom: 60px;
+}
+
+.inspiration .right-area {
+    grid-column-end: span 1;
+    display: block;
+    margin-top: 60px;
+    margin-right: -120px;
+    transform: translateX(-120px);
+}
+
+.inspiration .content-area {
+    grid-column-end: span 2;
+    display: block;
+}
+
+.umb-block-grid__layout-item[data-content-element-type-alias="inspirationBlock"] .umb-block-grid__area[data-area-alias="leftArea"] {
+    justify-content: start;
+}
+
+.umb-block-grid__layout-item[data-content-element-type-alias="inspirationBlock"] .umb-block-grid__area[data-area-alias="rightArea"] {
+    justify-content: end;
+}
+
+
+
+
+
+
+
+/* Card */
+
+.card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    color: black;
+    background-color: white;
+}
+
+.card .card-media {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+}
+
+.card .card-media img {
+    object-fit: cover;
+    height: 100%;
+    width: 100%;
+}
+
+.card .card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 20px;
+    font-weight: 300;
+}
+
+.card .card-content p {
+    margin: 0;
+}
+
+
+.card.--medium {
+    height: auto;
+}
+
+.card.--medium .card-media::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-color: rgba(0,0,0,.22);
+    pointer-events: none;
+}
+
+.card.--medium .card-content {
+    position: absolute;
+    z-index: 1;
+    bottom: 0;
+    color: white;
+}
+
+.card.--medium .card-content h4 {
+    font-size: 30px;
+}

@@ -1,0 +1,50 @@
+<style>
+
+    :host {
+        min-height: 160px;
+    }
+
+    .image-container {
+        cursor: pointer;
+    }
+
+    .icon {
+        font-size: 60px;
+        display: block;
+    }
+
+    .umb-icon {
+        display: inline-block;
+        width: 1em;
+        height: 1em;
+        flex-shrink: 0;
+    }
+
+    .umb-icon svg {
+        width: 100%;
+        height: 100%;
+        fill: currentColor;
+        animation: inherit;
+    }
+
+    .file-name {
+        background-color: rgba(255, 255, 255, 0.8);
+        color: black;
+        padding: 3px 6px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+
+        opacity: var(--umb-block-grid--block-ui-opacity, 0);
+        transition: opacity 120ms;
+    }
+
+</style>
+
+
+<div class="image-container" ng-click="block.edit()" ng-focus="block.focus">
+    {{mediaItem = (block.data.image[0].mediaKey | mediaItemResolver); ""}}
+    <img class="image" draggable="false" ng-if="mediaItem !== null && (mediaItem.mediaLink.indexOf('svg') === -1)" ng-src="{{mediaItem.mediaLink}}?width=1920" alt="{{mediaItem.name}}" />
+    <umb-icon ng-if="mediaItem !== null && (mediaItem.mediaLink.indexOf('svg') !== -1)" icon="{{mediaItem.contentType.icon}} color-black" class="icon"></umb-icon>
+    <span ng-if="mediaItem !== null && mediaItem.name" class="file-name">{{mediaItem.name}}</span>
+</div>
