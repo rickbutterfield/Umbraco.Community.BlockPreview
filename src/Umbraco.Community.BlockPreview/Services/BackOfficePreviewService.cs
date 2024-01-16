@@ -50,7 +50,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 if (!viewResult.Success)
                 {
                     
-                     formattedViewPath = string.Format($"~{viewPath}", contentAlias.CapitaliaseFirstLetter());
+                     formattedViewPath = string.Format($"~{viewPath}", contentAlias.ToPascalCase());
                          viewResult = _razorViewEngine.GetView("", formattedViewPath, false);
                          if (!viewResult.Success)
                          {
