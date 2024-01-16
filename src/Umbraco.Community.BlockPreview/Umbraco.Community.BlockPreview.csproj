@@ -16,8 +16,8 @@
 		<RootNamespace>Umbraco.Community.BlockPreview</RootNamespace>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
-		<VersionPrefix>1.8.0</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
+		<VersionPrefix>1.8.1</VersionPrefix>
+		<VersionSuffix>etch-beta.2</VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
 
