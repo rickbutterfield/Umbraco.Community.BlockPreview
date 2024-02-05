@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+		<TargetFrameworks>net8.0</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 		<StaticWebAssetBasePath>App_Plugins</StaticWebAssetBasePath>
@@ -16,7 +16,7 @@
 		<RootNamespace>Umbraco.Community.BlockPreview</RootNamespace>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
-		<VersionPrefix>1.8.0</VersionPrefix>
+		<VersionPrefix>2.0.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
@@ -29,22 +29,10 @@
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 	</PropertyGroup>
 
-	<ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[10.4.0,11.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[10.4.0,11.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[10.4.0,11.0.0)" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net7.0'">
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[11.0.0,13.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[11.0.0,13.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[11.0.0,13.0.0)" />
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0,14.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0,14.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[13.0.0,14.0.0)" />
+	<ItemGroup>
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="14.0.0--preview004" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="14.0.0--preview004" />
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="14.0.0--preview004" />
 	</ItemGroup>
 
 	<ItemGroup>

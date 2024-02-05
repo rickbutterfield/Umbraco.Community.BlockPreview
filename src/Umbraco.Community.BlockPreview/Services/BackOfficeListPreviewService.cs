@@ -45,7 +45,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         public async Task<string> GetMarkupForBlock(
             IPublishedContent page,
-            BlockValue blockValue,
+            BlockListValue blockValue,
             string blockEditorAlias,
             ControllerContext controllerContext,
             string culture)

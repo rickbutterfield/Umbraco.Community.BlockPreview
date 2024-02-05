@@ -14,7 +14,12 @@ namespace Umbraco.Community.BlockPreview.Extensions
             bool isBackOffice = request.IsBackOfficeRequest();
 
             string requestControllerName = (string)httpContext.Request.RouteValues["controller"] + "Controller";
-            bool isBlockPreviewController = requestControllerName.Equals(nameof(BlockPreviewApiController)) && httpContext.Request.RouteValues["action"].Equals(nameof(BlockPreviewApiController.PreviewMarkup));
+
+            bool requestControllerMatches = requestControllerName.Equals(nameof(BlockPreviewApiController));
+            bool isBlockGridPreview = httpContext.Request.RouteValues["action"]!.Equals(nameof(BlockPreviewApiController.PreviewGridMarkup));
+            bool isBlockListPreview = httpContext.Request.RouteValues["action"]!.Equals(nameof(BlockPreviewApiController.PreviewListMarkup));
+
+            bool isBlockPreviewController = requestControllerMatches && (isBlockGridPreview || isBlockListPreview);
 
             return isBackOffice && isBlockPreviewController;
         }

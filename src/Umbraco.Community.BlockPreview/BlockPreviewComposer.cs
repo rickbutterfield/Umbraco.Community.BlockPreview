@@ -38,8 +38,6 @@ namespace Umbraco.Community.BlockPreview
             builder.Services.AddScoped<ContextCultureService>();
 
             builder.Services.ConfigureOptions<BlockViewEngineOptionsSetup>();
-
-            builder.ManifestFilters().Append<BlockPreviewManifestFilter>();
         }
     }
 }

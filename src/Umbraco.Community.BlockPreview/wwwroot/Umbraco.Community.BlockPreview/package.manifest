@@ -1,0 +1,11 @@
+{
+  "name": "Umbraco.Community.BlockPreview",
+  "version": "1.8.0",
+  "allowPackageTelemetry": true,
+  "javascript": [
+    "/App_Plugins/Umbraco.Community.BlockPreview/js/controllers/block-preview.controller.js",
+    "/App_Plugins/Umbraco.Community.BlockPreview/js/directives/published-check.directive.js",
+    "/App_Plugins/Umbraco.Community.BlockPreview/js/directives/bind-compile.directive.js",
+    "/App_Plugins/Umbraco.Community.BlockPreview/js/resources/preview.resource.js"
+  ]
+}

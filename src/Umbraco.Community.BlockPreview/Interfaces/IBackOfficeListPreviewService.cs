@@ -9,7 +9,7 @@ namespace Umbraco.Community.BlockPreview.Interfaces
     {
         Task<string> GetMarkupForBlock(
             IPublishedContent page,
-            BlockValue blockValue,
+            BlockListValue blockValue,
             string blockGridAlias,
             ControllerContext controllerContext,
             string culture);
