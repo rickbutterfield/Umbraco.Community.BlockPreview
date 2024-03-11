@@ -6,18 +6,20 @@ using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Web;
-using Umbraco.Cms.Web.BackOffice.Controllers;
 using Umbraco.Extensions;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.BlockPreview.Services;
 using Umbraco.Cms.Core.Models.Blocks;
+using Asp.Versioning;
 
 namespace Umbraco.Community.BlockPreview.Controllers
 {
     /// <summary>
     /// Represents the Block Preview API controller.
     /// </summary>
-    public class BlockPreviewApiController : UmbracoAuthorizedJsonController
+    [ApiVersion("1.0")]
+    [ApiExplorerSettings(GroupName = "BlockPreview")]
+    public class BlockPreviewApiController : BlockPreviewApiControllerBase
     {
         private readonly IPublishedRouter _publishedRouter;
         private readonly ILogger<BlockPreviewApiController> _logger;
@@ -59,7 +61,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="blockEditorAlias">The alias of the block editor</param>
         /// <param name="culture">The culture</param>
         /// <returns>The markup to render in the preview.</returns>
-        [HttpPost]
+        [HttpPost("previewGridMarkup")]
+        [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> PreviewGridMarkup(
             [FromBody] BlockGridValue data,
             [FromQuery] int pageId = 0,
@@ -106,7 +109,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="blockEditorAlias">The alias of the block editor</param>
         /// <param name="culture">The culture</param>
         /// <returns>The markup to render in the preview.</returns>
-        [HttpPost]
+        [HttpPost("previewListMarkup")]
+        [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> PreviewListMarkup(
             [FromBody] BlockListValue data,
             [FromQuery] int pageId = 0,

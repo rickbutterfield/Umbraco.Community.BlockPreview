@@ -20,7 +20,7 @@ namespace Umbraco.Community.BlockPreview
             builder.AddBlockPreviewOptions();
 
             builder.AddNotificationHandler<ServerVariablesParsingNotification, ServerVariablesParsingNotificationHandler>();
-            builder.AddNotificationHandler<TreeNodesRenderingNotification, TreeRenderingNotificationHandler>();
+            //builder.AddNotificationHandler<TreeNodesRenderingNotification, TreeRenderingNotificationHandler>();
 
             builder.Services.AddScoped<IViewComponentHelperWrapper>(sp =>
             {
@@ -38,6 +38,8 @@ namespace Umbraco.Community.BlockPreview
             builder.Services.AddScoped<ContextCultureService>();
 
             builder.Services.ConfigureOptions<BlockViewEngineOptionsSetup>();
+
+            builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
         }
     }
 }

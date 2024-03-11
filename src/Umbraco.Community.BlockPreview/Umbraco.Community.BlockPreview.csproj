@@ -17,7 +17,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
 		<VersionPrefix>2.0.0</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
+		<VersionSuffix>alpha</VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
 
@@ -30,9 +30,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="14.0.0--preview004" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="14.0.0--preview004" />
-		<PackageReference Include="Umbraco.Cms.Web.Website" Version="14.0.0--preview004" />
+		<PackageReference Include="Umbraco.Cms.Core" Version="14.0.0-beta001" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="14.0.0-beta001" />
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="14.0.0-beta001" />
+		<PackageReference Include="Umbraco.Cms.Api.Common" Version="14.0.0-beta001" />
+		<PackageReference Include="Umbraco.Cms.Api.Management" Version="14.0.0-beta001" />	
 	</ItemGroup>
 
 	<ItemGroup>
@@ -44,5 +46,9 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Folder Include="assets\" />
 	</ItemGroup>
 </Project>

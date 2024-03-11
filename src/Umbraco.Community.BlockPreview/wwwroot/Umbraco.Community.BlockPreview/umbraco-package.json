@@ -1,0 +1,15 @@
+{
+  "$schema": "../umbraco-package-schema.json",
+  "name": "Umbraco.Community.BlockPreview",
+  "id": "Umbraco.Community.BlockPreview",
+  "version": "2.0.0-alpha",
+  "allowTelemetry": true,
+  "extensions": [
+    {
+      "name": "Umbraco.Community.BlockPreview.EntryPoint",
+      "alias": "Umbraco.Community.BlockPreview.EntryPoint",
+      "type": "entryPoint",
+      "js": "/app_plugins/Umbraco.Community.BlockPreview/assets.js"
+    }
+  ]
+}

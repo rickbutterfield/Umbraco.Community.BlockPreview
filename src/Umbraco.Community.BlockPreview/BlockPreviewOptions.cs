@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Umbraco.Community.BlockPreview
+﻿namespace Umbraco.Community.BlockPreview
 {
     public class BlockPreviewOptions
     {
