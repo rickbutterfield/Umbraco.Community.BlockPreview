@@ -16,7 +16,7 @@
 
             $scope.id = current.id;
             $scope.loading = true;
-            $scope.markup = '<div class="alert alert-info">Loading preview</div>';
+            $scope.markup = '<div class="preview-alert preview-alert-info">Loading preview</div>';
 
             // There must be a better way to do this...
             $scope.blockEditorAlias = '';
@@ -34,7 +34,7 @@
             }
 
             function loadPreview(content, settings) {
-                $scope.markup = $sce.trustAsHtml('<div class="alert alert-info">Loading preview</div>');
+                $scope.markup = $sce.trustAsHtml('<div class="preview-alert preview-alert-info">Loading preview</div>');
                 $scope.loading = true;
 
                 var formattedBlockData = {

@@ -1,8 +1,5 @@
-﻿using System.Linq;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Umbraco.Cms.Core.PropertyEditors;
-using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -52,26 +49,35 @@ namespace Umbraco.Community.BlockPreview.Services
         {
             _contextCultureService.SetCulture(culture);
 
-            var contentData = blockValue.ContentData.FirstOrDefault();
-            var settingsData = blockValue.SettingsData.FirstOrDefault();
+            BlockItemData? contentData = blockValue.ContentData.FirstOrDefault();
+            BlockItemData? settingsData = blockValue.SettingsData.FirstOrDefault();
+
+            // Convert each nested value to a string to enable proper conversion
+            if (contentData != null)
+            {
+                foreach (var rawPropValue in contentData.RawPropertyValues)
+                {
+                    contentData.RawPropertyValues[rawPropValue.Key] = rawPropValue.Value.ToString();
+                }
+            }
 
             // convert the JSON data to a IPublishedElement (using the built-in conversion)
-            IPublishedElement contentElement = _blockEditorConverter.ConvertToElement(contentData, PropertyCacheLevel.Element, true);
+            IPublishedElement? contentElement = _blockEditorConverter.ConvertToElement(contentData, PropertyCacheLevel.Element, true);
 
             if (contentElement == null)
             {
                 throw new InvalidOperationException($"Unable to find Element {contentData.ContentTypeAlias}");
             }
 
-            IPublishedElement settingsElement = settingsData != null ? _blockEditorConverter.ConvertToElement(settingsData, PropertyCacheLevel.Element, true) : default;
+            IPublishedElement? settingsElement = settingsData != null ? _blockEditorConverter.ConvertToElement(settingsData, PropertyCacheLevel.None, false) : default;
 
-            Type contentBlockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+            Type? contentBlockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
                 x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == contentElement.ContentType.Alias);
 
-            Type settingsBlockType = settingsElement != null ? _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+            Type? settingsBlockType = settingsElement != null ? _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
                 x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == settingsElement.ContentType.Alias) : default;
 
-            object blockInstance = null;
+            object? blockInstance = null;
 
             if (contentBlockType != null)
             {
@@ -104,15 +110,15 @@ namespace Umbraco.Community.BlockPreview.Services
             }
 
 
-            BlockGridItem typedBlockInstance = blockInstance as BlockGridItem;
+            BlockGridItem? typedBlockInstance = blockInstance as BlockGridItem;
 
-            IPublishedProperty contentProperty = page.Properties.FirstOrDefault(x => x.PropertyType.EditorAlias.Equals(blockEditorAlias));
+            IPublishedProperty? contentProperty = page.Properties.FirstOrDefault(x => x.PropertyType.EditorAlias.Equals(blockEditorAlias));
 
-            BlockGridModel typedBlockGridModel = contentProperty?.GetValue() as BlockGridModel;
+            BlockGridModel? typedBlockGridModel = contentProperty?.GetValue() as BlockGridModel;
 
             if (typedBlockGridModel != null)
             {
-                BlockGridItem blockGridItem = typedBlockGridModel?.FirstOrDefault(x => x.ContentUdi == contentData.Udi);
+                BlockGridItem? blockGridItem = typedBlockGridModel?.FirstOrDefault(x => x.ContentUdi == contentData.Udi);
 
                 if (blockGridItem == null)
                 {
@@ -152,6 +158,7 @@ namespace Umbraco.Community.BlockPreview.Services
             {
                 Model = typedBlockInstance
             };
+
             viewData["blockPreview"] = true;
             viewData["blockGridPreview"] = true;
 

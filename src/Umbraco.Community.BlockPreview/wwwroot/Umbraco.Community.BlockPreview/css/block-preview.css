@@ -1,4 +1,4 @@
-﻿.alert {
+﻿.preview-alert {
     background-color: #f0ac00;
     border: 1px solid transparent;
     border-radius: 0;
@@ -7,27 +7,27 @@
     position: relative;
 }
 
-    .alert, .alert a, .alert h4 {
+    .preview-alert, .preview-alert a, .preview-alert h4 {
         color: #fff;
     }
 
-        .alert pre {
+        .preview-alert pre {
             white-space: normal;
         }
 
-.alert-warning {
+.preview-alert-warning {
     background-color: #f0ac00;
     border-color: transparent;
     color: #fff;
 }
 
-.alert-info {
+.preview-alert-info {
     background-color: #3544b1;
     border-color: transparent;
     color: #fff;
 }
 
-.alert-danger, .alert-error {
+.preview-alert-danger, .preview-alert-error {
     background-color: #d42054;
     border-color: transparent;
     color: #fff;

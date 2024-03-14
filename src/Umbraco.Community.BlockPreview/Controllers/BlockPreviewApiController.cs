@@ -74,7 +74,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             try
             {
-                IPublishedContent page = null;
+                IPublishedContent? page = null;
 
                 // If the page is new, then the ID will be zero
                 if (pageId > 0)
@@ -84,7 +84,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                 if (page == null)
                 {
-                    return Ok("<div class=\"alert alert-warning\"><strong>Cannot create a preview:</strong> the page must be saved before a preview can be created</div>");
+                    return Ok("<div class=\"preview-alert preview-alert-warning\"><strong>Cannot create a preview:</strong> the page must be saved before a preview can be created</div>");
                 }
 
                 var currentCulture = GetCurrentCulture(page, culture);
@@ -99,7 +99,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             }
             catch (Exception ex)
             {
-                markup = $"<div class=\"alert alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{ex.Message}</pre></div>";
+                markup = $"<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{ex.Message}</pre></div>";
                 _logger.LogError(ex, "Error rendering preview for block {ContentTypeAlias}", data.ContentData.FirstOrDefault()?.ContentTypeAlias);
             }
 

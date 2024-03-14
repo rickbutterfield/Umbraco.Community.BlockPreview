@@ -52,26 +52,35 @@ namespace Umbraco.Community.BlockPreview.Services
         {
             _contextCultureService.SetCulture(culture);
 
-            var contentData = blockValue.ContentData.FirstOrDefault();
-            var settingsData = blockValue.SettingsData.FirstOrDefault();
+            BlockItemData? contentData = blockValue.ContentData.FirstOrDefault();
+            BlockItemData? settingsData = blockValue.SettingsData.FirstOrDefault();
+
+            // Convert each nested value to a string to enable proper conversion
+            if (contentData != null)
+            {
+                foreach (var rawPropValue in contentData.RawPropertyValues)
+                {
+                    contentData.RawPropertyValues[rawPropValue.Key] = rawPropValue.Value.ToString();
+                }
+            }
 
             // convert the JSON data to a IPublishedElement (using the built-in conversion)
-            IPublishedElement contentElement = _blockEditorConverter.ConvertToElement(contentData, PropertyCacheLevel.None, true);
+            IPublishedElement? contentElement = _blockEditorConverter.ConvertToElement(contentData, PropertyCacheLevel.None, true);
 
             if (contentElement == null)
             {
                 throw new InvalidOperationException($"Unable to find Element {contentData.ContentTypeAlias}");
             }
 
-            IPublishedElement settingsElement = settingsData != null ? _blockEditorConverter.ConvertToElement(settingsData, PropertyCacheLevel.None, true) : default;
+            IPublishedElement? settingsElement = settingsData != null ? _blockEditorConverter.ConvertToElement(settingsData, PropertyCacheLevel.None, true) : default;
 
-            Type contentBlockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+            Type? contentBlockType = _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
                 x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == contentElement.ContentType.Alias);
 
-            Type settingsBlockType = settingsElement != null ? _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
+            Type? settingsBlockType = settingsElement != null ? _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
                 x.GetCustomAttribute<PublishedModelAttribute>(false).ContentTypeAlias == settingsElement.ContentType.Alias) : default;
 
-            object blockInstance = null;
+            object? blockInstance = null;
 
             if (contentBlockType != null)
             {
@@ -107,6 +116,7 @@ namespace Umbraco.Community.BlockPreview.Services
             {
                 Model = blockInstance
             };
+
             viewData["blockPreview"] = true;
 
             string contentAlias = contentElement.ContentType.Alias;
