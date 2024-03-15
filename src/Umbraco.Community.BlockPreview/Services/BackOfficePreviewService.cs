@@ -7,9 +7,7 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
-using System.IO;
 using System.Text.Encodings.Web;
-using System.Threading.Tasks;
 using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
 
@@ -49,13 +47,12 @@ namespace Umbraco.Community.BlockPreview.Services
 
                 if (!viewResult.Success)
                 {
-                    
-                     formattedViewPath = string.Format($"~{viewPath}", contentAlias.ToPascalCase());
-                         viewResult = _razorViewEngine.GetView("", formattedViewPath, false);
-                         if (!viewResult.Success)
-                         {
-                             continue;
-                         }
+                    formattedViewPath = string.Format($"~{viewPath}", contentAlias.ToPascalCase());
+                    viewResult = _razorViewEngine.GetView("", formattedViewPath, false);
+                    if (!viewResult.Success)
+                    {
+                        continue;
+                    }
                 }
 
 

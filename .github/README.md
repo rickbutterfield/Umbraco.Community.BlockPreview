@@ -5,7 +5,7 @@
 
 **Umbraco.Community.BlockPreview** enables easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors.
 
-<img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/readme-assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
+<img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
 
 ## Getting started
 ### Installation
@@ -14,13 +14,13 @@ The Umbraco 10.4+ version of this package is [available via NuGet](https://www.n
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 1.8.1
+dotnet add package Umbraco.Community.BlockPreview --version 1.8.2
 ```
 
 or the older NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 1.8.1
+Install-Package Umbraco.Community.BlockPreview -Version 1.8.2
 ```
 
 ### Setup
@@ -53,10 +53,10 @@ This package installs a custom Angular preview for both the Block List and Block
 When setting up a block to be part of the List or Grid, setting the 'Custom View' property to `block-preview.html` will generate preview HTML based on the respective partial view found in `/Views/Partials/blocklist/Components` or `/Views/Partials/blockgrid/Components` or ViewComponents.
 
 How to select the custom views when creating a Block List/Grid:
-![Screenshot](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/screenshots/screenshot1.png "The Umbraco backoffice showing a panel titled 'Select view', with a HTML file named `block-preview.html` available for selection")
+![Screenshot](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/screenshot1.png "The Umbraco backoffice showing a panel titled 'Select view', with a HTML file named `block-preview.html` available for selection")
 
 Before and after of how components look within the Block Grid:
-![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/screenshots/screenshot2.png "Before and after of how components look within the Block Grid")
+![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/screenshot2.png "Before and after of how components look within the Block Grid")
 
 ### Grid-specific setup
 When using the new Block Grid, replace the references below in your default Grid template partial views, and and custom views that render areas:

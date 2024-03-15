@@ -55,7 +55,7 @@ namespace Umbraco.Community.BlockPreview.Services
             // Convert each nested value to a string to enable proper conversion
             if (contentData != null)
             {
-                foreach (var rawPropValue in contentData.RawPropertyValues)
+                foreach (var rawPropValue in contentData.RawPropertyValues.Where(x => x.Value != null))
                 {
                     contentData.RawPropertyValues[rawPropValue.Key] = rawPropValue.Value.ToString();
                 }
