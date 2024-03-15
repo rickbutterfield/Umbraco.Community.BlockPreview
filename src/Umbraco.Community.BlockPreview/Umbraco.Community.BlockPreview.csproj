@@ -38,11 +38,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<None Include="..\..\.github\readme-assets\icon.png">
+		<None Include="..\..\.github\assets\icon.png">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-		<None Include="..\..\README.md">
+		<None Include="..\..\.github\README.md">
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
