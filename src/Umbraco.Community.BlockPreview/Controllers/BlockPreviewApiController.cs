@@ -87,15 +87,13 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     return Ok("<div class=\"preview-alert preview-alert-warning\"><strong>Cannot create a preview:</strong> the page must be saved before a preview can be created</div>");
                 }
 
-                var currentCulture = GetCurrentCulture(page, culture);
+                string? currentCulture = GetCurrentCulture(page, culture);
 
                 await SetupPublishedRequest(page, currentCulture);
 
-                if (isGrid)
-                {
-                    markup = await _backOfficeGridPreviewService.GetMarkupForBlock(page, data, blockEditorAlias, ControllerContext, currentCulture);
-                }
-                else markup = await _backOfficeListPreviewService.GetMarkupForBlock(page, data, blockEditorAlias, ControllerContext, currentCulture);
+                markup = isGrid ?
+                    await _backOfficeGridPreviewService.GetMarkupForBlock(page, data, blockEditorAlias, ControllerContext, currentCulture) :
+                    await _backOfficeListPreviewService.GetMarkupForBlock(page, data, blockEditorAlias, ControllerContext, currentCulture);
             }
             catch (Exception ex)
             {
@@ -103,10 +101,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 _logger.LogError(ex, "Error rendering preview for block {ContentTypeAlias}", data.ContentData.FirstOrDefault()?.ContentTypeAlias);
             }
 
-            return Ok(CleanUpMarkup(markup));
+            string? cleanMarkup = CleanUpMarkup(markup);
+            return Ok(cleanMarkup);
         }
 
-        private string GetCurrentCulture(IPublishedContent page, string culture)
+        private string? GetCurrentCulture(IPublishedContent page, string culture)
         {
             // if in a culture variant setup also set the correct language.
             var currentCulture = string.IsNullOrWhiteSpace(culture)
@@ -119,13 +118,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
             return currentCulture;
         }
 
-        private async Task SetupPublishedRequest(IPublishedContent page, string culture)
+        private async Task SetupPublishedRequest(IPublishedContent page, string? culture)
         {
             // set the published request for the page we are editing in the back office
-            if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext context))
-            {
+            if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext? context))
                 return;
-            }
 
             // set the published request
             var requestBuilder = await _publishedRouter.CreateRequestAsync(new Uri(Request.GetDisplayUrl()));
@@ -139,9 +136,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _contextCultureService.SetCulture(culture);
         }
 
-        private IPublishedContent GetPublishedContentForPage(int pageId)
+        private IPublishedContent? GetPublishedContentForPage(int pageId)
         {
-            if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext context))
+            if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext? context))
                 return null;
 
             // Get page from published cache.
