@@ -15,7 +15,9 @@ export type { BlockListLayoutItemModel } from './models/BlockListLayoutItemModel
 export type { BlockListValueModel } from './models/BlockListValueModel';
 export type { BlockValueBlockGridLayoutItemModel } from './models/BlockValueBlockGridLayoutItemModel';
 export type { BlockValueBlockListLayoutItemModel } from './models/BlockValueBlockListLayoutItemModel';
+export { EventMessageTypeModel } from './models/EventMessageTypeModel';
 export type { GuidUdiModel } from './models/GuidUdiModel';
+export type { NotificationHeaderModel } from './models/NotificationHeaderModel';
 export type { StringUdiModel } from './models/StringUdiModel';
 export type { UdiModel } from './models/UdiModel';
 export type { UnknownTypeUdiModel } from './models/UnknownTypeUdiModel';

@@ -7,10 +7,10 @@ using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Extensions;
-using Umbraco.Cms.Core.Services;
 using Umbraco.Community.BlockPreview.Services;
-using Umbraco.Cms.Core.Models.Blocks;
 using Asp.Versioning;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Models.Blocks;
 
 namespace Umbraco.Community.BlockPreview.Controllers
 {
@@ -64,7 +64,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         [HttpPost("previewGridMarkup")]
         [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> PreviewGridMarkup(
-            [FromBody] BlockGridValue data,
+            [FromBody] BlockValue<BlockGridLayoutItem> data,
             [FromQuery] int pageId = 0,
             [FromQuery] string blockEditorAlias = "",
             [FromQuery] string culture = "")
@@ -86,7 +86,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     return Ok("<div class=\"preview-alert preview-alert-warning\"><strong>Cannot create a preview:</strong> the page must be saved before a preview can be created</div>");
                 }
 
-                var currentCulture = await GetCurrentCulture(page, culture);
+                string? currentCulture = await GetCurrentCulture(page, culture);
 
                 await SetupPublishedRequest(page, currentCulture);
 
@@ -94,11 +94,12 @@ namespace Umbraco.Community.BlockPreview.Controllers
             }
             catch (Exception ex)
             {
-                markup = $"<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{ex.Message}</pre></div>";
+                markup = $"<div class=\"alert alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{ex.Message}</pre></div>";
                 _logger.LogError(ex, "Error rendering preview for block {ContentTypeAlias}", data.ContentData.FirstOrDefault()?.ContentTypeAlias);
             }
 
-            return Ok(CleanUpMarkup(markup));
+            string? cleanMarkup = CleanUpMarkup(markup);
+            return Ok(cleanMarkup);
         }
 
         /// <summary>
@@ -112,7 +113,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         [HttpPost("previewListMarkup")]
         [ProducesResponseType(typeof(string), 200)]
         public async Task<IActionResult> PreviewListMarkup(
-            [FromBody] BlockListValue data,
+            [FromBody] BlockValue<BlockListLayoutItem> data,
             [FromQuery] int pageId = 0,
             [FromQuery] string blockEditorAlias = "",
             [FromQuery] string culture = "")
@@ -121,7 +122,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             try
             {
-                IPublishedContent page = null;
+                IPublishedContent? page = null;
 
                 // If the page is new, then the ID will be zero
                 if (pageId > 0)
@@ -131,10 +132,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                 if (page == null)
                 {
-                    return Ok("<div class=\"alert alert-warning\"><strong>Cannot create a preview:</strong> the page must be saved before a preview can be created</div>");
+                    return Ok("<div class=\"preview-alert preview-alert-warning\"><strong>Cannot create a preview:</strong> the page must be saved before a preview can be created</div>");
                 }
 
-                var currentCulture = await GetCurrentCulture(page, culture);
+                string? currentCulture = await GetCurrentCulture(page, culture);
 
                 await SetupPublishedRequest(page, currentCulture);
 
@@ -146,10 +147,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 _logger.LogError(ex, "Error rendering preview for block {ContentTypeAlias}", data.ContentData.FirstOrDefault()?.ContentTypeAlias);
             }
 
-            return Ok(CleanUpMarkup(markup));
+            string? cleanMarkup = CleanUpMarkup(markup);
+            return Ok(cleanMarkup);
         }
 
-        private async Task<string> GetCurrentCulture(IPublishedContent page, string culture)
+        private async Task<string?> GetCurrentCulture(IPublishedContent page, string culture)
         {
             // if in a culture variant setup also set the correct language.
             var currentCulture = string.IsNullOrWhiteSpace(culture)
@@ -162,13 +164,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
             return currentCulture;
         }
 
-        private async Task SetupPublishedRequest(IPublishedContent page, string culture)
+        private async Task SetupPublishedRequest(IPublishedContent page, string? culture)
         {
             // set the published request for the page we are editing in the back office
-            if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext context))
-            {
+            if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext? context))
                 return;
-            }
 
             // set the published request
             var requestBuilder = await _publishedRouter.CreateRequestAsync(new Uri(Request.GetDisplayUrl()));
@@ -182,9 +182,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _contextCultureService.SetCulture(culture);
         }
 
-        private IPublishedContent GetPublishedContentForPage(int pageId)
+        private IPublishedContent? GetPublishedContentForPage(int pageId)
         {
-            if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext context))
+            if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext? context))
                 return null;
 
             // Get page from published cache.

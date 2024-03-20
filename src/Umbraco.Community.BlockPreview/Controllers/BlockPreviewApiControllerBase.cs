@@ -10,7 +10,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 {
     [ApiController]
     [BackOfficeRoute("blockpreview/api/v{version:apiVersion}")]
-    [Authorize(Policy = "New" + AuthorizationPolicies.BackOfficeAccess)]
+    [Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
     [MapToApi("blockpreview")]
     public class BlockPreviewApiControllerBase : Controller, IUmbracoFeature
     {

@@ -103,7 +103,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
         private static bool IsBlockPreview(this ViewDataDictionary viewData)
         {
             if (viewData.ContainsKey("blockPreview"))
-                if (bool.TryParse(viewData["blockPreview"].ToString(), out bool isBlockPreview))
+                if (bool.TryParse(viewData["blockPreview"]?.ToString(), out bool isBlockPreview))
                     return isBlockPreview;
 
             return false;
@@ -111,7 +111,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
         private static bool IsBlockGridPreview(this ViewDataDictionary viewData)
         {
             if (viewData.ContainsKey("blockGridPreview"))
-                if (bool.TryParse(viewData["blockGridPreview"].ToString(), out bool isBlockPreview))
+                if (bool.TryParse(viewData["blockGridPreview"]?.ToString(), out bool isBlockPreview))
                     return isBlockPreview;
 
             return false;
