@@ -16,7 +16,7 @@
 		<RootNamespace>Umbraco.Community.BlockPreview</RootNamespace>
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
-		<VersionPrefix>2.0.0</VersionPrefix>
+		<VersionPrefix>1.8.2</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
@@ -42,9 +42,9 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(TargetFramework)' == 'net8.0'">
-		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.2.0,14.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.2.0,14.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[13.2.0,14.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.BackOffice" Version="[13.0.0,14.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[13.0.0,14.0.0)" />
+		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[13.0.0,14.0.0)" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -56,9 +56,5 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Include="Newtonsoft.Json.Schema" Version="3.0.15" />
 	</ItemGroup>
 </Project>
