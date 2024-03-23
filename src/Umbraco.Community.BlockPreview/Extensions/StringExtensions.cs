@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using Newtonsoft.Json.Schema;
-using Newtonsoft.Json.Schema.Generation;
 using System.Globalization;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Extensions;
