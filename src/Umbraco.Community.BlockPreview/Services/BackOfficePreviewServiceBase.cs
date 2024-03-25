@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text.Encodings.Web;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Composing;
@@ -59,7 +61,15 @@ namespace Umbraco.Community.BlockPreview.Services
 
             foreach (var rawPropValue in contentData.RawPropertyValues.Where(x => x.Value != null))
             {
-                contentData.RawPropertyValues[rawPropValue.Key] = rawPropValue.Value?.ToString();
+                var originalValue = rawPropValue.Value;
+                if (originalValue.TryConvertToGridItem(out var blockValue))
+                {
+                    blockValue.ContentData.ForEach(ConvertNestedValuesToString);
+                    blockValue.SettingsData.ForEach(ConvertNestedValuesToString);
+                    contentData.RawPropertyValues[rawPropValue.Key] = JsonConvert.SerializeObject(blockValue);
+                    continue;
+                }
+                contentData.RawPropertyValues[rawPropValue.Key] = originalValue.ToString();
             }
         }
         public virtual IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError)
@@ -77,8 +87,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         public virtual ViewDataDictionary CreateViewData(object? typedBlockInstance)
         {
-            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
-            {
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()) {
                 Model = typedBlockInstance
             };
 
