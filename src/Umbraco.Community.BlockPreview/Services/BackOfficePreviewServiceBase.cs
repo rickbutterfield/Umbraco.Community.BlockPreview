@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using System.Text.Encodings.Web;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Composing;
@@ -54,22 +53,22 @@ namespace Umbraco.Community.BlockPreview.Services
             _options = options.Value;
         }
 
-        public virtual void ConvertNestedValuesToString(BlockItemData? contentData)
+        public virtual void ConvertNestedValuesToString(BlockItemData? blockData)
         {
-            if (contentData == null)
+            if (blockData == null)
                 return;
 
-            foreach (var rawPropValue in contentData.RawPropertyValues.Where(x => x.Value != null))
+            foreach (var rawPropValue in blockData.RawPropertyValues.Where(x => x.Value != null))
             {
                 var originalValue = rawPropValue.Value;
-                if (originalValue.TryConvertToGridItem(out var blockValue))
+                if (originalValue.TryConvertToGridItem(out BlockValue? blockValue))
                 {
-                    blockValue.ContentData.ForEach(ConvertNestedValuesToString);
-                    blockValue.SettingsData.ForEach(ConvertNestedValuesToString);
-                    contentData.RawPropertyValues[rawPropValue.Key] = JsonConvert.SerializeObject(blockValue);
+                    blockValue?.ContentData.ForEach(ConvertNestedValuesToString);
+                    blockValue?.SettingsData.ForEach(ConvertNestedValuesToString);
+                    blockData.RawPropertyValues[rawPropValue.Key] = JsonConvert.SerializeObject(blockValue);
                     continue;
                 }
-                contentData.RawPropertyValues[rawPropValue.Key] = originalValue.ToString();
+                blockData.RawPropertyValues[rawPropValue.Key] = originalValue?.ToString();
             }
         }
         public virtual IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError)
@@ -87,7 +86,8 @@ namespace Umbraco.Community.BlockPreview.Services
 
         public virtual ViewDataDictionary CreateViewData(object? typedBlockInstance)
         {
-            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()) {
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
+            {
                 Model = typedBlockInstance
             };
 
