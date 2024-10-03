@@ -94,6 +94,14 @@
     }
 }
 
+.blockelement__draggable-element {
+    height: 100%;
+}
+
+.blockelement__draggable-element > div:first-of-type {
+    height: 100%;
+}
+
 section {
     padding: var(--section-padding, 60px 0);
 }
@@ -312,6 +320,7 @@ p.lead-paragraph {
     height: 100%;
     color: black;
     background-color: white;
+    position: relative;
 }
 
 .card .card-media {

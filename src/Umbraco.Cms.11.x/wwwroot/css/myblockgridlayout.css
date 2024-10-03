@@ -94,6 +94,14 @@
     }
 }
 
+.blockelement__draggable-element {
+    height: 100%;
+}
+
+.blockelement__draggable-element > div:first-of-type {
+    height: 100%;
+}
+
 section {
     padding: var(--section-padding, 60px 0);
 }
@@ -128,20 +136,20 @@ h2 {
 
 /**umb_name:H3*/
 h3 {
-	font-size: 30px;
-	font-weight: 300;
-	line-height: 1.2;
-	margin:0;
-	color: inherit;
+    font-size: 30px;
+    font-weight: 300;
+    line-height: 1.2;
+    margin:0;
+    color: inherit;
 }
 
 /**umb_name:H4*/
 h4 {
-	font-size: 21px;
-	font-weight: 300;
-	line-height: 1.2;
-	margin:0;
-	color: inherit;
+    font-size: 21px;
+    font-weight: 300;
+    line-height: 1.2;
+    margin:0;
+    color: inherit;
 }
 
 
@@ -184,7 +192,7 @@ p.lead-paragraph {
 
 /** Hero */
 
-.umb-block-grid__layout-item[data-content-element-type-alias="heroBlock"] .umb-block-grid__area-container, 
+.umb-block-grid__layout-item[data-content-element-type-alias="heroBlock"] .umb-block-grid__area-container,
 .umb-block-grid__layout-item[data-content-element-type-alias="heroBlock"] .umb-block-grid__block--view::part(area-container) {
     padding: 0;
 }
@@ -264,7 +272,7 @@ p.lead-paragraph {
     padding: var(--my-container-padding);
     margin-left: auto;
     margin-right: auto;
-    
+
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-auto-flow: row;
@@ -312,6 +320,7 @@ p.lead-paragraph {
     height: 100%;
     color: black;
     background-color: white;
+    position: relative;
 }
 
 .card .card-media {
