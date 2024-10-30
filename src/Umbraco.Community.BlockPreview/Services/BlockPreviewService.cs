@@ -106,35 +106,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 return string.Empty;
 
             List<string>? layoutItems = blockData?.Layout?.FirstOrDefault().Value.Select(layout => layout.ToString()).ToList();
-            BlockGridLayoutItem? layoutItem = null;
-
-            if (layoutItems != null)
-            {
-                foreach (var layoutItemJson in layoutItems)
-                {
-                    layoutItem = JsonConvert.DeserializeObject<BlockGridLayoutItem>(layoutItemJson);
-                    if (layoutItem == null) continue;
-                    
-                    if (layoutItem.ContentUdi == blockInstance.ContentUdi)
-                    {
-                        blockInstance.RowSpan = layoutItem.RowSpan!.Value;
-                        blockInstance.ColumnSpan = layoutItem.ColumnSpan!.Value;
-                    }
-                    else
-                    {
-                        foreach (var area in layoutItem.Areas)
-                        {
-                            foreach (var item in area.Items)
-                            {
-                                if (item.ContentUdi != blockInstance.ContentUdi) continue;
-                                blockInstance.RowSpan = item.RowSpan!.Value;
-                                blockInstance.ColumnSpan = item.ColumnSpan!.Value;
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            BlockGridLayoutItem? layoutItem = GetMatchingLayout(layoutItems!, blockInstance);
 
             IContentType? documentType = _contentTypeService.Get(documentTypeUnique);
             if (documentType == null)
@@ -304,6 +276,43 @@ namespace Umbraco.Community.BlockPreview.Services
                 throw new InvalidOperationException($"Unable to find Element {data?.ContentTypeAlias}");
 
             return element;
+        }
+
+        private BlockGridLayoutItem? GetMatchingLayout(List<string> layoutItems, BlockGridItem? blockInstance)
+        {
+            BlockGridLayoutItem? matchingLayout = null;
+
+            if (layoutItems != null && blockInstance != null)
+            {
+                foreach (var layoutItemJson in layoutItems)
+                {
+                    var layoutItem = JsonConvert.DeserializeObject<BlockGridLayoutItem>(layoutItemJson);
+                    if (layoutItem == null) continue;
+
+                    if (layoutItem.ContentUdi == blockInstance.ContentUdi)
+                    {
+                        blockInstance.RowSpan = layoutItem.RowSpan!.Value;
+                        blockInstance.ColumnSpan = layoutItem.ColumnSpan!.Value;
+                        matchingLayout = layoutItem;
+                    }
+                    else
+                    {
+                        foreach (var area in layoutItem.Areas)
+                        {
+                            foreach (var item in area.Items)
+                            {
+                                if (item.ContentUdi != blockInstance.ContentUdi) continue;
+                                blockInstance.RowSpan = item.RowSpan!.Value;
+                                blockInstance.ColumnSpan = item.ColumnSpan!.Value;
+                                matchingLayout = layoutItem;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            return matchingLayout;
         }
 
         private Type? FindBlockType(string? contentTypeAlias) =>
