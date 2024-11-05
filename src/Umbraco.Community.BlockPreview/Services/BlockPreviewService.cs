@@ -246,28 +246,57 @@ namespace Umbraco.Community.BlockPreview.Services
         private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError)
         {
             var properties = data.RawPropertyValues;
-            var jsonProperties = properties.Where(x => x.Value != null && x.Value is string && !string.IsNullOrEmpty(x.Value.ToString()) && x.Value.ToString()!.DetectIsJson());
+
+            var jsonProperties = properties
+                .Where(x => x.Value is string str && !string.IsNullOrEmpty(str) && str.DetectIsJson())
+                .ToDictionary(x => x.Key, x => x.Value?.ToString());
 
             foreach (var property in jsonProperties)
             {
                 var key = property.Key;
-                var value = property.Value;
-                var propertyAsString = value?.ToString();
+                var propertyAsString = property.Value!;
 
-                if (!string.IsNullOrEmpty(propertyAsString) && propertyAsString.DetectIsJson()) 
+                if (propertyAsString.Contains("unique") && propertyAsString.Contains("type"))
                 {
                     try
                     {
-                        var entityReference = JsonSerializer.Deserialize<List<EditorEntityReference>>(propertyAsString);
-
-                        if (entityReference != null && entityReference?.Any() == true)
+                        using (var document = JsonDocument.Parse(propertyAsString))
                         {
-                            properties[key] = string.Join(",", entityReference.Select(x => new StringUdi(x.Type, x.Unique.ToString())));
+                            // Ensure that the JSON is an array
+                            if (document.RootElement.ValueKind == JsonValueKind.Array)
+                            {
+                                bool isValidArray = true;
+
+                                // Check each object in the array
+                                foreach (var el in document.RootElement.EnumerateArray())
+                                {
+                                    // Validate that each element is an object with only "unique" and "type" properties
+                                    if (el.ValueKind != JsonValueKind.Object ||
+                                        el.EnumerateObject().Count() != 2 ||
+                                        !el.TryGetProperty("unique", out _) ||
+                                        !el.TryGetProperty("type", out _))
+                                    {
+                                        isValidArray = false;
+                                        break;
+                                    }
+                                }
+
+                                // If all elements in the array match the criteria, proceed with deserialization
+                                if (isValidArray)
+                                {
+                                    var entityReference = JsonSerializer.Deserialize<List<EditorEntityReference>>(propertyAsString);
+                                    if (entityReference != null)
+                                    {
+                                        properties[key] = string.Join(",", entityReference.Select(x => new StringUdi(x.Type, x.Unique.ToString())));
+                                    }
+                                }
+                            }
                         }
                     }
-                    catch (Exception ex)
+                    catch (JsonException)
                     {
-                        throw new Exception($"Unable to convert {key} property data to JSON", ex);
+                        if (throwOnError)
+                            throw new InvalidOperationException($"Invalid JSON format for property '{key}'.");
                     }
                 }
             }

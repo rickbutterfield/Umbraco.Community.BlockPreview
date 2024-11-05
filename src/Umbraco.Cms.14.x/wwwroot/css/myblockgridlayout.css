@@ -1,4 +1,5 @@
-.umb-block-grid__layout-container {
+.umb-block-grid__layout-container,
+:scope .umb-block-grid__layout-container {
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--umb-block-grid--grid-columns, 1), minmax(0, 1fr));
@@ -8,7 +9,8 @@
     row-gap: var(--umb-block-grid--row-gap, 0);
 }
 
-.umb-block-grid__layout-item {
+.umb-block-grid__layout-item,
+:scope .umb-block-grid__layout-item {
     position: relative;
     /* For small devices we scale columnSpan by three, to make everything bigger than 1/3 take full width: */
     grid-column-end: span min(calc(var(--umb-block-grid--item-column-span, 1) * 3), var(--umb-block-grid--grid-columns));
@@ -16,7 +18,9 @@
 }
 
 
-.umb-block-grid__area-container, .umb-block-grid__block--view::part(area-container) {
+.umb-block-grid__area-container,
+:scope .umb-block-grid__area-container,
+.umb-block-grid__block--view::part(area-container) {
     position: relative;
     display: grid;
     grid-template-columns: repeat(var(--umb-block-grid--area-grid-columns, var(--umb-block-grid--grid-columns, 1)), minmax(0, 1fr));
@@ -26,7 +30,8 @@
     row-gap: var(--umb-block-grid--areas-row-gap, 0);
 }
 
-.umb-block-grid__area {
+.umb-block-grid__area,
+:scope .umb-block-grid__area {
     position: relative;
     height: 100%;
     display: flex;
@@ -48,7 +53,7 @@
 
 
 /**** Custom additions to the default Grid Layout Stylehseet: ****/
-:root, :host {
+:root, :host, :scope {
     --umb-block-grid--areas-column-gap: 60px;
     --umb-block-grid--areas-row-gap: 60px;
     --umb-block-grid--column-gap: 60px;
@@ -57,17 +62,20 @@
     --my-container-padding: 0 20px;
 }
 
-/* additional CSS options for area-container and areas: */
-.umb-block-grid__area-container, .umb-block-grid__block--view::part(area-container) {
-    max-width: var(--my-container-max-width);
-    padding: var(--my-container-padding);
-    margin-left: auto;
-    margin-right: auto;
-}
+    /* additional CSS options for area-container and areas: */
+    :scope .umb-block-grid__area-container,
+    .umb-block-grid__area-container,
+    .umb-block-grid__block--view::part(area-container) {
+        max-width: var(--my-container-max-width);
+        padding: var(--my-container-padding);
+        margin-left: auto;
+        margin-right: auto;
+    }
 
-.umb-block-grid__area {
-    justify-content: center;
-}
+    .umb-block-grid__area,
+    :scope .umb-block-grid__area {
+        justify-content: center;
+    }
 
 .umb-block-grid__layout-item[data-content-element-type-alias="oneColumnSectionBlock"] .umb-block-grid__layout-container {
 }
@@ -89,6 +97,7 @@
 .umb-block-grid {
     container-type: inline-size;
 }
+
 @container (min-width: 720px) {
     .umb-block-grid__layout-container {
         --my-container-padding: 0 60px;
@@ -98,10 +107,11 @@
 section {
     padding: var(--section-padding, 60px 0);
 }
-section[bright-contrast] {
-    color:white;
-    --my-bright-contrast: ;
-}
+
+    section[bright-contrast] {
+        color: white;
+        --my-bright-contrast:;
+    }
 
 
 /** only works on website. */
@@ -129,20 +139,20 @@ h2 {
 
 /**umb_name:H3*/
 h3 {
-	font-size: 30px;
-	font-weight: 300;
-	line-height: 1.2;
-	margin:0;
-	color: inherit;
+    font-size: 30px;
+    font-weight: 300;
+    line-height: 1.2;
+    margin: 0;
+    color: inherit;
 }
 
 /**umb_name:H4*/
 h4 {
-	font-size: 21px;
-	font-weight: 300;
-	line-height: 1.2;
-	margin:0;
-	color: inherit;
+    font-size: 21px;
+    font-weight: 300;
+    line-height: 1.2;
+    margin: 0;
+    color: inherit;
 }
 
 
@@ -171,9 +181,9 @@ img.image {
     column-gap: 60px;
 }
 
-.rich-text > p:first-child {
-    margin-top: 0;
-}
+    .rich-text > p:first-child {
+        margin-top: 0;
+    }
 
 /**umb_name:Lead Paragraph*/
 p.lead-paragraph {
@@ -185,7 +195,7 @@ p.lead-paragraph {
 
 /** Hero */
 
-.umb-block-grid__layout-item[data-content-element-type-alias="heroBlock"] .umb-block-grid__area-container, 
+.umb-block-grid__layout-item[data-content-element-type-alias="heroBlock"] .umb-block-grid__area-container,
 .umb-block-grid__layout-item[data-content-element-type-alias="heroBlock"] .umb-block-grid__block--view::part(area-container) {
     padding: 0;
 }
@@ -199,38 +209,39 @@ p.lead-paragraph {
     padding: 60px 0;
     box-sizing: border-box;
 }
-.hero[bright-contrast] {
-    color: white;
-    --my-bright-contrast: ;
-}
 
-.hero .hero-background {
-    position: absolute;
-    inset: 0;
-    background-position: 50% 50%;
-    background-size: cover;
-}
+    .hero[bright-contrast] {
+        color: white;
+        --my-bright-contrast:;
+    }
 
-.hero .hero-background:after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0,0,0,.22);
-    pointer-events: none;
-}
+    .hero .hero-background {
+        position: absolute;
+        inset: 0;
+        background-position: 50% 50%;
+        background-size: cover;
+    }
 
-.hero .hero-content {
-    position: relative;
-    width: 100%;
-    max-width: var(--my-container-max-width);
-    padding: var(--my-container-padding);
-    margin-left: auto;
-    margin-right: auto;
-}
+        .hero .hero-background:after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0,0,0,.22);
+            pointer-events: none;
+        }
 
-.hero .hero-content > h1 {
-    max-width: 14em;
-}
+    .hero .hero-content {
+        position: relative;
+        width: 100%;
+        max-width: var(--my-container-max-width);
+        padding: var(--my-container-padding);
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+        .hero .hero-content > h1 {
+            max-width: 14em;
+        }
 
 
 
@@ -257,7 +268,7 @@ p.lead-paragraph {
 /** Inspiration */
 
 .inspiration[bright-contrast] {
-    --my-bright-contrast: ;
+    --my-bright-contrast:;
 }
 
 .inspiration .area-container {
@@ -265,7 +276,6 @@ p.lead-paragraph {
     padding: var(--my-container-padding);
     margin-left: auto;
     margin-right: auto;
-    
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
     grid-auto-flow: row;
@@ -315,51 +325,51 @@ p.lead-paragraph {
     background-color: white;
 }
 
-.card .card-media {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    overflow: hidden;
-}
+    .card .card-media {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 16 / 9;
+        overflow: hidden;
+    }
 
-.card .card-media img {
-    object-fit: cover;
-    height: 100%;
-    width: 100%;
-}
+        .card .card-media img {
+            object-fit: cover;
+            height: 100%;
+            width: 100%;
+        }
 
-.card .card-content {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    padding: 20px;
-    font-weight: 300;
-}
+    .card .card-content {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 20px;
+        font-weight: 300;
+    }
 
-.card .card-content p {
-    margin: 0;
-}
+        .card .card-content p {
+            margin: 0;
+        }
 
 
-.card.--medium {
-    height: auto;
-}
+    .card.--medium {
+        height: auto;
+    }
 
-.card.--medium .card-media::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background-color: rgba(0,0,0,.22);
-    pointer-events: none;
-}
+        .card.--medium .card-media::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-color: rgba(0,0,0,.22);
+            pointer-events: none;
+        }
 
-.card.--medium .card-content {
-    position: absolute;
-    z-index: 1;
-    bottom: 0;
-    color: white;
-}
+        .card.--medium .card-content {
+            position: absolute;
+            z-index: 1;
+            bottom: 0;
+            color: white;
+        }
 
-.card.--medium .card-content h4 {
-    font-size: 30px;
-}
+            .card.--medium .card-content h4 {
+                font-size: 30px;
+            }
