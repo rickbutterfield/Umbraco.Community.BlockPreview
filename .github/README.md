@@ -9,6 +9,15 @@
 
 ## Getting started
 ### Installation
+> [!IMPORTANT]
+> **v3.x** supports Umbraco v15
+> 
+> **v2.x** supports Umbraco v14.2+
+> 
+> **v1.x** supports Umbraco v10.x - v13.x
+> 
+> To understand more about which Umbraco CMS versions are actively supported by Umbraco HQ, please see [Umbraco's Long-term Support (LTS) and End-of-Life (EOL) policy](https://umbraco.com/products/knowledge-center/long-term-support-and-end-of-life/).
+
 The Umbraco 10.4+ version of this package is [available via NuGet](https://www.nuget.org/packages/Umbraco.Community.BlockPreview).
 
 To install the package, you can use either .NET CLI:
