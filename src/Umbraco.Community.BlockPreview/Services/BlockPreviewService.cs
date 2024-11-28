@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -37,6 +38,7 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly IPublishedValueFallback _publishedValueFallback;
         private readonly IDataTypeService _dataTypeService;
         private readonly IContentTypeService _contentTypeService;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public BlockPreviewService(
             ITempDataProvider tempDataProvider,
@@ -48,7 +50,8 @@ namespace Umbraco.Community.BlockPreview.Services
             IPublishedValueFallback publishedValueFallback,
             IOptions<BlockPreviewOptions> options,
             IContentTypeService contentTypeService,
-            IDataTypeService dataTypeService)
+            IDataTypeService dataTypeService,
+            IWebHostEnvironment webHostEnvironment)
         {
             _tempDataProvider = tempDataProvider;
             _viewComponentHelperWrapper = viewComponentHelperWrapper;
@@ -60,6 +63,7 @@ namespace Umbraco.Community.BlockPreview.Services
             _options = options.Value;
             _contentTypeService = contentTypeService;
             _dataTypeService = dataTypeService;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         public async Task<string> RenderGridBlock(
@@ -315,9 +319,17 @@ namespace Umbraco.Community.BlockPreview.Services
             return matchingLayout;
         }
 
-        private Type? FindBlockType(string? contentTypeAlias) =>
-            _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
-                x.GetCustomAttribute<PublishedModelAttribute>(false)?.ContentTypeAlias == contentTypeAlias);
+        private Type? FindBlockType(string? contentTypeAlias)
+        {
+            if (string.IsNullOrEmpty(contentTypeAlias))
+                return null;
+
+            var type = _typeFinder
+                .FindClassesWithAttribute<PublishedModelAttribute>()
+                .FirstOrDefault(x => x.GetCustomAttribute<PublishedModelAttribute>(false)?.ContentTypeAlias == contentTypeAlias);
+
+            return type;
+        }
 
         private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default)
         {
@@ -449,23 +461,47 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private ViewEngineResult? GetViewResult(string? contentAlias, BlockType blockType)
         {
+            if (string.IsNullOrEmpty(contentAlias))
+                return null;
+
             var viewPaths = _options.GetViewLocations(blockType);
 
             if (viewPaths == null || !viewPaths.Any())
                 return null;
 
+            ViewEngineResult? viewResult = null;
+            string appRoot = _webHostEnvironment.ContentRootPath;
+
             foreach (var viewPath in viewPaths)
             {
-                var formattedViewPath = $"~{viewPath}";
-                var viewResult = _razorViewEngine.GetView("", string.Format(formattedViewPath, contentAlias), false);
+                string baseViewPath = viewPath.TrimStart($"~{Path.DirectorySeparatorChar}").TrimStart("/");
 
-                if (viewResult.Success)
-                    return viewResult;
+                var pathNonPascal = string.Format(baseViewPath, contentAlias ?? "");
+                var viewPathNonPascal = Path.Combine(appRoot, pathNonPascal);
 
-                viewResult = _razorViewEngine.GetView("", string.Format(formattedViewPath, contentAlias?.ToPascalCase()), false);
+                if (System.IO.File.Exists(viewPathNonPascal))
+                {
+                    viewResult = _razorViewEngine.GetView("", pathNonPascal, false);
 
-                if (viewResult.Success)
-                    return viewResult;
+                    if (viewResult.Success)
+                        return viewResult;
+                }
+
+                else
+                {
+                    var pathPascal = string.Format(baseViewPath, contentAlias?.ToPascalCase() ?? "");
+                    var viewPathPascal = Path.Combine(appRoot, pathPascal);
+
+                    if (System.IO.File.Exists(viewPathPascal))
+                    {
+                        viewResult = _razorViewEngine.GetView("", pathPascal, false);
+
+                        if (viewResult.Success)
+                            return viewResult;
+                    }
+                }
+
+                return null;
             }
 
             return null;
