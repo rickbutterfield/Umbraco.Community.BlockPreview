@@ -183,9 +183,9 @@ export class BlockGridPreviewCustomView
             }
 
             .preview-alert-warning {
-                background-color: var(--uui-color-danger, #f0ac00);
+                background-color: var(--uui-color-warning, #f0ac00);
                 border-color: transparent;
-                color: #fff;
+                color: #000;
             }
 
             .preview-alert-info {

@@ -22,17 +22,29 @@ The Umbraco v14.2+ version of this package is [available via NuGet](https://www.
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 2.0.3
+dotnet add package Umbraco.Community.BlockPreview --version 2.1.0
 ```
 
 or the NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 2.0.3
+Install-Package Umbraco.Community.BlockPreview -Version 2.1.0
 ```
 
 ## Setup
-The package can be configured in the `Program.cs` file, before the call to the `.Build()` method:
+`Umbraco:Cms:ModelsBuilder:ModelsBuilderMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` for BlockPreview to work.
+
+```json
+"Umbraco": {
+  "CMS": {
+    "ModelsBuilder": {
+      "ModelsMode": "SourceCodeAuto"
+    }
+  }
+}
+```
+
+The package can then be configured in the `Program.cs` file, before the call to the `.Build()` method:
 ```diff
 +using Umbraco.Community.BlockPreview.Extensions;
 builder.CreateUmbracoBuilder()

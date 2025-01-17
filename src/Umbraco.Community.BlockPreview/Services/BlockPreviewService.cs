@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
@@ -42,8 +43,7 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly IJsonSerializer _jsonSerializer;
         private readonly IDataTypeService _dataTypeService;
         private readonly IContentTypeService _contentTypeService;
-        private readonly IBlockEditorElementTypeCache _elementTypeCache;
-        private readonly ILogger<BlockPreviewService> _logger;
+        private readonly IWebHostEnvironment _webHostEnvironment;
 
         public BlockPreviewService(
             ITempDataProvider tempDataProvider,
@@ -57,8 +57,7 @@ namespace Umbraco.Community.BlockPreview.Services
             IJsonSerializer jsonSerializer,
             IContentTypeService contentTypeService,
             IDataTypeService dataTypeService,
-            IBlockEditorElementTypeCache elementTypeCache,
-            ILogger<BlockPreviewService> logger)
+            IWebHostEnvironment webHostEnvironment)
         {
             _tempDataProvider = tempDataProvider;
             _viewComponentHelperWrapper = viewComponentHelperWrapper;
@@ -71,8 +70,7 @@ namespace Umbraco.Community.BlockPreview.Services
             _jsonSerializer = jsonSerializer;
             _dataTypeService = dataTypeService;
             _contentTypeService = contentTypeService;
-            _elementTypeCache = elementTypeCache;
-            _logger = logger;
+            _webHostEnvironment = webHostEnvironment;
         }
 
         #region Public
@@ -109,6 +107,11 @@ namespace Umbraco.Community.BlockPreview.Services
 
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
+
+            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
+            {
+                return $"<div class=\"preview-alert preview-alert-warning\">ModelsBuilder is enabled but the generated model(s) could not be found. Please try regenerating models and restarting the application.</div>";
+            }
 
             BlockGridItem? blockInstance = CreateBlockInstance(
                 BlockType.BlockGrid,
@@ -342,9 +345,17 @@ namespace Umbraco.Community.BlockPreview.Services
             return matchingLayout;
         }
 
-        private Type? FindBlockType(string? contentTypeAlias) =>
-            _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().FirstOrDefault(x =>
-                x.GetCustomAttribute<PublishedModelAttribute>(false)?.ContentTypeAlias == contentTypeAlias);
+        private Type? FindBlockType(string? contentTypeAlias)
+        {
+            if (string.IsNullOrEmpty(contentTypeAlias))
+                return null;
+
+            var type = _typeFinder
+                .FindClassesWithAttribute<PublishedModelAttribute>()
+                .FirstOrDefault(x => x.GetCustomAttribute<PublishedModelAttribute>(false)?.ContentTypeAlias == contentTypeAlias);
+
+            return type;
+        }
 
         private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default)
         {
@@ -497,23 +508,47 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private ViewEngineResult? GetViewResult(string? contentAlias, BlockType blockType)
         {
+            if (string.IsNullOrEmpty(contentAlias))
+                return null;
+
             var viewPaths = _options.GetViewLocations(blockType);
 
             if (viewPaths == null || !viewPaths.Any())
                 return null;
 
+            ViewEngineResult? viewResult = null;
+            string appRoot = _webHostEnvironment.ContentRootPath;
+
             foreach (var viewPath in viewPaths)
             {
-                var formattedViewPath = $"~{viewPath}";
-                var viewResult = _razorViewEngine.GetView("", string.Format(formattedViewPath, contentAlias), false);
+                string baseViewPath = viewPath.TrimStart($"~{Path.DirectorySeparatorChar}").TrimStart("/");
 
-                if (viewResult.Success)
-                    return viewResult;
+                var pathNonPascal = string.Format(baseViewPath, contentAlias ?? "");
+                var viewPathNonPascal = Path.Combine(appRoot, pathNonPascal);
 
-                viewResult = _razorViewEngine.GetView("", string.Format(formattedViewPath, contentAlias?.ToPascalCase()), false);
+                if (System.IO.File.Exists(viewPathNonPascal))
+                {
+                    viewResult = _razorViewEngine.GetView("", pathNonPascal, false);
 
-                if (viewResult.Success)
-                    return viewResult;
+                    if (viewResult.Success)
+                        return viewResult;
+                }
+
+                else
+                {
+                    var pathPascal = string.Format(baseViewPath, contentAlias?.ToPascalCase() ?? "");
+                    var viewPathPascal = Path.Combine(appRoot, pathPascal);
+
+                    if (System.IO.File.Exists(viewPathPascal))
+                    {
+                        viewResult = _razorViewEngine.GetView("", pathPascal, false);
+
+                        if (viewResult.Success)
+                            return viewResult;
+                    }
+                }
+
+                return null;
             }
 
             return null;
