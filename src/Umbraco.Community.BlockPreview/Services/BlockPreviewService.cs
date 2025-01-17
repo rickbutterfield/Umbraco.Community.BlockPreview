@@ -99,6 +99,11 @@ namespace Umbraco.Community.BlockPreview.Services
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
 
+            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
+            {
+                return $"<div class=\"preview-alert preview-alert-warning\">ModelsBuilder is enabled but the generated model(s) could not be found. Please try regenerating models and restarting the application.</div>";
+            }
+
             BlockGridItem? blockInstance = CreateBlockInstance(
                 BlockType.BlockGrid,
                 contentBlockType, contentElement,

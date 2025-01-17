@@ -32,6 +32,19 @@ or the older NuGet Package Manager:
 Install-Package Umbraco.Community.BlockPreview
 ```
 
+### Setup
+`Umbraco:Cms:ModelsBuilder:ModelsBuilderMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` for BlockPreview to work.
+
+```json
+"Umbraco": {
+  "CMS": {
+    "ModelsBuilder": {
+      "ModelsMode": "SourceCodeAuto"
+    }
+  }
+}
+```
+
 ## Usage
 This package installs a custom Angular preview for both the Block List and Block Grid editors in the backoffice.
 

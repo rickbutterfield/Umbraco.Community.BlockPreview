@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
@@ -26,6 +28,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly IBlockPreviewService _blockPreviewService;
         private readonly ILocalizationService _localizationService;
         private readonly ISiteDomainMapper _siteDomainMapper;
+        private readonly ModelsBuilderSettings _modelsBuilderSettings;
+
+        private const string RENDER_ERROR = "<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{0}</pre></div>";
+        private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-warning\"><strong><code>Umbraco:Cms:ModelsBuilder:ModelsBuilderMode</code></strong> must be set to either <strong><code>SourceCodeManual</code></strong> or <strong><code>SourceCodeAuto</code></strong> for BlockPreview to work.</div>";
+        private const string LOGGER_ERROR = "Error rendering preview for block {0}";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockPreviewApiController"/> class.
@@ -37,6 +44,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             ContextCultureService contextCultureSwitcher,
             IBlockPreviewService blockPreviewService,
             ILocalizationService localizationService,
+            IOptionsMonitor<ModelsBuilderSettings> modelsBuilderSettings,
             ISiteDomainMapper siteDomainMapper)
         {
             _publishedRouter = publishedRouter;
@@ -46,6 +54,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _blockPreviewService = blockPreviewService;
             _localizationService = localizationService;
             _siteDomainMapper = siteDomainMapper;
+            _modelsBuilderSettings = modelsBuilderSettings.CurrentValue;
         }
 
         /// <summary>
@@ -74,20 +83,28 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            try
+            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration())
             {
-                IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeKey);
+                try
+                {
+                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeKey);
 
-                string? currentCulture = GetCurrentCulture(culture, content);
+                    string? currentCulture = GetCurrentCulture(culture, content);
 
-                await SetupPublishedRequest(currentCulture, content);
+                    await SetupPublishedRequest(currentCulture, content);
 
-                markup = await _blockPreviewService.RenderGridBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi);
+                    markup = await _blockPreviewService.RenderGridBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi);
+                }
+                catch (Exception ex)
+                {
+                    markup = string.Format(RENDER_ERROR, ex.Message);
+                    _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
+                }
             }
-            catch (Exception ex)
+
+            else
             {
-                markup = $"<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{ex.Message}</pre></div>";
-                _logger.LogError(ex, $"Error rendering preview for block {contentElementAlias}");
+                markup = MODELS_BUILDER_ERROR;
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -117,22 +134,29 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] string? settingsUdi = default)
         {
             string markup;
-            _ = culture;
 
-            try
+            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration())
             {
-                IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeKey);
+                try
+                {
+                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeKey);
 
-                string? currentCulture = GetCurrentCulture(culture, content);
+                    string? currentCulture = GetCurrentCulture(culture, content);
 
-                await SetupPublishedRequest(currentCulture, content);
+                    await SetupPublishedRequest(currentCulture, content);
 
-                markup = await _blockPreviewService.RenderListBlock(blockData, ControllerContext, contentUdi, settingsUdi);
+                    markup = await _blockPreviewService.RenderListBlock(blockData, ControllerContext, contentUdi, settingsUdi);
+                }
+                catch (Exception ex)
+                {
+                    markup = string.Format(RENDER_ERROR, ex.Message);
+                    _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
+                }
             }
-            catch (Exception ex)
+
+            else
             {
-                markup = $"<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{ex.Message}</pre></div>";
-                _logger.LogError(ex, $"Error rendering preview for block {contentElementAlias}");
+                markup = MODELS_BUILDER_ERROR;
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -162,20 +186,28 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            try
+            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration())
             {
-                IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeKey);
+                try
+                {
+                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeKey);
 
-                string? currentCulture = GetCurrentCulture(culture, content);
+                    string? currentCulture = GetCurrentCulture(culture, content);
 
-                await SetupPublishedRequest(currentCulture, content);
+                    await SetupPublishedRequest(currentCulture, content);
 
-                markup = await _blockPreviewService.RenderRichTextBlock(blockData, ControllerContext);
+                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, ControllerContext);
+                }
+                catch (Exception ex)
+                {
+                    markup = string.Format(RENDER_ERROR, ex.Message);
+                    _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
+                }
             }
-            catch (Exception ex)
+
+            else
             {
-                markup = $"<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{ex.Message}</pre></div>";
-                _logger.LogError(ex, $"Error rendering preview for block {contentElementAlias}");
+                markup = MODELS_BUILDER_ERROR;
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -205,7 +237,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             var requestUrl = new Uri(Request.GetDisplayUrl());
             var requestBuilder = await _publishedRouter.CreateRequestAsync(requestUrl);
-            
+
             if (content != null)
                 requestBuilder.SetPublishedContent(content);
 
