@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Umbraco.Cms.Core.Cache;
+using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Configuration;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Models.Blocks;
@@ -29,11 +31,18 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly IBlockPreviewService _blockPreviewService;
         private readonly ILocalizationService _localizationService;
         private readonly ISiteDomainMapper _siteDomainMapper;
-        private readonly ModelsBuilderSettings _modelsBuilderSettings;
+        private readonly IAppPolicyCache _runtimeCache;
+        private readonly ITypeFinder _typeFinder;
 
         private const string RENDER_ERROR = "<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{0}</pre></div>";
-        private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-warning\"><strong><code>Umbraco:Cms:ModelsBuilder:ModelsBuilderMode</code></strong> must be set to either <strong><code>SourceCodeManual</code></strong> or <strong><code>SourceCodeAuto</code></strong> for BlockPreview to work.</div>";
+        private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-warning\">Strongly typed models must be generated and exist on disk for BlockPreview to work.</div>";
         private const string LOGGER_ERROR = "Error rendering preview for block {0}";
+
+        private const string CONTENT_CACHE_KEY = "BlockPreview_Content_{0}";
+        private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
+        private const string GENERATED_MODELS_KEY = "BlockPreview_GeneratedModels";
+
+        private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
         #region Public
         /// <summary>
@@ -46,8 +55,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
             ContextCultureService contextCultureSwitcher,
             IBlockPreviewService blockPreviewService,
             ILocalizationService localizationService,
-            IOptionsMonitor<ModelsBuilderSettings> modelsBuilderSettings,
-            ISiteDomainMapper siteDomainMapper)
+            ISiteDomainMapper siteDomainMapper,
+            ITypeFinder typeFinder,
+            AppCaches appCaches)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -56,7 +66,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _blockPreviewService = blockPreviewService;
             _localizationService = localizationService;
             _siteDomainMapper = siteDomainMapper;
-            _modelsBuilderSettings = modelsBuilderSettings.CurrentValue;
+            _typeFinder = typeFinder;
+            _runtimeCache = appCaches.RuntimeCache;
         }
 
         /// <summary>
@@ -85,7 +96,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration() || IsUsingLimboModelsBuilder())
+            if (CheckGeneratedModelsExist())
             {
                 try
                 {
@@ -136,7 +147,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration() || IsUsingLimboModelsBuilder())
+            if (CheckGeneratedModelsExist())
             {
                 try
                 {
@@ -187,7 +198,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration() || IsUsingLimboModelsBuilder())
+            if (CheckGeneratedModelsExist())
             {
                 try
                 {
@@ -218,9 +229,12 @@ namespace Umbraco.Community.BlockPreview.Controllers
         #endregion
 
         #region Private
-        private bool IsUsingLimboModelsBuilder()
+        private bool CheckGeneratedModelsExist()
         {
-            return AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName.Contains("Limbo.Umbraco.ModelsBuilder"));
+            return _runtimeCache.GetCacheItem(GENERATED_MODELS_KEY, () =>
+            {
+                return _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().Any();
+            }, CacheDuration);
         }
 
         private string GetCurrentCulture(string? culture, IPublishedContent? content = null)
@@ -253,7 +267,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             context.ForcedPreview(true);
         }
 
-        private IPublishedContent? GetPublishedContent(Guid? nodeKey = default, Guid? documentTypeKey = default)
+        private IPublishedContent? GetPublishedContent(Guid? nodeKey = default, Guid? documentTypeUnique = default)
         {
             if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext? context))
                 return null;
@@ -261,15 +275,30 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IPublishedContent? content = null;
 
             if (nodeKey != default)
-                content = context.Content?.GetById(true, nodeKey.GetValueOrDefault());
+            {
+                var cacheKey = string.Format(CONTENT_CACHE_KEY, nodeKey);
+                content = _runtimeCache.GetCacheItem(cacheKey, () =>
+                {
+                    return context.Content?.GetById(true, nodeKey.GetValueOrDefault());
+                }, CacheDuration);
+            }
 
             if (content == null)
             {
-                var contentType = context.Content?.GetContentType(documentTypeKey.GetValueOrDefault());
+                var typeCacheKey = string.Format(CONTENT_TYPE_CACHE_KEY, documentTypeUnique);
+                var contentType = _runtimeCache.GetCacheItem(typeCacheKey, () =>
+                {
+                    return context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
+                }, CacheDuration);
+
                 if (contentType != null)
                 {
-                    var cache = context.Content?.GetByContentType(contentType);
-                    return cache?.FirstOrDefault();
+                    var cacheKey = string.Format(CONTENT_CACHE_KEY, nodeKey);
+                    var cache = _runtimeCache.GetCacheItem(CONTENT_CACHE_KEY, () =>
+                    {
+                        return context.Content?.GetByContentType(contentType).FirstOrDefault();
+                    }, CacheDuration);
+                    return cache;
                 }
             }
 
