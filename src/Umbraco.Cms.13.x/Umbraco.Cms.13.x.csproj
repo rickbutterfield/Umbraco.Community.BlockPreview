@@ -16,6 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Limbo.Umbraco.ModelsBuilder" Version="13.0.2" />
     <PackageReference Include="Umbraco.BlockGrid.Example.Website" Version="1.0.2" />
     <PackageReference Include="Umbraco.Cms" Version="13.5.2" />
     <PackageReference Include="uSync" Version="13.0.0" />
@@ -26,6 +27,10 @@
     <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="68.2.0.9" />
     <ProjectReference Include="..\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj" />
     <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="68.2.0.9" Condition="$(RuntimeIdentifier.StartsWith('linux')) or $(RuntimeIdentifier.StartsWith('win')) or ('$(RuntimeIdentifier)' == '' and !$([MSBuild]::IsOSPlatform('osx')))" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="umbraco\" />
   </ItemGroup>
 
   <PropertyGroup>

@@ -1,8 +1,8 @@
-﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem<HeroBlock>>
+﻿@inherits UmbracoViewPage<BlockGridItem<HeroBlock>>
 @{
-    var backgroundColor = Model.Content.BackgroundColor;
-    var image = Model.Content.Image;
-    var hasBrightContrast = Model.Content.Contrast == "ffffff";
+    var backgroundColor = Model.Content.Value<string>("backgroundColor");
+    var image = Model.Content.Value<IPublishedContent>("image");
+    var hasBrightContrast = Model.Content.Value<string>("contrast") == "ffffff";
 }
 
 <div 
@@ -14,9 +14,11 @@
         <div class="hero-background" style="background-image: url(@image.GetCropUrl(width:3840))">
         </div>
     }
+
+    <pre>@Model.Content.Dropdown</pre>
     
     <div class="hero-content">
-        <h1>@Model.Content.Headline</h1>
+        <h1>@(Model.Content.Value<string>("headline"))</h1>
         @* Only render if there is some content... *@
         @if (Model.Areas.Any(a => a.Any())) {
             @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)

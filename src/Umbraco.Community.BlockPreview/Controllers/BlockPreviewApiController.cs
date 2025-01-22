@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Umbraco.Cms.Core.Configuration;
 using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
@@ -34,6 +35,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-warning\"><strong><code>Umbraco:Cms:ModelsBuilder:ModelsBuilderMode</code></strong> must be set to either <strong><code>SourceCodeManual</code></strong> or <strong><code>SourceCodeAuto</code></strong> for BlockPreview to work.</div>";
         private const string LOGGER_ERROR = "Error rendering preview for block {0}";
 
+        #region Public
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockPreviewApiController"/> class.
         /// </summary>
@@ -83,7 +85,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration())
+            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration() || IsUsingLimboModelsBuilder())
             {
                 try
                 {
@@ -101,7 +103,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
                 }
             }
-
             else
             {
                 markup = MODELS_BUILDER_ERROR;
@@ -135,7 +136,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration())
+            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration() || IsUsingLimboModelsBuilder())
             {
                 try
                 {
@@ -186,7 +187,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration())
+            if (_modelsBuilderSettings.ModelsMode.SupportsExplicitGeneration() || IsUsingLimboModelsBuilder())
             {
                 try
                 {
@@ -214,6 +215,13 @@ namespace Umbraco.Community.BlockPreview.Controllers
             return Ok(cleanMarkup);
         }
 #endif
+        #endregion
+
+        #region Private
+        private bool IsUsingLimboModelsBuilder()
+        {
+            return AppDomain.CurrentDomain.GetAssemblies().Any(a => a.FullName.Contains("Limbo.Umbraco.ModelsBuilder"));
+        }
 
         private string GetCurrentCulture(string? culture, IPublishedContent? content = null)
         {
@@ -299,5 +307,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             return content.DocumentNode.OuterHtml;
         }
+        #endregion
     }
 }

@@ -16,7 +16,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
             return $"{char.ToUpper(value[0], CultureInfo.CurrentCulture)}{value[1..]}";
         }
 
-        public static bool TryConvertToGridItem(this object? rawPropValue, out BlockValue? value)
+        public static bool TryConvertToBlockItem(this object? rawPropValue, out BlockValue? value)
         {
             if (!rawPropValue?.ToString()?.DetectIsJson() == true || rawPropValue is not JObject jObject)
             {
