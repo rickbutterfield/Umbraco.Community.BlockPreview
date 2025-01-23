@@ -19,7 +19,6 @@ using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
-using Umbraco.Cms.Core.Serialization;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Extensions;
@@ -87,7 +86,7 @@ namespace Umbraco.Community.BlockPreview.Services
             string? settingsUdi = default)
         {
             if (blockData == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
             if (!UdiParser.TryParse(contentUdi, out Udi? contentUdiParsed))
                 return string.Empty;
@@ -96,7 +95,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             BlockItemData? contentData = blockData.ContentData.FirstOrDefault(x => x.Udi == contentUdiParsed);
             if (contentData == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true);
 
@@ -110,9 +109,7 @@ namespace Umbraco.Community.BlockPreview.Services
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
-            {
-                return $"<div class=\"preview-alert preview-alert-warning\">ModelsBuilder is enabled but the generated model(s) could not be found. Please try regenerating models and restarting the application.</div>";
-            }
+                return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.NoGeneratedModels);
 
             BlockGridItem? blockInstance = CreateBlockInstance(
                 BlockType.BlockGrid,
@@ -165,16 +162,16 @@ namespace Umbraco.Community.BlockPreview.Services
             string? settingsUdi = default)
         {
             if (blockData == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
             if (!UdiParser.TryParse(contentUdi, out Udi? contentUdiParsed))
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentKey);
 
             UdiParser.TryParse(settingsUdi!, out Udi? settingsUdiParsed);
 
             BlockItemData? contentData = blockData.ContentData.FirstOrDefault(x => x.Udi == contentUdiParsed);
             if (contentData == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true);
 
@@ -187,6 +184,9 @@ namespace Umbraco.Community.BlockPreview.Services
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
 
+            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
+                return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.NoGeneratedModels);
+
             BlockListItem? blockInstance = CreateBlockInstance(
                 BlockType.BlockList,
                 contentBlockType, contentElement,
@@ -195,7 +195,7 @@ namespace Umbraco.Community.BlockPreview.Services
             ) as BlockListItem;
 
             if (blockInstance == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockList);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockList);
@@ -207,11 +207,11 @@ namespace Umbraco.Community.BlockPreview.Services
             ControllerContext controllerContext)
         {
             if (blockData == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
             BlockItemData? contentData = blockData.ContentData.FirstOrDefault();
             if (contentData == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true);
 
@@ -221,6 +221,9 @@ namespace Umbraco.Community.BlockPreview.Services
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
 
+            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
+                return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.NoGeneratedModels);
+
             RichTextBlockItem? blockInstance = CreateBlockInstance(
                 BlockType.RichText,
                 contentBlockType, contentElement,
@@ -229,7 +232,7 @@ namespace Umbraco.Community.BlockPreview.Services
             ) as RichTextBlockItem;
 
             if (blockInstance == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.RichText);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.RichText);
@@ -419,13 +422,13 @@ namespace Umbraco.Community.BlockPreview.Services
                     _razorViewEngine.FindView(controllerContext, contentAlias?.ToPascalCase()!, false);
 
                 if (!viewResult.Success)
-                    return string.Empty;
+                    return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ViewNotFound);
             }
 
             var actionContext = new ActionContext(controllerContext.HttpContext, new RouteData(), new ActionDescriptor());
 
             if (viewResult.View == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ViewNotFound);
 
             await using var sw = new StringWriter();
 
@@ -480,16 +483,16 @@ namespace Umbraco.Community.BlockPreview.Services
                 if (!blockConfigAreaMap.TryGetValue(area.Key, out var areaConfig))
                     return null;
 
-                //var items = area.Items.Select(item =>
-                //{
-                //    BlockItemData? areaContentData = blockValue.ContentData.FirstOrDefault(x => x.Udi == item.ContentUdi);
-                //    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true);
+                var items = area.Items.Select(item =>
+                {
+                    BlockItemData? areaContentData = blockValue.ContentData.FirstOrDefault(x => x.Udi == item.ContentUdi);
+                    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true);
 
-                //    BlockItemData? areaSettingsData = blockValue.SettingsData.FirstOrDefault(x => x.Udi == item.SettingsUdi);
-                //    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true) : default;
+                    BlockItemData? areaSettingsData = blockValue.SettingsData.FirstOrDefault(x => x.Udi == item.SettingsUdi);
+                    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true) : default;
 
-                //    return new BlockGridItem(item.ContentUdi!, areaContentElement!, item.SettingsUdi!, areaSettingsElement!);
-                //}).WhereNotNull().ToList();
+                    return new BlockGridItem(item.ContentUdi!, areaContentElement!, item.SettingsUdi!, areaSettingsElement!);
+                }).WhereNotNull().ToList();
 
                 return new BlockGridArea(new List<BlockGridItem>(area.Items.Count()), areaConfig.Alias!, areaConfig.RowSpan!.Value, areaConfig.ColumnSpan!.Value);
             }).WhereNotNull().ToList();
