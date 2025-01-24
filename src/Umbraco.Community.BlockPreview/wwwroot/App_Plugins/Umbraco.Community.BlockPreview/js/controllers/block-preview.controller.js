@@ -78,7 +78,7 @@
             }
 
             function loadPreview() {
-                $scope.markup = $sce.trustAsHtml('<div class="preview-alert preview-alert-info">Loading preview</div>');
+                $scope.markup = $sce.trustAsHtml('<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader>Loading preview...</div>');
                 $scope.loading = true;
 
                 if ($scope.isGrid) {

@@ -5,6 +5,9 @@
     var hasBrightContrast = Model.Content.Value<string>("contrast") == "ffffff";
 }
 
+<pre>Content Picker: @Model.Content.ContentPicker?.Name (@Model.Content.ContentPicker?.Url())</pre>
+<pre>Dropdown: @Model.Content.Dropdown</pre>
+
 <div 
     class="hero"
     style="background-color:#@backgroundColor"
