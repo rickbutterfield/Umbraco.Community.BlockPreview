@@ -15,5 +15,34 @@
             public static string AppSettingsRoot => "BlockPreview";
             public static string AppPluginsRoot => $"App_Plugins/{PackageName}";
         }
+
+        public static partial class ErrorMessages
+        {
+            public static string ErrorTemplate = "<div class=\"preview-alert preview-alert-error\"></div>";
+
+            public static string WarningTemplate = "<div class=\"preview-alert preview-alert-warning\"></div>";
+
+            public static string NoGeneratedModels = "Generated model(s) could not be found. Please try regenerating models and restarting the application.";
+
+            public static string InvalidBlockData = "The block data is invalid.";
+
+            public static string InvalidContentKey = "The content key is invalid.";
+
+            public static string InvalidContentData = "The content data is invalid.";
+
+            public static string InvalidBlockInstance = "The block instance is invalid.";
+
+            public static string InvalidDocumentType = "The document type is invalid.";
+
+            public static string InvalidPropertyType = "The property type is invalid.";
+
+            public static string InvalidDataType = "The data type is invalid.";
+
+            public static string InvalidBlockGridConfiguration = "The block grid configuration is invalid.";
+
+            public static string InvalidMatchingBlockGridConfiguration = "A matching block grid configuration could not be found";
+
+            public static string ViewNotFound = "The view could not be found.";
+        }
     }
 }

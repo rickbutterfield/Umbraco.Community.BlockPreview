@@ -6,6 +6,9 @@
     padding: 8px 35px 8px 14px;
     position: relative;
 }
+    .preview-alert uui-loader {
+        margin-right: 16px;
+    }
 
     .preview-alert, .preview-alert a, .preview-alert h4 {
         color: #fff;

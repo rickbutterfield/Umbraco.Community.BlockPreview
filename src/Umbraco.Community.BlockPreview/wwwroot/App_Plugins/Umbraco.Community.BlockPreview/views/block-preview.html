@@ -4,11 +4,12 @@
         @import '/App_Plugins/Umbraco.Community.BlockPreview/css/block-preview.css?umb__rnd={{cacheBuster}}';
     </style>
 
-    <div ng-if="loading === false"
-         ng-bind-compile="markup"
-         publication-check
+    <div ng-bind-compile="markup"
          settings="block.settingsData">
-        <div class="preview-alert preview-alert-info">Loading preview...</div>
+        <div class="preview-alert preview-alert-info">
+            <uui-loader style="color: #fff"></uui-loader>
+            Loading preview...
+        </div>
     </div>
 
 </div>

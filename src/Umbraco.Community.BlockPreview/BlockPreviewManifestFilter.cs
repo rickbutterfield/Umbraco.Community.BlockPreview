@@ -16,9 +16,12 @@ namespace Umbraco.Community.BlockPreview
                 Scripts = new string[]
                 {
                     $"/{Constants.Configuration.AppPluginsRoot}/js/controllers/block-preview.controller.js",
-                    $"/{Constants.Configuration.AppPluginsRoot}/js/directives/published-check.directive.js",
                     $"/{Constants.Configuration.AppPluginsRoot}/js/directives/bind-compile.directive.js",
                     $"/{Constants.Configuration.AppPluginsRoot}/js/resources/preview.resource.js"
+                },
+                Stylesheets = new string[]
+                {
+                    $"/{Constants.Configuration.AppPluginsRoot}/css/block-preview.css"
                 }
             });
         }
