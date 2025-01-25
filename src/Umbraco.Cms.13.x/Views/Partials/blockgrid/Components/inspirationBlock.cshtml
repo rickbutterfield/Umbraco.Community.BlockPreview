@@ -3,12 +3,12 @@
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @{
     var backgroundColor = Model.Settings.BackgroundColor;
-    var hasBrightContrast = Model.Settings.Contrast == "ffffff";
+    var hasBrightContrast = Model.Settings.Contrast == "#ffffff";
 }
 
 <section 
     class="inspiration" 
-    style="background-color:#@backgroundColor"
+    style="background-color:@backgroundColor"
     @(hasBrightContrast ? "bright-contrast" : null)>
     <div class="area-container">
         <div class="left-area">

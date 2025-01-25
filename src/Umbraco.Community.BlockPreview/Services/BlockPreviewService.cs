@@ -19,6 +19,7 @@ using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
+using Umbraco.Cms.Core.Serialization;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Extensions;
@@ -42,6 +43,7 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly IContentTypeService _contentTypeService;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly IJsonSerializer _jsonSerializer;
 
         private const string BLOCK_TYPE_CACHE_KEY = "BlockPreview_BlockType_{0}";
         private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
@@ -60,7 +62,8 @@ namespace Umbraco.Community.BlockPreview.Services
             IContentTypeService contentTypeService,
             IDataTypeService dataTypeService,
             AppCaches appCaches,
-            IWebHostEnvironment webHostEnvironment)
+            IWebHostEnvironment webHostEnvironment,
+            IJsonSerializer jsonSerializer)
         {
             _tempDataProvider = tempDataProvider;
             _viewComponentHelperWrapper = viewComponentHelperWrapper;
@@ -74,6 +77,7 @@ namespace Umbraco.Community.BlockPreview.Services
             _dataTypeService = dataTypeService;
             _webHostEnvironment = webHostEnvironment;
             _runtimeCache = appCaches.RuntimeCache;
+            _jsonSerializer = jsonSerializer;
         }
 
         #region Public
@@ -88,8 +92,14 @@ namespace Umbraco.Community.BlockPreview.Services
             if (blockData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
+            if (!blockData.ContentData.Any())
+            {
+                BlockGridEditorDataConverter converter = new BlockGridEditorDataConverter(_jsonSerializer);
+                converter.TryDeserialize(JsonConvert.SerializeObject(blockData), out var convertedBlockData);
+            }
+
             if (!UdiParser.TryParse(contentUdi, out Udi? contentUdiParsed))
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentKey);
 
             UdiParser.TryParse(settingsUdi!, out Udi? settingsUdiParsed);
 
@@ -158,11 +168,19 @@ namespace Umbraco.Community.BlockPreview.Services
         public async Task<string> RenderListBlock(
             BlockValue blockData,
             ControllerContext controllerContext,
+            string blockEditorAlias = "",
+            Guid documentTypeUnique = default,
             string contentUdi = "",
             string? settingsUdi = default)
         {
             if (blockData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
+
+            if (!blockData.ContentData.Any())
+            {
+                BlockListEditorDataConverter converter = new BlockListEditorDataConverter();
+                converter.TryDeserialize(JsonConvert.SerializeObject(blockData), out var convertedBlockData);
+            }
 
             if (!UdiParser.TryParse(contentUdi, out Udi? contentUdiParsed))
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentKey);
@@ -422,13 +440,13 @@ namespace Umbraco.Community.BlockPreview.Services
                     _razorViewEngine.FindView(controllerContext, contentAlias?.ToPascalCase()!, false);
 
                 if (!viewResult.Success)
-                    return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ViewNotFound);
+                    return string.Format(Constants.ErrorMessages.WarningTemplate, string.Format(Constants.ErrorMessages.ViewNotFound, viewResult.ViewName, string.Join("<br/>", viewResult.SearchedLocations)));
             }
 
             var actionContext = new ActionContext(controllerContext.HttpContext, new RouteData(), new ActionDescriptor());
 
             if (viewResult.View == null)
-                return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ViewNotFound);
+                return string.Format(Constants.ErrorMessages.WarningTemplate, string.Format(Constants.ErrorMessages.ViewNotFound, viewResult.ViewName, string.Join("<br/>", viewResult.SearchedLocations)));
 
             await using var sw = new StringWriter();
 

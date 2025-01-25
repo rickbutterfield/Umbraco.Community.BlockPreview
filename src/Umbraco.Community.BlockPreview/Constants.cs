@@ -42,7 +42,7 @@
 
             public static string InvalidMatchingBlockGridConfiguration = "A matching block grid configuration could not be found";
 
-            public static string ViewNotFound = "The view could not be found.";
+            public static string ViewNotFound = "The view <code>{0}.cshtml</code> could not be found. Searched the following locations: <pre>{1}</pre>";
         }
     }
 }
