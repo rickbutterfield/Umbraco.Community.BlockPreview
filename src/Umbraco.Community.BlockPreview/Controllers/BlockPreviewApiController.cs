@@ -157,7 +157,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderListBlock(blockData, ControllerContext, contentUdi, settingsUdi);
+                    markup = await _blockPreviewService.RenderListBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi);
                 }
                 catch (Exception ex)
                 {
