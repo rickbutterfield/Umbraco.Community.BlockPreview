@@ -1,4 +1,4 @@
-﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem<HeroBlock>>
+﻿@inherits UmbracoViewPage<BlockGridItem<HeroBlock, BlockSettings>>
 @{
     var backgroundColor = Model.Content.BackgroundColor;
     var image = Model.Content.Image;
@@ -7,6 +7,8 @@
 
 <pre>Dropdown: @Model.Content.Height</pre>
 <pre>Content Picker: @Model.Content.ContentPicker?.Name (@Model.Content.ContentPicker?.Url())</pre>
+<pre>Settings Dropdown: @Model.Settings.Dropdown</pre>
+<pre>MultipleTextstring: @Html.Raw(string.Join("<br/>", Model.Content.RepeatingTextString))</pre>
 
 <div 
     class="hero"
