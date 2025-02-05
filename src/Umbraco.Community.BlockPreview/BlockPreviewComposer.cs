@@ -32,6 +32,7 @@ namespace Umbraco.Community.BlockPreview
                 throw new InvalidOperationException($"Expected {nameof(DefaultViewComponentHelper)} when resolving {nameof(IViewComponentHelperWrapper)}");
             });
 
+            builder.Services.AddSingleton<IBlockEditorElementTypeCache, BlockEditorElementTypeCache>();
             builder.Services.AddScoped<IBlockPreviewService, BlockPreviewService>();
             builder.Services.AddScoped<ContextCultureService>();
 

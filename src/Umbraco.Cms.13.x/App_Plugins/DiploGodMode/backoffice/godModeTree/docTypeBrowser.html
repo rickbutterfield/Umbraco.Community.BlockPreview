@@ -1,0 +1,246 @@
+﻿<div ng-controller="GodMode.DocTypeBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="model.infiniteMode">
+
+        <godmode-header heading="Document Type Browser" title="Because who doesn't love a doc type?" on-reload="vm.reload()"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-header title="Search Filters"></umb-box-header>
+                <umb-box-content>
+
+                    <div class="row">
+                        <div class="span4">
+                            <label class="control-label" for="search-hasTemplate">Has Template?</label>
+                            <br />
+                            <select id="search-hasTemplate" ng-model="vm.search.hasTemplate" ng-options="opt.label for opt in vm.triStateOptions" class="input-large"></select>
+                        </div>
+                        <div class="span4">
+                            <label class="control-label" for="search-dataType">Uses DataType:</label>
+                            <br />
+                            <select id="search-dataType" ng-model="vm.search.dataType" ng-options="item.Name for item in vm.dataTypes" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+                        <div class="span4">
+                            <label class="control-label" for="search-propertyEditor">Uses Editor:</label>
+                            <br />
+                            <select id="search-propertyEditor" ng-model="vm.search.propertyEditor" ng-options="item.Alias for item in vm.propertyEditors" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="span4">
+                            <label class="control-label" for="search-hasCompositions">Has Compositions?</label>
+                            <br />
+                            <select id="search-hasCompositions" ng-model="vm.search.hasCompositions" ng-options="opt.label for opt in vm.triStateOptions" class="input-large"></select>
+                        </div>
+                        <div class="span4">
+                            <label class="control-label" for="search-composedOf">Composed With:</label>
+                            <br />
+                            <select id="search-composedOf" ng-model="vm.search.composedOf" ng-options="item.Name for item in vm.compositions" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+                        <div class="span4">
+                            <label class="control-label" for="search-propertyGroup">Has Group:</label>
+                            <br />
+                            <select id="search-propertyGroup" ng-model="vm.search.propertyGroup" ng-options="group for group in vm.propertyGroups" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="span4">
+                            <label class="control-label" for="search-isElement">Element Type?</label>
+                            <br />
+                            <select id="search-isElement" ng-model="vm.search.isElement" ng-options="opt.label for opt in vm.triStateOptions" class="input-large"></select>
+                        </div>
+                        <div class="span4">
+                            <label class="control-label" for="search-variesBy">Varies By:</label>
+                            <br />
+                            <select id="search-variesBy" ng-model="vm.search.variesBy" ng-options="item for item in vm.variations" class="input-large">
+                            </select>
+                        </div>
+                        <div class="span4">
+                            <label class="control-label" for="search-listView">List View?</label>
+                            <br />
+                            <select id="search-listView" ng-model="vm.search.isListView" ng-options="opt.label for opt in vm.triStateOptions" class="input-large"></select>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="span4">
+                            <label class="control-label" for="search-doctypes">Search document types</label>
+                            <br />
+                            <div class="input-prepend">
+                                <span class="add-on"><i class="icon-item-arrangement"></i></span>
+                                <input type="search" id="search-doctypes" ng-model="vm.search.doctype" placeholder="Filter document types" class="input-large">
+                            </div>
+                        </div>
+                        <div class="span4">
+                            <label class="control-label" for="search-templates">Search templates</label>
+                            <br />
+                            <div class="input-prepend">
+                                <span class="add-on"><i class="icon-newspaper-alt"></i></span>
+                                <input type="search" id="search-templates" ng-model="vm.search.template" placeholder="Filter templates">
+                            </div>
+                        </div>
+                        <div class="span4">
+                            <label class="control-label" for="search-properties">Search properties</label>
+                            <br />
+                            <div class="input-prepend input-append">
+                                <span class="add-on"><i class="icon-autofill"></i></span>
+                                <input type="search" id="search-properties" ng-model="vm.search.property" placeholder="Filter properties">
+                                <span class="add-on">
+                                    <input type="checkbox" ng-model="vm.search.includeInherited" aria-label="Tick to include inherited properties" title="Tick to include inherited properties" />
+                                </span>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </umb-box-content>
+
+            </umb-box>
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+            <p class="gm-results" ng-show="vm.contentTypes"><strong>{{results.length}}</strong> / <strong>{{vm.contentTypes.length}}</strong></p>
+
+            <div ng-repeat="ct in vm.contentTypes | filter: vm.filterContentTypes as results">
+
+                <umb-box>
+                    <div class="umb-box-header box-opener flex">
+                        <div class="span12" ng-click="ct.IsOpen = !ct.IsOpen">
+                            <h4>
+                                <i class="{{ ct.Icon }}"></i>&nbsp;{{ ct.Name }} <small>({{ ct.Alias }})</small>
+                                <small ng-show="ct.IsElement"><i class="icon icon-box color-blue"></i> Element</small>
+                                <small ng-show="ct.VariesBy !== 'Nothing'"><i class="icon icon-shuffle color-blue-grey"></i> Varies by {{ct.VariesBy}}</small>
+                                <small ng-show="ct.IsListView"><i class="icon icon-list color-light-blue"></i> List</small>
+                            </h4>
+                        </div>
+                        <div>
+                            <button type="button" ng-click="vm.openContentType(ct.Id)" title="Edit {{ ct.Name }} doctype" aria-label="Edit {{ct.Name}}" class="btn btn-action">Edit</button>
+                        </div>
+                    </div>
+
+                    <umb-box-content ng-if="ct.IsOpen">
+
+                        <div class="row">
+                            <div class="span8">
+                                {{ ct.Description }}
+                            </div>
+                            <div class="span4 text-right">
+                                <span class="label label-inverse">{{ct.Id}}</span> <code>{{ct.Udi}}</code> <span class="label">{{ct.CreateDate}}</span>
+                            </div>
+                        </div>
+
+                        <table class="table" ng-show="ct.Templates.length > 0">
+                            <caption><h5>Templates</h5></caption>
+                            <thead>
+                                <tr>
+                                    <th width="34%">Name</th>
+                                    <th width="33%">Alias</th>
+                                    <th width="33%">Filename</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="tmp in ct.Templates">
+                                    <td><button type="button" ng-click="vm.openTemplate(tmp.Id)" title="Edit Template">{{ tmp.Name }}</button></td>
+                                    <td>{{ tmp.Alias }}</td>
+                                    <td>{{ tmp.Path }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="table" ng-show="ct.Properties.length > 0">
+                            <caption><h5>Native Properties</h5></caption>
+                            <thead>
+                                <tr>
+                                    <th width="20%">Name</th>
+                                    <th width="20%">Alias</th>
+                                    <th width="20%">Editor</th>
+                                    <th width="20%">Varies By</th>
+                                    <th width="20%">Stored As</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="prop in ct.Properties">
+                                    <td title="{{ prop.Description }}">{{ prop.Name }}</td>
+                                    <td>{{ prop.Alias }}</td>
+                                    <td><button type="button" ng-click="vm.openDataType(prop.EditorId)" title="Edit">{{ prop.EditorAlias }}</button></td>
+                                    <td>{{ prop.VariesBy }}</td>
+                                    <td><code>{{ prop.StorageType }}</code></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="table" ng-show="ct.CompositionProperties.length > 0">
+                            <caption><h5><i class="icon-merge color-grey"></i> Inherited Properties</h5></caption>
+                            <thead>
+                                <tr>
+                                    <th width="20%">Name</th>
+                                    <th width="20%">Alias</th>
+                                    <th width="20%">Editor</th>
+                                    <th width="20%">Varies By</th>
+                                    <th width="20%">Stored As</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="prop in ct.CompositionProperties">
+                                    <td title="{{ prop.Description }}">{{ prop.Name }}</td>
+                                    <td>{{ prop.Alias }}</td>
+                                    <td><button type="button" ng-click="vm.openDataType(prop.EditorId)" title="Edit">{{ prop.EditorAlias }}</button></td>
+                                    <td>{{ prop.VariesBy }}</td>
+                                    <td>{{ prop.StorageType }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="table" ng-show="ct.Compositions.length">
+                            <caption><h5><i class="icon-merge color-grey"></i> Composed Of</h5></caption>
+                            <thead>
+                                <tr>
+                                    <th width="34%">Name</th>
+                                    <th width="33%">Alias</th>
+                                    <th width="33%">Description</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="comp in ct.Compositions">
+                                    <td><i class="{{ comp.Icon }}"></i><button type="button" ng-click="vm.openContentType(comp.Id)" title="Edit Composition" target="_blank">{{ comp.Name }}</button></td>
+                                    <td>{{ comp.Alias }}</td>
+                                    <td><small>{{ comp.Description }}</small></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                    </umb-box-content>
+                </umb-box>
+
+            </div>
+
+            <p ng-if="results.length === 0" class="alert alert-info alert-block">Sorry, there are no documents that match your chosen search criteria. Try changing the filters at the top of the page.</p>
+
+        </umb-editor-container>
+        <umb-editor-footer ng-if="model.infiniteMode">
+
+            <umb-editor-footer-content-right>
+                <umb-button type="button"
+                            button-style="link"
+                            label-key="general_close"
+                            shortcut="esc"
+                            action="model.close()">
+                </umb-button>
+            </umb-editor-footer-content-right>
+
+        </umb-editor-footer>
+
+    </umb-editor-view>
+
+</div>

@@ -1,0 +1,90 @@
+﻿.god-mode .umb-panel-header {
+    position: relative !important;
+}
+
+.god-mode .umb-panel-header-icon {
+    cursor: default;
+    border: none;
+}
+
+.god-mode input[type=search]::-webkit-search-cancel-button {
+    -webkit-appearance: searchfield-cancel-button;
+}
+
+.god-mode .box-opener {
+    cursor: pointer;
+}
+
+    .god-mode .box-opener:hover {
+        cursor: pointer;
+        border-bottom: 1px solid #c9c9cb;
+        box-shadow: 0 8px 6px -6px #c9c9cb;
+    }
+
+.god-mode .umb-box-content table th {
+    background-color: #eee;
+}
+
+.god-mode table tbody .wrap {
+    white-space: pre-wrap;
+}
+
+.god-mode table tbody button {
+    text-align: left;
+    background: none;
+    padding: 0;
+    margin: 0;
+    border: 0;
+    display: inline;
+    font: inherit;
+    text-decoration: underline;
+    text-decoration-color: #aaa;
+}
+
+    .god-mode table tbody button:hover, .god-mode table tbody a:hover {
+        text-decoration: underline;
+        text-decoration-color: #2bc37c;
+    }
+
+.god-mode table tbody td code {
+    font-size: smaller;
+}
+
+.god-mode table tbody td {
+    overflow-wrap: break-word;
+    word-break: break-all;
+}
+
+.god-mode .true-false {
+    color: #bbbabf;
+}
+
+.god-mode .god-mode-title {
+    font-size: 120%;
+    transition: all 0.7s ease;
+    display: inline-block;
+    margin-right: 10px;
+}
+
+    .god-mode .god-mode-title:hover {
+        transform: rotateY(180deg);
+        transform-style: preserve-3d;
+    }
+
+.god-mode .add-on .icon-delete {
+    color: #aaa;
+    cursor: pointer;
+}
+
+    .god-mode .add-on .icon-delete:hover {
+        cursor: pointer;
+        color: #000;
+    }
+
+.god-mode .gm-results {
+    background-color: #fff;
+    padding: 4px;
+    font-size: smaller;
+    border-bottom: 1px solid #e9e9eb;
+    color: #666;
+}

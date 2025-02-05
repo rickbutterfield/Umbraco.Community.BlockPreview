@@ -1,0 +1,85 @@
+﻿<div ng-controller="GodMode.UtilityBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="false">
+
+        <godmode-header heading="Utilities" title="Do some stuff and feel enpowered!"></godmode-header>
+
+        <umb-load-indicator ng-show="vm.loading"></umb-load-indicator>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-header title="Caches" description="Clear out the internal Umbraco in-memory caches"></umb-box-header>
+                <umb-box-content>
+                    <div class="row">
+
+                        <div class="span4">
+                            <button class="btn btn-warning" title="Clears the Umbraco request cache" ng-click="vm.clearCache('Request')"><i class="icon-delete-key"></i> Clear Request Cache</button>
+                        </div>
+
+                        <div class="span4">
+                            <button class="btn btn-warning" title="Clears the Umbraco runtime cache" ng-click="vm.clearCache('Runtime')"><i class="icon-delete-key"></i> Clear Runtime Cache</button>
+                        </div>
+
+                        <div class="span4">
+                            <button class="btn btn-warning" title="Clears the Umbraco isolated cache" ng-click="vm.clearCache('Isolated')"><i class="icon-delete-key"></i> Clear Isolated Cache</button>
+                        </div>
+                    </div>
+                    <br />
+                    <div class="row">
+                        <div class="span4">
+                            <button class="btn btn-warning" title="Clears the Umbraco partial view cache" ng-click="vm.clearCache('Partial')"><i class="icon-delete-key"></i> Clear Partial Cache</button>
+                        </div>
+                        <div class="span4">
+                            <button class="btn btn-warning" title="Clears anything in IMemoryCache" ng-click="vm.clearCache('Other')"><i class="icon-delete-key"></i> Clear Other Cache</button>
+                        </div>
+                        <div class="span4">
+                            <button class="btn btn-danger" title="Clears ALL Umbraco caches" ng-click="vm.clearCache('all')"><i class="icon-delete-key"></i> Clear All Caches</button>
+                        </div>
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-box>
+                <umb-box-header title="TEMP Files" description="Purge temporary / cached files"></umb-box-header>
+                <umb-box-content>
+                    <div class="row">
+                        <div class="span4">
+                            <button class="btn btn-warning" title="Attempts to delete ALL the cached image crops on disk" ng-click="vm.purgeMediaCache()"><i class="icon-hard-drive"></i> Purge Media Cache</button>
+                        </div>
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-box>
+                <umb-box-header title="Application" description="Here be dragons"></umb-box-header>
+                <umb-box-content>
+                    <div class="row">
+
+                        <div class="span4">
+                            <button class="btn btn-danger" title="Stops the application which will take the site offline" ng-click="vm.restartAppPool()"><i class="icon-scull"></i> Stop Application</button>
+                        </div>
+
+                        <div class="span4">
+                            <button class="btn btn-primary" title="Hits a single URL for every distinct template in the site to 'warm-up' compilation of views" ng-click="vm.warmUpTemplates()"><i class="icon-server"></i> Warm-Up Templates</button>
+                        </div>
+
+                        <div class="span4">
+                            <button class="btn btn-primary" title="Sends an HTTP request to ALL URLs in the site for the selected culture" ng-click="vm.pingUrls()"><i class="icon-server"></i> Ping ALL URLs</button>
+
+                            <select ng-model="vm.lang" ng-options="item.Name for item in vm.languages" class="input-medium"></select>
+                        </div>
+                    </div>
+
+                    <div class="row" ng-show="vm.warmup.current < vm.warmup.count">
+                        <umb-load-indicator ng-show="vm.warmup.current < vm.warmup.count"></umb-load-indicator>
+                        <br />
+                        Warming up {{ vm.warmup.current }} of {{ vm.warmup.count }} - pinging URL: <a href="{{vm.warmup.url}}" target="_blank">{{vm.warmup.url}}</a>
+                        <hr />
+                    </div>
+
+                </umb-box-content>
+            </umb-box>
+        </umb-editor-container>
+    </umb-editor-view>
+</div>

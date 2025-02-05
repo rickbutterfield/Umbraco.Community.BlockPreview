@@ -1,0 +1,73 @@
+﻿<div ng-controller="GodMode.UsageBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="false">
+
+        <godmode-header heading="Usage Browser" title="Because statistics don't lie..." on-reload="vm.fetchContent()"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-content>
+                    <div class="row">
+
+                        <div class="span4">
+                            <label class="control-label" for="search-name">Alias:</label>
+                            <br />
+                            <input type="search" id="search-name" ng-model="vm.criteria.Alias" placeholder="Search content-type aliases" class="input-large">
+                        </div>
+
+                        <div class="span4">
+                            <label class="control-label" for="search-name">Description:</label>
+                            <br />
+                            <input type="search" id="search-name" ng-model="vm.criteria.Description" placeholder="Search content-type descriptions" class="input-large">
+                        </div>
+
+                        <div class="span4">
+                            <label class="control-label" for="search-type">Type:</label>
+                            <br />
+                            <select ng-model="vm.criteria.Type" id="search-type" ng-options="item.Type as item.Type for item in vm.usage | godModeUnique: 'Type'" class="input-medium">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-load-indicator ng-show="isLoading"></umb-load-indicator>
+
+            <p class="gm-results" ng-show="vm.usage"><strong>{{results.length}}</strong> / <strong>{{vm.usage.length}}</strong></p>
+
+            <table class="table table-hover">
+                <colgroup>
+                    <col style="width:30%">
+                    <col style="width:60%">
+                    <col style="width:10%">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th><godmode-sortable sort-by="vm.sortBy('CT.Alias')" column="CT.Alias" sort="vm.sort">Alias</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('CT.description')" column="CT.description'" sort="vm.sort">Description</godmode-sortable></th>
+                        <th align="center"><godmode-sortable sort-by="vm.sortBy('NodeCount')" column="NodeCount" sort="vm.sort">Count</godmode-sortable></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="c in vm.usage | filter:  vm.criteria.Type === null ? undefined : vm.criteria as results">
+                        <td>
+                            <span class="{{c.Icon}}"></span>
+                            <strong>
+                                <button type="button" ng-click="vm.openContentBrowser(c.Alias)" ng-show="c.Type === 'Content'" title="View related content">{{ c.Alias }}</button>
+                                <span ng-show="c.Type !== 'Content'">{{ c.Alias }}</span>
+                            </strong>
+                        </td>
+                        <td class="muted">{{ c.Description }}</td>
+                        <td>{{ c.NodeCount }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </umb-editor-container>
+
+    </umb-editor-view>
+
+</div>

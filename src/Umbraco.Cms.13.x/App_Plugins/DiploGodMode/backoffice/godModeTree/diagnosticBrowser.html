@@ -1,0 +1,68 @@
+﻿<div ng-controller="GodMode.DiagnosticBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="false">
+
+        <godmode-header heading="{{vm.heading}}" title="She canna take any more, captain. She's gonna blow!" on-reload="vm.init()"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-content>
+                    <div class="row">
+
+                        <div class="span4">
+                            <label class="control-label" for="search-id">Search Names:</label>
+                            <br />
+                            <div class="input-append">
+                                <input type="search" id="search-id" ng-model="vm.search.name" placeholder="Filter by name" class="input-large">
+                            </div>
+                        </div>
+
+                        <div class="span4">
+                            <label class="control-label" for="search-name">Search Values:</label>
+                            <br />
+                            <div class="input-append">
+                                <input type="search" id="search-name" ng-model="vm.search.value" placeholder="Filter by value" class="input-large">
+                            </div>
+                        </div>
+                        <div class="span4">
+                            <label class="control-label" for="search-section">Configuration Group:</label>
+                            <br />
+                            <select id="search-section" ng-model="vm.search.group" ng-options="item.Title for item in vm.groups" class="input-large" ng-change="vm.selectGroup(vm.search.group)">
+                                <option value="">Select</option>
+                            </select>
+                        </div>
+
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+            <h4 class="text-center">{{ vm.group.Title }}</h4>
+
+            <div ng-repeat="section in vm.group.Sections" id="section{{$index}}">
+
+                <table class="table table-striped" ng-show="(section.Diagnostics | filter: vm.filterValues).length > 0">
+                    <caption style="text-align:left"><h5>{{ section.Heading }}</h5></caption>
+                    <thead ng-show="section.Diagnostics.length > 0">
+                        <tr>
+                            <th style="width:30%" class="tkey">Key</th>
+                            <th style="width:70%" class="tval">Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr ng-repeat="item in section.Diagnostics | filter: vm.filterValues">
+                            <td><strong>{{ item.Key }}</strong></td>
+                            <td class="wrap">{{ item.Value }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </div>
+
+        </umb-editor-container>
+
+    </umb-editor-view>
+
+</div>

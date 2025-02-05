@@ -8,8 +8,10 @@ using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Text.Encodings.Web;
 using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Cache;
@@ -23,8 +25,12 @@ using Umbraco.Cms.Core.Serialization;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Extensions;
+using Umbraco.Community.BlockPreview.Helpers;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Extensions;
+#if NET8_0
+using Umbraco.Community.BlockPreview.Converters;
+#endif
 using static Umbraco.Cms.Core.Constants.PropertyEditors;
 
 namespace Umbraco.Community.BlockPreview.Services
@@ -45,12 +51,19 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IJsonSerializer _jsonSerializer;
 
+        private readonly BlockEditorValues _blockGridEditorValues;
+        private readonly BlockEditorValues _blockListEditorValues;
+#if NET8_0
+        private readonly BlockEditorValues _richTextBlockEditorValues;
+#endif
+
         private const string BLOCK_TYPE_CACHE_KEY = "BlockPreview_BlockType_{0}";
         private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
         private const string DATA_TYPE_CACHE_KEY = "BlockPreview_DataType_{0}";
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
         public BlockPreviewService(
+            ILogger<BlockPreviewService> logger,
             ITempDataProvider tempDataProvider,
             IViewComponentHelperWrapper viewComponentHelperWrapper,
             IRazorViewEngine razorViewEngine,
@@ -63,6 +76,7 @@ namespace Umbraco.Community.BlockPreview.Services
             IDataTypeService dataTypeService,
             AppCaches appCaches,
             IWebHostEnvironment webHostEnvironment,
+            IBlockEditorElementTypeCache elementTypeCache,
             IJsonSerializer jsonSerializer)
         {
             _tempDataProvider = tempDataProvider;
@@ -78,6 +92,12 @@ namespace Umbraco.Community.BlockPreview.Services
             _webHostEnvironment = webHostEnvironment;
             _runtimeCache = appCaches.RuntimeCache;
             _jsonSerializer = jsonSerializer;
+
+            _blockGridEditorValues = new BlockEditorValues(new BlockGridEditorDataConverter(jsonSerializer), elementTypeCache, logger);
+            _blockListEditorValues = new BlockEditorValues(new BlockListEditorDataConverter(), elementTypeCache, logger);
+#if NET8_0
+            _richTextBlockEditorValues = new BlockEditorValues(new RichTextEditorBlockDataConverter(), elementTypeCache, logger);
+#endif
         }
 
         #region Public
@@ -89,13 +109,14 @@ namespace Umbraco.Community.BlockPreview.Services
             string contentUdi = "",
             string? settingsUdi = default)
         {
-            if (blockData == null)
+            var blockValue = _blockGridEditorValues.DeserializeAndClean(blockData);
+            if (blockValue == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
-            if (!blockData.ContentData.Any())
+            if (!blockValue.BlockValue.ContentData.Any())
             {
                 BlockGridEditorDataConverter converter = new BlockGridEditorDataConverter(_jsonSerializer);
-                converter.TryDeserialize(JsonConvert.SerializeObject(blockData), out var convertedBlockData);
+                converter.TryDeserialize(_jsonSerializer.Serialize(blockData), out blockValue);
             }
 
             if (!UdiParser.TryParse(contentUdi, out Udi? contentUdiParsed))
@@ -103,14 +124,16 @@ namespace Umbraco.Community.BlockPreview.Services
 
             UdiParser.TryParse(settingsUdi!, out Udi? settingsUdiParsed);
 
-            BlockItemData? contentData = blockData.ContentData.FirstOrDefault(x => x.Udi == contentUdiParsed);
+            FormatBlockData(blockValue?.BlockValue.ContentData);
+            BlockItemData? contentData = blockValue?.BlockValue.ContentData.FirstOrDefault(x => x.Udi == contentUdiParsed);
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true);
 
+            FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsUdiParsed != null
-                ? blockData.SettingsData.FirstOrDefault(x => x.Udi == settingsUdiParsed)
+                ? blockValue?.BlockValue.SettingsData.FirstOrDefault(x => x.Udi == settingsUdiParsed)
                 : null;
 
             IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true) : default;
@@ -129,14 +152,14 @@ namespace Umbraco.Community.BlockPreview.Services
             ) as BlockGridItem;
 
             if (blockInstance == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
-            List<string>? layoutItems = blockData?.Layout?.FirstOrDefault().Value.Select(layout => layout.ToString()).ToList();
-            BlockGridLayoutItem? layoutItem = GetMatchingGridLayout(layoutItems!, blockInstance);
+            List<string>? layoutItems = blockValue?.BlockValue.Layout.FirstOrDefault().Value.Select(layout => layout.ToString()).ToList();
+            BlockGridLayoutItem? matchingLayout = GetMatchingGridLayout(layoutItems!, blockInstance);
 
             IContentType? documentType = GetContentType(documentTypeUnique);
             if (documentType == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidDocumentType);
 
             IPropertyType? property = documentType.PropertyTypes.FirstOrDefault(x => x.Alias.Equals(blockEditorAlias));
             if (property == null)
@@ -144,22 +167,22 @@ namespace Umbraco.Community.BlockPreview.Services
                 property = documentType.CompositionPropertyTypes.FirstOrDefault(x => x.Alias.Equals(blockEditorAlias));
 
                 if (property == null)
-                    return string.Empty;
+                    return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidPropertyType);
             }
 
             IDataType? dataType = GetDataType(property.DataTypeKey);
             if (dataType == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidDataType);
 
             BlockGridConfiguration? config = dataType.ConfigurationAs<BlockGridConfiguration>();
             if (config == null)
-                return string.Empty;
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockGridConfiguration);
 
-            BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlock = config.Blocks.FirstOrDefault(x => x.ContentElementTypeKey == contentData.ContentTypeKey);
-            if (matchingBlock == null)
-                return string.Empty;
+            BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlockConfig = config.Blocks.FirstOrDefault(x => x.ContentElementTypeKey == contentData.ContentTypeKey);
+            if (matchingBlockConfig == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidMatchingBlockGridConfiguration);
 
-            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlock, layoutItem!, blockData!);
+            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlockConfig, matchingLayout!);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);
@@ -173,13 +196,14 @@ namespace Umbraco.Community.BlockPreview.Services
             string contentUdi = "",
             string? settingsUdi = default)
         {
-            if (blockData == null)
+            var blockValue = _blockListEditorValues.DeserializeAndClean(blockData);
+            if (blockValue == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
-            if (!blockData.ContentData.Any())
+            if (!blockValue.BlockValue.ContentData.Any())
             {
                 BlockListEditorDataConverter converter = new BlockListEditorDataConverter();
-                converter.TryDeserialize(JsonConvert.SerializeObject(blockData), out var convertedBlockData);
+                converter.TryDeserialize(JsonConvert.SerializeObject(blockData), out blockValue);
             }
 
             if (!UdiParser.TryParse(contentUdi, out Udi? contentUdiParsed))
@@ -187,14 +211,16 @@ namespace Umbraco.Community.BlockPreview.Services
 
             UdiParser.TryParse(settingsUdi!, out Udi? settingsUdiParsed);
 
-            BlockItemData? contentData = blockData.ContentData.FirstOrDefault(x => x.Udi == contentUdiParsed);
+            FormatBlockData(blockValue?.BlockValue.ContentData);
+            BlockItemData? contentData = blockValue?.BlockValue.ContentData.FirstOrDefault(x => x.Udi == contentUdiParsed);
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = ConvertToElement(contentData, true);
 
+            FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsUdiParsed != null
-                ? blockData.SettingsData.FirstOrDefault(x => x.Udi == settingsUdiParsed)
+                ? blockValue?.BlockValue.SettingsData.FirstOrDefault(x => x.Udi == settingsUdiParsed)
                 : null;
 
             IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true) : default;
@@ -293,45 +319,123 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError)
         {
-            Parallel.ForEach(data.RawPropertyValues, prop =>
-            {
-                string? propertyAsString = prop.Value as string ?? JsonConvert.SerializeObject(prop.Value);
+            var newPropertyValues = new Dictionary<string, BlockItemData.BlockPropertyValue>();
 
-                if (propertyAsString?.Contains(Aliases.BlockList) == true || propertyAsString?.Contains(Aliases.BlockGrid) == true)
+            for (int i = 0; i < data.PropertyValues.Count; i++)
+            {
+                var property = data.PropertyValues.ElementAt(i);
+                var propValue = property.Value;
+                string? propertyAsString = propValue.Value as string ?? JsonConvert.SerializeObject(propValue.Value);
+
+                if (propertyAsString?.Contains(Aliases.BlockGrid) == true)
                 {
-                    if (prop.Value.TryConvertToBlockItem(out BlockValue? blockValue))
+                    var blockValue = _blockGridEditorValues.DeserializeAndClean(propValue.Value);
+                    if (blockValue != null)
                     {
-                        blockValue?.ContentData.ForEach(ConvertNestedValuesToString);
-                        blockValue?.SettingsData.ForEach(ConvertNestedValuesToString);
-                        data.RawPropertyValues[prop.Key] = JsonConvert.SerializeObject(blockValue);
+                        FormatBlockData(blockValue.BlockValue.ContentData);
+                        FormatBlockData(blockValue.BlockValue.SettingsData);
+
+                        newPropertyValues.Add(property.Key, new BlockItemData.BlockPropertyValue(blockValue, propValue.PropertyType));
                     }
-                    else data.RawPropertyValues[prop.Key] = propertyAsString;
                 }
-            });
+
+                else if (propertyAsString?.Contains(Aliases.BlockList) == true)
+                {
+                    var blockValue = _blockListEditorValues.DeserializeAndClean(propValue.Value);
+                    if (blockValue != null)
+                    {
+                        FormatBlockData(blockValue.BlockValue.ContentData);
+                        FormatBlockData(blockValue.BlockValue.SettingsData);
+
+                        newPropertyValues.Add(property.Key, new BlockItemData.BlockPropertyValue(blockValue, propValue.PropertyType));
+                    }
+                }
+
+                else newPropertyValues.Add(property.Key, property.Value);
+            }
+
+            data.PropertyValues = newPropertyValues;
 
             var element = _blockEditorConverter.ConvertToElement(data, PropertyCacheLevel.None, throwOnError);
+
+            foreach (var prop in element.Properties)
+            {
+                if (prop.PropertyType.EditorAlias == Aliases.MultipleTextstring)
+                {
+                    var sourceValue = prop.GetSourceValue();
+                    if (sourceValue is JArray asArray)
+                    {
+                        IEnumerable<string?> array = asArray.OfType<JObject>()
+                            .Where(x => x["value"] != null)
+                            .Select(x => x["value"]!.Value<string>());
+                        string strValue = JsonConvert.SerializeObject(array);
+                    }
+                }
+            }
+
             if (element == null && throwOnError)
                 throw new InvalidOperationException($"Unable to find Element {data?.ContentTypeAlias}");
 
             return element;
         }
 
-        private void ConvertNestedValuesToString(BlockItemData? blockData)
+        private void FormatBlockData(List<BlockItemData>? blockData)
         {
             if (blockData == null)
                 return;
 
-            foreach (var rawPropValue in blockData.RawPropertyValues.Where(x => x.Value != null))
+            if (blockData.Any() == false)
+                return;
+
+            foreach (var contentData in blockData)
             {
-                var originalValue = rawPropValue.Value;
-                if (originalValue.TryConvertToBlockItem(out BlockValue? blockValue))
+                var newPropertyValues = new Dictionary<string, BlockItemData.BlockPropertyValue>();
+
+                foreach (var propertyData in contentData.PropertyValues)
                 {
-                    blockValue?.ContentData.ForEach(ConvertNestedValuesToString);
-                    blockValue?.SettingsData.ForEach(ConvertNestedValuesToString);
-                    blockData.RawPropertyValues[rawPropValue.Key] = JsonConvert.SerializeObject(blockValue);
-                    continue;
+                    if (propertyData.Value.PropertyType.PropertyEditorAlias == Aliases.ContentPicker)
+                    {
+                        if (Guid.TryParse(propertyData.Value.Value?.ToString(), out Guid parsedGuid))
+                        {
+                            string strUdi = StringUdi.Create("document", parsedGuid).UriValue.ToString();
+                            newPropertyValues.Add(propertyData.Key, new BlockItemData.BlockPropertyValue(strUdi, propertyData.Value.PropertyType));
+                        }
+
+                        newPropertyValues.Add(propertyData.Key, propertyData.Value);
+                    }
+
+                    else if (propertyData.Value.PropertyType.PropertyEditorAlias == Aliases.MultipleTextstring)
+                    {
+                        if (propertyData.Value.Value is JArray asArray)
+                        {
+                            IEnumerable<string?> array = asArray.OfType<JObject>()
+                                .Where(x => x["value"] != null)
+                                .Select(x => x["value"]!.Value<string>());
+
+                            string strValue = JsonConvert.SerializeObject(array);
+                            newPropertyValues.Add(propertyData.Key, new BlockItemData.BlockPropertyValue(strValue, propertyData.Value.PropertyType));
+                        }
+                    }
+
+                    else if (propertyData.Value.Value is JObject jsonObject)
+                    {
+                        string strValue = JsonConvert.SerializeObject(jsonObject);
+                        newPropertyValues.Add(propertyData.Key, new BlockItemData.BlockPropertyValue(strValue, propertyData.Value.PropertyType));
+                    }
+
+                    else if (propertyData.Value.Value is List<string> list)
+                    {
+                        string strValue = JsonConvert.SerializeObject(list);
+                        newPropertyValues.Add(propertyData.Key, new BlockItemData.BlockPropertyValue(strValue, propertyData.Value.PropertyType));
+                    }
+
+                    else
+                    {
+                        newPropertyValues.Add(propertyData.Key, propertyData.Value);
+                    }
                 }
-                blockData.RawPropertyValues[rawPropValue.Key] = originalValue?.ToString();
+
+                contentData.PropertyValues = newPropertyValues;
             }
         }
 
@@ -368,7 +472,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             return null;
         }
-        
+
         private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default, BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlockConfig = null)
         {
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
@@ -486,8 +590,7 @@ namespace Umbraco.Community.BlockPreview.Services
             BlockGridItem blockInstance,
             BlockGridConfiguration config,
             BlockGridConfiguration.BlockGridBlockConfiguration matchingBlock,
-            BlockGridLayoutItem layoutItem,
-            BlockValue blockValue)
+            BlockGridLayoutItem layoutItem)
         {
             blockInstance.AreaGridColumns = matchingBlock.AreaGridColumns ?? 12;
             blockInstance.GridColumns = config.GridColumns ?? 12;
@@ -501,16 +604,16 @@ namespace Umbraco.Community.BlockPreview.Services
                 if (!blockConfigAreaMap.TryGetValue(area.Key, out var areaConfig))
                     return null;
 
-                var items = area.Items.Select(item =>
-                {
-                    BlockItemData? areaContentData = blockValue.ContentData.FirstOrDefault(x => x.Udi == item.ContentUdi);
-                    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true);
+                //var items = area.Items.Select(item =>
+                //{
+                //    BlockItemData? areaContentData = blockValue.ContentData.FirstOrDefault(x => x.Udi == item.ContentUdi);
+                //    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true);
 
-                    BlockItemData? areaSettingsData = blockValue.SettingsData.FirstOrDefault(x => x.Udi == item.SettingsUdi);
-                    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true) : default;
+                //    BlockItemData? areaSettingsData = blockValue.SettingsData.FirstOrDefault(x => x.Udi == item.SettingsUdi);
+                //    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true) : default;
 
-                    return new BlockGridItem(item.ContentUdi!, areaContentElement!, item.SettingsUdi!, areaSettingsElement!);
-                }).WhereNotNull().ToList();
+                //    return new BlockGridItem(item.ContentUdi!, areaContentElement!, item.SettingsUdi!, areaSettingsElement!);
+                //}).WhereNotNull().ToList();
 
                 return new BlockGridArea(new List<BlockGridItem>(area.Items.Count()), areaConfig.Alias!, areaConfig.RowSpan!.Value, areaConfig.ColumnSpan!.Value);
             }).WhereNotNull().ToList();
