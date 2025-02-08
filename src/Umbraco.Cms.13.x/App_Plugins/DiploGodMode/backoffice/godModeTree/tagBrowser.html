@@ -1,0 +1,84 @@
+﻿<div ng-controller="GodMode.TagBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view>
+
+        <godmode-header heading="Tag Browser" title="Tag - you're it!" on-reload="vm.fetchContent()"></godmode-header>
+
+        <umb-editor-container>
+            <umb-box>
+                <umb-box-content>
+                    <div class="row">
+                        <div class="span4">
+                            <label class="control-label" for="search-tag">Tag Name:</label>
+                            <input id="search-tag" type="search" ng-model="vm.search.tagName" placeholder="Filter tag names" class="input-large">
+                        </div>
+
+                        <div class="span4">
+                            <label class="control-label" for="search-taggroup">Tag Group:</label>
+                            <input id="search-taggroup" type="search" ng-model="vm.search.tagGroup" placeholder="Filter tag groups" class="input-large">
+                        </div>
+
+                        <div class="span4">
+                            <label class="control-label" for="search-tagcontent">Content:</label>
+                            <input id="search-tagcontent" type="search" ng-model="vm.search.tagContent" placeholder="Filter tagged content" class="input-large">
+                        </div>
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+            <p class="gm-results" ng-show="vm.tags"><strong>{{results.length}}</strong> / <strong>{{vm.tags.length}}</strong></p>
+
+            <umb-box ng-repeat="t in vm.tags | filter: vm.tagFilter as results">
+                <div class="umb-box-header flex">
+                    <div class="span12">
+                        <h3><span class="icon-tag color-grey"></span> <span title="ID: {{t.Tag.Id}}">{{ t.Tag.Text }}</span> <small class="muted"><code>{{t.Tag.NodeCount}}</code></small> <span class="label">{{t.Tag.Group}}</span> <span ng-show="t.Tag.Culture" class="label">{{t.Tag.Culture}}</span> </h3>
+                    </div>
+                    <div>
+                        <button type="button" ng-click="vm.deleteTag(t.Tag.Id, t.Tag.Text)" title="Delete '{{ t.Tag.Text }}'" aria-label="Delete {{t.Tag.Text}}" class="btn btn-danger">Delete</button>
+                    </div>
+                </div>
+
+                <umb-box-content>
+                    <table class="table table-hover">
+                        <colgroup>
+                            <col style="width:30%">
+                            <col style="width:20%">
+                            <col style="width:30%">
+                            <col style="width:20%">
+                        </colgroup>
+                        <tbody>
+                            <tr ng-repeat="c in t.Content | filter: vm.contentFilter">
+                                <td>
+                                    <button ng-show="c.Type == 'Content'" type="button" ng-click="vm.openContent(c.Id)" title="Edit"><strong>{{ c.Name }}</strong></button>
+                                    <button ng-show="c.Type == 'Media'" type="button" ng-click="vm.openMedia(c.Id)" title="Edit"><strong>{{ c.Name }}</strong></button>
+                                </td>
+                                <td><span class="{{c.Icon}}"></span>&nbsp;{{ c.Alias }}</td>
+                                <td>
+                                    <span ng-repeat="ct in c.Tags"><span class="label label-inverse">{{ ct.Text }}</span>&nbsp;</span>
+                                </td>
+                                <td><div>{{ c.Id }}</div><code>{{ c.Udi }}</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-box ng-show="vm.orphanedTags.length > 0">
+                <umb-box-content>
+                    <h3>Orphaned Tags</h3>
+                    <p>The following tags exist in the database but are not associated with any content. You may delete them if you wish:</p>
+                    <ul>
+                        <li ng-repeat="t in vm.orphanedTags" class="add-on">
+                            <span class="label label-inverse">{{ t.Text }}</span> <span class="label">{{ t.Group }}</span> <span ng-show="t.Tag.Culture" class="label">{{t.Culture}}</span> &nbsp;<a ng-click="vm.deleteTag(t.Id, t.Text)" class="icon-delete icon-trash" title="Delete" aria-label="Delete"></a>
+                        </li>
+                    </ul>
+                </umb-box-content>
+            </umb-box>
+
+        </umb-editor-container>
+
+    </umb-editor-view>
+
+</div>

@@ -1,0 +1,89 @@
+﻿<div ng-controller="GodMode.MemberBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="false">
+
+        <godmode-header heading="Member Browser" title="Because everyone likes browsing a member, right?" on-reload="vm.fetchMembers()"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-content>
+                    <div class="row">
+
+                        <div class="span6">
+                            <label class="control-label" for="search-alias">Group:</label>
+                            <br />
+                            <select id="search-alias" ng-model="vm.criteria.group" ng-options="item as item.Name for item in vm.memberGroups track by item.Id" class="input-medium" ng-change="vm.filterChange()">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+
+                        <div class="span6">
+                            <label class="control-label" for="search-name">Search:</label>
+                            <br />
+                            <input type="search" id="search-name" ng-model="vm.criteria.search" placeholder="Search members" class="input-lg" ng-change="vm.filterChange()">
+                        </div>
+
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+            <p class="gm-results" ng-show="vm.page.Items"><strong>{{vm.page.Items.length}}</strong> / <strong>{{vm.page.TotalItems}}</strong></p>
+
+            <table class="table">
+                <colgroup>
+                    <col style="width:22%">
+                    <col style="width:22%">
+                    <col style="width:22%">
+                    <col style="width:20%">
+                    <col style="width:14%">
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th><godmode-sortable sort-by="vm.sortBy('M.LoginName')" column="M.LoginName" sort="vm.sort">UserName</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('MN.Text')" column="MN.Text" sort="vm.sort">Name</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('M.Email')" column="M.Email" sort="vm.sort">Email</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('MN.createDate')" column="MN.createDate" sort="vm.sort">Create Date</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('M.nodeId')" column="M.nodeId" sort="vm.sort">Id</godmode-sortable></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="m in vm.page.Items">
+                        <td><strong><button type="button" ng-click="vm.openMember(m.Udi)" title="Edit">{{ m.Username }}</button></strong></td>
+                        <td>{{ m.Name }}</td>
+                        <td><a href="mailto:{{m.Email}}" target="_blank" title="Email">{{ m.Email }}</a></td>
+                        <td>{{ m.CreateDate | date:'short' : 'utc' }}</td>
+                        <td>{{ m.Id }}<br /><code>{{ m.Udi}}</code></td>
+                    </tr>
+                </tbody>
+
+                <tfoot>
+                    <tr>
+                        <th colspan="8">
+                            <div class="pagination pagination-centered" ng-show="vm.page.TotalPages > 1">
+                                <umb-pagination page-number="vm.page.CurrentPage"
+                                                total-pages="vm.page.TotalPages"
+                                                on-next="vm.nextPage"
+                                                on-prev="vm.prevPage"
+                                                on-go-to-page="vm.setPage">
+                                </umb-pagination>
+                            </div>
+                        </th>
+                    </tr>
+                    <tr ng-hide="vm.page.Items.length > 0 || vm.isLoading">
+                        <td colspan="8">
+                            <p class="text-center"><strong>No members were found for your selected criteria.</strong></p>
+                        </td>
+                    </tr>
+                </tfoot>
+
+            </table>
+
+        </umb-editor-container>
+
+    </umb-editor-view>
+
+</div>

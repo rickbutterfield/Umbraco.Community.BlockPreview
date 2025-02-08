@@ -1,0 +1,30 @@
+﻿{
+  "name": "Diplo GodMode",
+  "version": "13.1.0",
+  "allowPackageTelemetry": true,
+  "versionAssemblyName": "Diplo.GodMode",
+  "javascript": [
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.Config.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.Resources.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.ContentBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.MemberBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.DocTypeBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.TemplateBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.PartialBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.DataTypeBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.MediaBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.ReflectionBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.TypeBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.DiagnosticBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.UtilityBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.UsageBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.Intro.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.TypesIntro.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.nuCacheViewer.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.TagBrowser.Controller.js",
+    "~/App_Plugins/DiploGodMode/backoffice/Scripts/GodMode.ServiceBrowser.Controller.js"
+  ],
+  "css": [
+    "~/App_Plugins/DiploGodMode/backoffice/Css/godMode.css"
+  ]
+}

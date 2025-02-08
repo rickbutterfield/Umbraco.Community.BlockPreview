@@ -1,0 +1,144 @@
+﻿<div ng-controller="GodMode.TemplateBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="false">
+
+        <godmode-header heading="Template Browser" title="I'm a blueprint for a view, I am!" on-reload="vm.init()"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-content>
+                    <div class="row">
+                        <div class="span4">
+                            <label class="control-label">Search:</label>
+                            <br />
+                            <input type="search" ng-model="vm.search.template" placeholder="Filter template names" class="input-large">
+                        </div>
+
+                        <div class="span4">
+                            <label class="control-label">Uses Master:</label>
+                            <br />
+                            <select ng-model="vm.search.master" ng-options="item.Name for item in vm.masters" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+
+                        <div class="span4">
+                            <label class="control-label">Uses Partial:</label>
+                            <br />
+                            <select ng-model="vm.search.partial" ng-options="item.Name for item in vm.partials | godModeUnique: 'Name' | orderBy: 'Name'" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+            <p class="gm-results" ng-show="vm.templates"><strong>{{results.length}}</strong> / <strong>{{vm.templates.length}}</strong></p>
+
+            <div ng-repeat="temp in vm.templates | filter: vm.filterTemplates as results">
+
+                <umb-box>
+                    <div class="umb-box-header box-opener flex">
+                        <div class="span12" ng-click="temp.IsOpen = !temp.IsOpen">
+                            <h4>
+                                <strong>{{ temp.Name }}</strong> <small>({{ temp.Alias }})</small>
+                                <span ng-if="temp.IsMaster" class="icon icon-key color-amber" title="Master" aria-label="Master template"></span>
+                                <span ng-show="!temp.HasCorrectMaster" class="icon icon-alert color-red" aria-label="Warning"></span>
+                            </h4>
+                        </div>
+                        <div class="">
+                            <button type="button" ng-click="vm.openTemplate(temp.Id)" title="Edit Template" class="btn btn-action">Edit</button>
+                        </div>
+                    </div>
+
+                    <umb-box-content ng-if="temp.IsOpen">
+
+                        <div class="row">
+                            <div class="span8">
+                                <strong>{{ temp.Name }}</strong> <small class="muted">{{ temp.VirtualPath }}</small>
+                            </div>
+                            <div class="span4 text-right">
+                                <span class="label">{{temp.Id}}</span> <code>{{temp.Udi}}</code>
+                            </div>
+                        </div>
+
+                        <table class="table" ng-show="temp.Parents">
+                            <caption><h5>Inheritance</h5></caption>
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Path</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="t in temp.Parents">
+                                    <td width="50%"><button type="button" ng-click="vm.openTemplate(t.Id)" title="Edit Template">{{ t.Name }}</button></td>
+                                    <td width="50%">{{ t.FilePath }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="table" ng-show="temp.Partials" ng-if="temp.Partials.length > 0">
+                            <caption><h5>Partials</h5></caption>
+                            <thead>
+                                <tr>
+                                    <th width="50%">Partial Name</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="p in temp.Partials">
+                                    <td><button type="button" ng-click="vm.openPartial(p.Path)" title="Edit Partial">{{ p.Name }}</button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <table class="table" ng-show="temp.ViewComponents" ng-if="temp.ViewComponents.length > 0">
+                            <caption><h5>View Components</h5></caption>
+                            <thead>
+                                <tr>
+                                    <th width="50%">Component Name</th>
+                                    <th width="40%">Parameters</th>
+                                    <th width="10%">Tag Helper?</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr ng-repeat="p in temp.ViewComponents">
+                                    <td>{{ p.Name }}</td>
+                                    <td><code>{{ p.Parameters }}</code></td>
+                                    <td>{{ p.TagHelper }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+
+                        <p ng-show="!temp.HasCorrectMaster"><span class="icon icon-alert color-red" aria-label="Warning"></span> Warning! This template is assigned the layout of <strong>{{ temp.Layout }}</strong> in it's view but the master template alias is set to <strong>{{ temp.MasterAlias || "nothing" }} in the database.</strong></p>
+
+                    </umb-box-content>
+
+                </umb-box>
+
+            </div>
+
+            <p ng-if="results.length === 0" class="alert alert-info alert-block">Sorry, there are no templates that match your chosen search criteria. Try changing the filters at the top of the page.</p>
+
+            <umb-box ng-if="vm.brokenTemplatesCount > 0">
+                <umb-box-content>
+                    <h3>Fix Templates</h3>
+                    <p><span class="icon icon-alert color-red" aria-label="Warning"></span> You currently have <strong>{{vm.brokenTemplatesCount}}</strong> templates that are assigned a different master in the view than is set in Umbraco database.</p>
+                    <p>
+                        If you have configured a master template layout in your template views but not made the association in the Umbraco Templates section tree then click the button below. This will go through all templates and set the correct master template based on
+                        what is found in the template view. For instance, if template X has the layout set to "master.cshtml" but this template doesn't show as having a master then it won't have been set in Umbraco. This will fix this and create the correct association between template and master.
+                    </p>
+                    <p>
+                        <button class="btn btn-action" ng-click="vm.fixTemplates()" ng-disabled="vm.fixTemplatesBtnDisabled">Fix Templates</button>
+                    </p>
+                </umb-box-content>
+            </umb-box>
+
+        </umb-editor-container>
+
+    </umb-editor-view>
+
+</div>

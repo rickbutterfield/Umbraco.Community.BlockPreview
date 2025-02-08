@@ -1,0 +1,74 @@
+﻿<div ng-controller="GodMode.ReflectionBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="false">
+
+        <godmode-header heading="{{vm.heading}} Browser" title="I'll be your mirror, reflect what you are" on-reload="vm.init()"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-content>
+                    <div class="row">
+
+                        <div class="span3">
+                            <label class="control-label" for="search-partial" title="Search names">Search:</label>
+                            <br />
+                            <input id="search-partial" type="search" ng-model="vm.search.controller" placeholder="Search names" class="input-large">
+                        </div>
+
+                        <div class="span3">
+                            <label class="control-label" for="search-namespace" title="Select a namespace">In Namespace:</label>
+                            <br />
+                            <select id="search-namespace" ng-model="vm.search.namespace" ng-options="item.Namespace for item in vm.controllers | godModeUnique: 'Namespace' | orderBy: 'Namespace'" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+
+                        <div class="span3">
+                            <label class="control-label" for="search-basetype" title="Select which base types this inhierts from">Inherits From:</label>
+                            <br />
+                            <select id="search-basetype" ng-model="vm.search.baseType" ng-options="item.BaseType for item in vm.controllers | godModeUnique: 'BaseType' | orderBy: 'BaseType'" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+
+                        <div class="span3">
+                            <label class="control-label" for="search-isUmbraco" title="Select whether to include classes that are native Umbraco">Is Umbraco?</label>
+                            <br />
+                            <select id="search-isUmbraco" ng-model="vm.search.isUmbraco" ng-options="opt.label for opt in vm.triStateOptions" class="input-small" ng-change="resetFilters()"></select>
+                        </div>
+
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+            <p class="gm-results" ng-show="vm.controllers"><strong>{{results.length}}</strong> / <strong>{{vm.controllers.length}}</strong></p>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><godmode-sortable sort-by="vm.sortBy('Name')" column="Name" sort="vm.sort">Name</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('Module')" column="Module" sort="vm.sort">Module</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('BaseType')" column="BaseType" sort="vm.sort">Base Type</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('IsUmbraco')" column="IsUmbraco" sort="vm.sort">Umbraco?</godmode-sortable></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="c in vm.controllers | filter: vm.filterControllers | orderBy: vm.sort.column : vm.sort.reverse as results">
+                        <td title="{{c.Namespace}}"><strong>{{ c.Name }}</strong></td>
+                        <td title="{{c.Assembly}}"><code>{{ c.Module }}</code></td>
+                        <td>{{ c.BaseType }}</td>
+                        <td><godmode-True-False value="c.IsUmbraco"></godmode-True-False></td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </umb-editor-container>
+
+    </umb-editor-view>
+
+
+
+</div>

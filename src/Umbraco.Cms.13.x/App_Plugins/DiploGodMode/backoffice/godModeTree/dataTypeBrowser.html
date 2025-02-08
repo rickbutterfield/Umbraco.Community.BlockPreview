@@ -1,0 +1,96 @@
+﻿<div ng-controller="GodMode.DataTypeBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="model.infiniteMode">
+
+        <godmode-header heading="DataType Browser" title="Are you my data-type?" on-reload="vm.reload"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-content>
+
+                    <div class="row">
+
+                        <div class="span3">
+                            <label class="control-label" for="search-dataType">Search:</label>
+                            <br />
+                            <input type="search" id="search-dataType" ng-model="vm.search.dataType" placeholder="Filter data types" class="input-large">
+                        </div>
+
+                        <div class="span3">
+                            <label class="control-label" for="search-propertyEditor">Editor:</label>
+                            <br />
+                            <select id="search-propertyEditor" ng-model="vm.search.propertyEditor" ng-options="item.Alias for item in vm.propertyEditors" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+
+                        <div class="span3">
+                            <label class="control-label" for="search-dbType">DB Type:</label>
+                            <br />
+                            <select id="search-dbType" ng-model="vm.search.dbType" ng-options="item.DbType for item in vm.dataTypes | godModeUnique: 'DbType'" class="input-medium">
+                                <option value="">Any</option>
+                            </select>
+                        </div>
+
+                        <div class="span3">
+                            <label class="control-label" for="search-isUsed">Is Used?</label>
+                            <br />
+                            <select id="search-isUsed" ng-model="vm.search.isUsed" ng-options="opt.label for opt in vm.triStateOptions" class="input-small"></select>
+                        </div>
+
+                    </div>
+
+                </umb-box-content>
+            </umb-box>
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+            <p class="gm-results" ng-show="vm.dataTypes"><strong>{{results.length}}</strong> / <strong>{{vm.dataTypes.length}}</strong></p>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th><godmode-sortable sort-by="vm.sortBy('Name')" column="Name" sort="vm.sort">Name</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('Alias')" column="Alias" sort="vm.sort">Editor Alias</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('DbType')" column="DbType" sort="vm.sort">Database Type</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('IsUsed')" column="IsUsed" sort="vm.sort">Used by DocType? </godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('UpdateDate')" column="UpdateDate" sort="vm.sort">Last Updated</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('Id')" column="Id" sort="vm.sort">Id</godmode-sortable></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="d in vm.dataTypes | filter: vm.filterDataTypes | orderBy: vm.sort.column : vm.sort.reverse  as results">
+                        <td><button type="button" ng-click="vm.openDataType(d.Id)" title="Edit DataType"><strong>{{ d.Name }}</strong></button></td>
+                        <td><button type="button" ng-click="vm.openDocTypeBrowser(d.Alias)" title="Search for in doc types"><i class="icon icon-search"></i> {{ d.Alias }}</button></td>
+                        <td><code>{{ d.DbType }}</code></td>
+                        <td><godmode-True-False value="d.IsUsed"></godmode-True-False></td>
+                        <td><small>{{ d.UpdateDate | limitTo:22 }}</small></td>
+                        <td><div><strong>{{ d.Id }}</strong></div> <code>{{ d.Udi }}</code></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div ng-show="!vm.isLoading" class="alert alert-warning alert-block">
+                <h4><span class="icon icon-alert"></span> Important!</h4>
+                <p>This only checks for datatypes that are used directly by a document type. Datatypes that are nested within another datatype (eg. within Block Editor, Grid or Nested Content) are not discoverable via the Umbraco API.</p>
+            </div>
+
+
+        </umb-editor-container>
+        <umb-editor-footer ng-if="model.infiniteMode">
+
+            <umb-editor-footer-content-right>
+                <umb-button type="button"
+                            button-style="link"
+                            label-key="general_close"
+                            shortcut="esc"
+                            action="model.close()">
+                </umb-button>
+            </umb-editor-footer-content-right>
+
+        </umb-editor-footer>
+
+    </umb-editor-view>
+
+</div>

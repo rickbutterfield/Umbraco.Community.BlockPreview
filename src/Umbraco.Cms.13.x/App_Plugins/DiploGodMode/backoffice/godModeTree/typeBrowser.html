@@ -1,0 +1,60 @@
+﻿<div ng-controller="GodMode.TypeBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="false">
+
+        <godmode-header heading="Interface Browser" title="Because no one wants to be tightly coupled, right?" on-reload="vm.init()"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-content>
+                    <div class="row">
+
+                        <div class="span4">
+                            <label class="control-label" for="search-basetype">Assembly:</label>
+                            <br />
+                            <select id="search-basetype" ng-model="vm.search.assembly" ng-options="item.Name for item in vm.assemblies" class="input-xlarge" ng-change="vm.getInterfaces(vm.search.assembly)">
+                                <option value="">Please Select</option>
+                            </select>
+                        </div>
+
+                        <div class="span4" ng-show="vm.interfaces.length > 0">
+                            <label class="control-label" for="search-namespace">Interface:</label>
+                            <br />
+                            <select id="search-namespace" ng-model="vm.search.interface" ng-options="item.Name for item in vm.interfaces" class="input-xlarge" ng-change="vm.getTypes(vm.search.interface)">
+                                <option value="">Please Select</option>
+                            </select>
+                        </div>
+                    </div>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+            <h5 class="text-center">{{ vm.search.assembly.Value }}</h5>
+
+            <p class="alert alert-info" ng-hide="vm.interfaces.length > 0">Please select an Assembly (above) and then the Interface you wish to browse. You will then see all types that implement the Interface.</p>
+
+            <p class="gm-results" ng-show="vm.types"><strong>{{results.length}}</strong> / <strong>{{vm.types.length}}</strong></p>
+
+            <table class="table table-hover" ng-show="vm.interfaces.length > 0">
+                <thead>
+                    <tr>
+                        <th><godmode-sortable sort-by="vm.sortBy('Name')" column="Name" sort="vm.sort">Implemented By</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('Namespace')" column="Namespace" sort="vm.sort">Namespace</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('Module')" column="Module" sort="vm.sort">Module</godmode-sortable></th>
+                        <th><godmode-sortable sort-by="vm.sortBy('BaseType')" column="BaseType" sort="vm.sort">Base Type</godmode-sortable></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="t in vm.types | orderBy: vm.sort.column : vm.sort.reverse as results">
+                        <td>{{ t.Name }}</td>
+                        <td>{{ t.Namespace }}</td>
+                        <td title="{{t.Assembly}}"><code>{{ t.Module }}</code></td>
+                        <td>{{ t.BaseType }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </umb-editor-container>
+    </umb-editor-view>
+</div>

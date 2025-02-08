@@ -1,0 +1,35 @@
+﻿<div ng-controller="GodMode.nuCacheViewer.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="model.infiniteMode">
+
+        <godmode-header heading="nuCache Viewer" title="La nouvelle cache" on-reload="vm.reload()"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <div class="umb-box-header"><h4 class="umb-box-header-title"><code>{{vm.cache.Id}}</code> {{vm.cache.Title}}</h4></div>
+                <umb-box-content>
+                    <pre style="font-family:Consolas, serif">{{vm.cache.Data | json }}</pre>
+                </umb-box-content>
+
+            </umb-box>
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+        </umb-editor-container>
+        <umb-editor-footer ng-if="model.infiniteMode">
+
+            <umb-editor-footer-content-right>
+                <umb-button type="button"
+                            button-style="link"
+                            label-key="general_close"
+                            shortcut="esc"
+                            action="model.close()">
+                </umb-button>
+            </umb-editor-footer-content-right>
+
+        </umb-editor-footer>
+
+    </umb-editor-view>
+
+</div>

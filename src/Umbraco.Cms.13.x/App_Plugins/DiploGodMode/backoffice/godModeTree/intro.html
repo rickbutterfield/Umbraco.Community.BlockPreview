@@ -1,0 +1,46 @@
+﻿<div ng-controller="GodMode.Intro.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="false" header="false">
+
+        <div class="umb-pane">
+
+            <umb-box>
+                <umb-box-content>
+                    <h1><span class="color-indigo icon icon-sience"></span> Welcome to God Mode</h1>
+
+                    <p class="muted">The indispensable Umbraco tool to makes developers invincible!</p>
+
+                </umb-box-content>
+            </umb-box>
+
+            <umb-box>
+                <umb-box-content>
+                    <table class="table">
+                        <tr>
+                            <th style="width:20%">Action</th>
+                            <th style="width:80%">Description</th>
+                        </tr>
+                        <tr ng-repeat="page in vm.pages">
+                            <td>
+                                <strong><a href="{{vm.config.baseViewUrl}}{{page.url}}">{{page.name}}</a></strong>
+                            </td>
+                            <td>
+                                {{page.desc}}
+                            </td>
+                        </tr>
+                    </table>
+                </umb-box-content>
+            </umb-box>
+
+            <umb-box>
+                <umb-box-content>
+                    <p class="muted">
+                        <span class="color-pink icon icon-hearts"></span> Made with love by Dan 'Diplo' Booth - <a href="https://www.diplo.co.uk/" target="_blank" rel="noopener">https://www.diplo.co.uk</a> - report any issues on the <a target="_blank" rel="noopener" href="https://github.com/DanDiplo/Umbraco.GodMode/issues">GitHub Issue Tracker</a>.
+                    </p>
+                </umb-box-content>
+            </umb-box>
+
+        </div>
+
+    </umb-editor-view>
+</div>

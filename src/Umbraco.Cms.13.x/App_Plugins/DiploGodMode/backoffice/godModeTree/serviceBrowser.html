@@ -1,0 +1,104 @@
+﻿<div ng-controller="GodMode.ServiceBrowser.Controller as vm" class="god-mode">
+
+    <umb-editor-view footer="false">
+
+        <godmode-header heading="DI Services Browser" title="Are you being served?" on-reload="vm.init()"></godmode-header>
+
+        <umb-editor-container>
+
+            <umb-box>
+                <umb-box-content>
+
+                    <div class="row">
+
+                        <div class="span4">
+
+                            <label class="control-label" for="search-name" title="Search names">Names:</label>
+                            <br />
+                            <input id="search-name" type="search" ng-model="vm.search.name" placeholder="Search names" class="input-large" autocomplete="off">
+
+                            <br />
+
+                            <label class="control-label" for="search-namespace" title="Select a namespace">Namespace:</label>
+                            <br />
+                            <select id="search-namespace" ng-model="vm.search.namespace" ng-options="item.Namespace for item in vm.services | godModeUnique: 'Namespace' | orderBy: 'Namespace'" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+
+                        </div>
+
+                        <div class="span4">
+
+                            <label class="control-label" for="search-implemented-name" title="Search names">Implemented:</label>
+                            <br />
+                            <input id="search-implemented-name" type="search" ng-model="vm.search.implementName" placeholder="Search implemented" class="input-large" autocomplete="off">
+
+                            <br />
+
+                            <label class="control-label" for="search-implemented-namespace" title="Select a namespace">Implemented NS:</label>
+                            <br />
+                            <select id="search-implemented-namespace" ng-model="vm.search.implementNamespace" ng-options="item.ImplementNamespace for item in vm.services | godModeUnique: 'ImplementNamespace' | orderBy: 'ImplementNamespace'" class="input-large">
+                                <option value="">Any</option>
+                            </select>
+
+                        </div>
+
+                        <div class="span4">
+
+                            <label class="control-label" for="search-lifetime" title="Select the service lifetime">Lifetime:</label>
+                            <br />
+                            <select id="search-lifetime" ng-model="vm.search.lifetime" ng-options="item.Lifetime for item in vm.services | godModeUnique: 'Lifetime' | orderBy: 'Lifetime'">
+                                <option value="">Any</option>
+                            </select>
+
+                            <br />
+
+                            <label class="control-label" for="search-visibility">Visibility:</label>
+                            <br />
+                            <umb-toggle checked="vm.search.hideNonPublic"
+                                        on-click="vm.toggleVisibility()"
+                                        show-labels="true"
+                                        label-on="Public" label-off="Any"
+                                        label-position="right" hide-icons="false">
+                            </umb-toggle>
+                        </div>
+
+                    </div>
+
+                </umb-box-content>
+            </umb-box>
+
+            <umb-load-indicator ng-show="vm.isLoading"></umb-load-indicator>
+
+            <p class="gm-results" ng-show="vm.services"><strong>{{results.length}}</strong> / <strong>{{vm.services.length}}</strong></p>
+
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th style="width:20%"><godmode-sortable sort-by="vm.sortBy('Name')" column="Name" sort="vm.sort">Name</godmode-sortable></th>
+                        <th style="width:20%"><godmode-sortable sort-by="vm.sortBy('Namespace')" column="Namespace" sort="vm.sort">Namespace</godmode-sortable></th>
+                        <th style="width:20%"><godmode-sortable sort-by="vm.sortBy('ImplementName')" column="ImplementName" sort="vm.sort">Implemented By</godmode-sortable></th>
+                        <th style="width:20%"><godmode-sortable sort-by="vm.sortBy('ImplementNamespace')" column="ImplementNamespace" sort="vm.sort">Implemented Namespace</godmode-sortable></th>
+                        <th style="width:10%"><godmode-sortable sort-by="vm.sortBy('Lifetime')" column="Lifetime" sort="vm.sort">Lifetime</godmode-sortable></th>
+                        <th style="width:10%"><godmode-sortable sort-by="vm.sortBy('Key')" column="Key" sort="vm.sort">Key</godmode-sortable></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr ng-repeat="c in vm.services | filter: vm.filterServices | orderBy: vm.sort.column : vm.sort.reverse as results">
+                        <td title="{{c.FullName}}"><strong>{{ c.Name }}</strong></td>
+                        <td><small>{{ c.Namespace }}</small></td>
+                        <td title="{{c.ImplementFullName}}"><strong>{{ c.ImplementName }}</strong></td>
+                        <td><small>{{ c.ImplementNamespace }}</small></td>
+                        <td>{{ c.Lifetime }}</td>
+                        <td>{{ c.Key }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </umb-editor-container>
+
+    </umb-editor-view>
+
+
+
+</div>
