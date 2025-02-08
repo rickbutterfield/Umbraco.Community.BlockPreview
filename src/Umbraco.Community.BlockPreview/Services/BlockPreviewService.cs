@@ -319,60 +319,44 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError)
         {
-            var newPropertyValues = new Dictionary<string, BlockItemData.BlockPropertyValue>();
+            var newPropertyValues = new Dictionary<string, object?>();
 
-            for (int i = 0; i < data.PropertyValues.Count; i++)
+            for (int i = 0; i < data.RawPropertyValues.Count; i++)
             {
-                var property = data.PropertyValues.ElementAt(i);
+                var property = data.RawPropertyValues.ElementAt(i);
                 var propValue = property.Value;
-                string? propertyAsString = propValue.Value as string ?? JsonConvert.SerializeObject(propValue.Value);
+                string? propertyAsString = propValue as string ?? JsonConvert.SerializeObject(propValue);
 
                 if (propertyAsString?.Contains(Aliases.BlockGrid) == true)
                 {
-                    var blockValue = _blockGridEditorValues.DeserializeAndClean(propValue.Value);
+                    var blockValue = _blockGridEditorValues.DeserializeAndClean(propValue);
                     if (blockValue != null)
                     {
                         FormatBlockData(blockValue.BlockValue.ContentData);
                         FormatBlockData(blockValue.BlockValue.SettingsData);
 
-                        newPropertyValues.Add(property.Key, new BlockItemData.BlockPropertyValue(blockValue, propValue.PropertyType));
+                        newPropertyValues.Add(property.Key, JsonConvert.SerializeObject(blockValue.BlockValue));
                     }
                 }
 
                 else if (propertyAsString?.Contains(Aliases.BlockList) == true)
                 {
-                    var blockValue = _blockListEditorValues.DeserializeAndClean(propValue.Value);
+                    var blockValue = _blockListEditorValues.DeserializeAndClean(propValue);
                     if (blockValue != null)
                     {
                         FormatBlockData(blockValue.BlockValue.ContentData);
                         FormatBlockData(blockValue.BlockValue.SettingsData);
 
-                        newPropertyValues.Add(property.Key, new BlockItemData.BlockPropertyValue(blockValue, propValue.PropertyType));
+                        newPropertyValues.Add(property.Key, JsonConvert.SerializeObject(blockValue.BlockValue));
                     }
                 }
 
                 else newPropertyValues.Add(property.Key, property.Value);
             }
 
-            data.PropertyValues = newPropertyValues;
+            data.RawPropertyValues = newPropertyValues;
 
             var element = _blockEditorConverter.ConvertToElement(data, PropertyCacheLevel.None, throwOnError);
-
-            foreach (var prop in element.Properties)
-            {
-                if (prop.PropertyType.EditorAlias == Aliases.MultipleTextstring)
-                {
-                    var sourceValue = prop.GetSourceValue();
-                    if (sourceValue is JArray asArray)
-                    {
-                        IEnumerable<string?> array = asArray.OfType<JObject>()
-                            .Where(x => x["value"] != null)
-                            .Select(x => x["value"]!.Value<string>());
-                        string strValue = JsonConvert.SerializeObject(array);
-                    }
-                }
-            }
-
             if (element == null && throwOnError)
                 throw new InvalidOperationException($"Unable to find Element {data?.ContentTypeAlias}");
 
@@ -389,7 +373,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             foreach (var contentData in blockData)
             {
-                var newPropertyValues = new Dictionary<string, BlockItemData.BlockPropertyValue>();
+                var newPropertyValues = new Dictionary<string, object?>();
 
                 foreach (var propertyData in contentData.PropertyValues)
                 {
@@ -398,10 +382,10 @@ namespace Umbraco.Community.BlockPreview.Services
                         if (Guid.TryParse(propertyData.Value.Value?.ToString(), out Guid parsedGuid))
                         {
                             string strUdi = StringUdi.Create("document", parsedGuid).UriValue.ToString();
-                            newPropertyValues.Add(propertyData.Key, new BlockItemData.BlockPropertyValue(strUdi, propertyData.Value.PropertyType));
+                            newPropertyValues.Add(propertyData.Key, strUdi);
                         }
 
-                        newPropertyValues.Add(propertyData.Key, propertyData.Value);
+                        newPropertyValues.Add(propertyData.Key, propertyData.Value.Value);
                     }
 
                     else if (propertyData.Value.PropertyType.PropertyEditorAlias == Aliases.MultipleTextstring)
@@ -412,30 +396,26 @@ namespace Umbraco.Community.BlockPreview.Services
                                 .Where(x => x["value"] != null)
                                 .Select(x => x["value"]!.Value<string>());
 
-                            string strValue = JsonConvert.SerializeObject(array);
-                            newPropertyValues.Add(propertyData.Key, new BlockItemData.BlockPropertyValue(strValue, propertyData.Value.PropertyType));
+                            newPropertyValues.Add(propertyData.Key, string.Join("\r\n", array));
                         }
                     }
 
                     else if (propertyData.Value.Value is JObject jsonObject)
                     {
                         string strValue = JsonConvert.SerializeObject(jsonObject);
-                        newPropertyValues.Add(propertyData.Key, new BlockItemData.BlockPropertyValue(strValue, propertyData.Value.PropertyType));
+                        newPropertyValues.Add(propertyData.Key, strValue);
                     }
 
                     else if (propertyData.Value.Value is List<string> list)
                     {
                         string strValue = JsonConvert.SerializeObject(list);
-                        newPropertyValues.Add(propertyData.Key, new BlockItemData.BlockPropertyValue(strValue, propertyData.Value.PropertyType));
+                        newPropertyValues.Add(propertyData.Key, strValue);
                     }
 
-                    else
-                    {
-                        newPropertyValues.Add(propertyData.Key, propertyData.Value);
-                    }
+                    else newPropertyValues.Add(propertyData.Key, propertyData.Value.Value);
                 }
 
-                contentData.PropertyValues = newPropertyValues;
+                contentData.RawPropertyValues = newPropertyValues;
             }
         }
 

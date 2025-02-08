@@ -2,11 +2,8 @@
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Composing;
-using Umbraco.Cms.Core.Configuration;
-using Umbraco.Cms.Core.Configuration.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Routing;
@@ -30,7 +27,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly ContextCultureService _contextCultureService;
         private readonly IBlockPreviewService _blockPreviewService;
         private readonly ILocalizationService _localizationService;
-        private readonly ISiteDomainMapper _siteDomainMapper;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly ITypeFinder _typeFinder;
 
@@ -55,7 +51,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             ContextCultureService contextCultureSwitcher,
             IBlockPreviewService blockPreviewService,
             ILocalizationService localizationService,
-            ISiteDomainMapper siteDomainMapper,
             ITypeFinder typeFinder,
             AppCaches appCaches)
         {
@@ -65,7 +60,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _contextCultureService = contextCultureSwitcher;
             _blockPreviewService = blockPreviewService;
             _localizationService = localizationService;
-            _siteDomainMapper = siteDomainMapper;
             _typeFinder = typeFinder;
             _runtimeCache = appCaches.RuntimeCache;
         }
@@ -239,9 +233,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
         private string GetCurrentCulture(string? culture, IPublishedContent? content = null)
         {
-            // if in a culture variant setup also set the correct language.
             var currentCulture = string.IsNullOrWhiteSpace(culture)
-                ? content?.GetCultureFromDomains(_umbracoContextAccessor, _siteDomainMapper)
+                ? content?.GetCultureFromDomains()
                 : culture;
 
             if (string.IsNullOrEmpty(currentCulture) || currentCulture == "undefined")
