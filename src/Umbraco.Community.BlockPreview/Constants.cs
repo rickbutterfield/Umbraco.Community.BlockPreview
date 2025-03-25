@@ -18,9 +18,9 @@
 
         public static partial class ErrorMessages
         {
-            public static string ErrorTemplate = "<div class=\"preview-alert preview-alert-error\"></div>";
+            public static string ErrorTemplate = "<div class=\"preview-alert preview-alert-error\">{0}</div>";
 
-            public static string WarningTemplate = "<div class=\"preview-alert preview-alert-warning\"></div>";
+            public static string WarningTemplate = "<div class=\"preview-alert preview-alert-warning\">{0}</div>";
 
             public static string NoGeneratedModels = "Generated model(s) could not be found. Please try regenerating models and restarting the application.";
 
