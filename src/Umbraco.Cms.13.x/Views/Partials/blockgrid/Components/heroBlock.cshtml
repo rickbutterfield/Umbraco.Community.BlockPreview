@@ -9,6 +9,7 @@
 <pre>Content Picker: @Model.Content.ContentPicker?.Name (@Model.Content.ContentPicker?.Url())</pre>
 <pre>Settings Dropdown: @Model.Settings.Dropdown</pre>
 <pre>MultipleTextstring: @Html.Raw(string.Join("<br/>", Model.Content.RepeatingTextString))</pre>
+<pre>MNTP: @(string.Join(", ", Model.Content.MNtp.Select(x => x.Name))) (@(string.Join(", ", Model.Content.MNtp.Select(x => x.Id))))</pre>
 
 <div 
     class="hero"

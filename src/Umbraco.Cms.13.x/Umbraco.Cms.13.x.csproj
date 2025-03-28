@@ -18,7 +18,7 @@
   <ItemGroup>
     <PackageReference Include="Diplo.GodMode" Version="13.1.0" />
     <PackageReference Include="Umbraco.BlockGrid.Example.Website" Version="1.0.2" />
-    <PackageReference Include="Umbraco.Cms" Version="13.6.0" />
+    <PackageReference Include="Umbraco.Cms" Version="13.7.2" />
     <PackageReference Include="uSync" Version="13.2.6" />
   </ItemGroup>
 
