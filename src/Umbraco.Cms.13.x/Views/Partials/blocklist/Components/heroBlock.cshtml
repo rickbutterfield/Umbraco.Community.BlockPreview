@@ -5,20 +5,21 @@
     var hasBrightContrast = Model.Content.Contrast == "ffffff";
 }
 
-<pre>Dropdown: @Model.Content.Height</pre>
-<pre>Content Picker: @Model.Content.ContentPicker?.Name (@Model.Content.ContentPicker?.Url())</pre>
-
 <div 
-    class="hero"
-    style="background-color:#@backgroundColor"
+class="hero"
+style="background-color:#@backgroundColor"
 @(hasBrightContrast ? "bright-contrast" : null)>
 
     @if (image is not null) {
         <div class="hero-background" style="background-image: url(@image.GetCropUrl(width:3840))">
         </div>
     }
-    
+
     <div class="hero-content">
+        @if (Context.Request.IsBlockPreviewRequest())
+        {
+            <pre>List: Hero Block</pre>
+        }
         <h1>@Model.Content.Headline</h1>
     </div>
 </div>

@@ -6,6 +6,10 @@
     var hasBrightContrast = Model.Settings.Contrast == "ffffff";
 }
 
+@if (Context.Request.IsBlockPreviewRequest())
+{
+    <pre>Grid: One Column Section</pre>
+}
 <section
     style="background-color:#@backgroundColor"
     @(noBackgroundColor ? "nobackgroundcolor" : null)

@@ -57,9 +57,6 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly BlockEditorValues _richTextBlockEditorValues;
 #endif
 
-        private const string BLOCK_TYPE_CACHE_KEY = "BlockPreview_BlockType_{0}";
-        private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
-        private const string DATA_TYPE_CACHE_KEY = "BlockPreview_DataType_{0}";
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
         public BlockPreviewService(
@@ -107,7 +104,8 @@ namespace Umbraco.Community.BlockPreview.Services
             string blockEditorAlias = "",
             Guid documentTypeUnique = default,
             string contentUdi = "",
-            string? settingsUdi = default)
+            string? settingsUdi = default,
+            int? blockIndex = 0)
         {
             var blockValue = _blockGridEditorValues.DeserializeAndClean(blockData);
             if (blockValue == null)
@@ -184,7 +182,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             ConfigureBlockInstanceAreas(blockInstance, config, matchingBlockConfig, matchingLayout!);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid);
+            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig, blockIndex);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);
         }
 
@@ -194,7 +192,8 @@ namespace Umbraco.Community.BlockPreview.Services
             string blockEditorAlias = "",
             Guid documentTypeUnique = default,
             string contentUdi = "",
-            string? settingsUdi = default)
+            string? settingsUdi = default,
+            int? blockIndex = 0)
         {
             var blockValue = _blockListEditorValues.DeserializeAndClean(blockData);
             if (blockValue == null)
@@ -234,14 +233,14 @@ namespace Umbraco.Community.BlockPreview.Services
             BlockListItem? blockInstance = CreateBlockInstance(
                 BlockType.BlockList,
                 contentBlockType, contentElement,
-                settingsBlockType, settingsElement, contentData.Udi,
-                settingsData?.Udi
+                settingsBlockType, settingsElement,
+                contentData.Udi, settingsData?.Udi
             ) as BlockListItem;
 
             if (blockInstance == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockList);
+            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockList, null, blockIndex);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockList);
         }
 
@@ -290,7 +289,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (string.IsNullOrEmpty(contentTypeAlias))
                 return null;
 
-            var cacheKey = string.Format(BLOCK_TYPE_CACHE_KEY, contentTypeAlias);
+            var cacheKey = string.Format(Constants.CacheKeys.BlockType, contentTypeAlias);
             return _runtimeCache.GetCacheItem(cacheKey, () =>
             {
                 return _typeFinder
@@ -301,7 +300,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private IContentType? GetContentType(Guid documentTypeUnique)
         {
-            var cacheKey = string.Format(CONTENT_TYPE_CACHE_KEY, documentTypeUnique);
+            var cacheKey = string.Format(Constants.CacheKeys.ContentType, documentTypeUnique);
             return _runtimeCache.GetCacheItem(cacheKey, () =>
             {
                 return _contentTypeService.Get(documentTypeUnique);
@@ -310,7 +309,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private IDataType? GetDataType(Guid dataTypeKey)
         {
-            var cacheKey = string.Format(DATA_TYPE_CACHE_KEY, dataTypeKey);
+            var cacheKey = string.Format(Constants.CacheKeys.DataType, dataTypeKey);
             return _runtimeCache.GetCacheItem(cacheKey, () =>
             {
                 return _dataTypeService.GetDataType(dataTypeKey);
@@ -453,7 +452,7 @@ namespace Umbraco.Community.BlockPreview.Services
             return null;
         }
 
-        private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default, BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlockConfig = null)
+        private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default, BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlockConfig = null, int? blockIndex = 0)
         {
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
@@ -466,6 +465,7 @@ namespace Umbraco.Community.BlockPreview.Services
             }
 
             viewData["blockPreview"] = true;
+            viewData["blockIndex"] = blockIndex;
 
             if (blockType == BlockType.BlockGrid)
                 viewData["blockGridPreview"] = true;

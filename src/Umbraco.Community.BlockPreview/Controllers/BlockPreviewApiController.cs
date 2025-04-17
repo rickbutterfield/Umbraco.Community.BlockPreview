@@ -75,6 +75,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node content type</param>
         /// <param name="contentUdi">The <see cref="Cms.Core.Udi"/> that represents the content element</param>
         /// <param name="settingsUdi">The <see cref="Cms.Core.Udi"/> that represents the settings element</param>
+        /// <param name="blockIndex">The <see cref="int"/> that represents the index of the block</param>
         /// <returns>The markup to render in the preview.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(string), 200)]
@@ -86,7 +87,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] string? culture = "",
             [FromQuery] Guid documentTypeKey = default,
             [FromQuery] string contentUdi = "",
-            [FromQuery] string? settingsUdi = default)
+            [FromQuery] string? settingsUdi = default,
+            [FromQuery] int? blockIndex = 0)
         {
             string markup;
 
@@ -100,7 +102,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderGridBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi);
+                    markup = await _blockPreviewService.RenderGridBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi, blockIndex);
                 }
                 catch (Exception ex)
                 {
@@ -137,7 +139,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] string culture = "",
             [FromQuery] Guid documentTypeKey = default,
             [FromQuery] string contentUdi = "",
-            [FromQuery] string? settingsUdi = default)
+            [FromQuery] string? settingsUdi = default,
+            [FromQuery] int? blockIndex = 0)
         {
             string markup;
 
@@ -151,7 +154,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderListBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi);
+                    markup = await _blockPreviewService.RenderListBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi, blockIndex);
                 }
                 catch (Exception ex)
                 {

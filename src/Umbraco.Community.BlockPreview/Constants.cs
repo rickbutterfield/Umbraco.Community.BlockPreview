@@ -44,5 +44,12 @@
 
             public static string ViewNotFound = "The view <code>{0}.cshtml</code> could not be found. Searched the following locations: <pre>{1}</pre>";
         }
+
+        public static partial class CacheKeys
+        {
+            public static string BlockType = "BlockPreview_BlockType_{0}";
+            public static string ContentType => "BlockPreview_ContentType_{0}";
+            public static string DataType => "BlockPreview_DataType_{0}";
+        }
     }
 }

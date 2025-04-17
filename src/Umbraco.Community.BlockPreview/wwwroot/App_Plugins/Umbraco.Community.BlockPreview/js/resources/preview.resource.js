@@ -23,12 +23,13 @@
             culture,
             documentTypeKey,
             contentUdi,
-            settingsUdi)
+            settingsUdi,
+            blockIndex)
         {
             culture = culture || '';
 
             return umbRequestHelper.resourcePromise(
-                $http.post(`${apiGridUrl}?nodeKey=${nodeKey}&blockEditorAlias=${blockEditorAlias}&contentElementAlias=${contentElementAlias}&documentTypeKey=${documentTypeKey}&contentUdi=${contentUdi}&settingsUdi=${settingsUdi}&culture=${culture}`, blockData),
+                $http.post(`${apiGridUrl}?nodeKey=${nodeKey}&blockEditorAlias=${blockEditorAlias}&contentElementAlias=${contentElementAlias}&documentTypeKey=${documentTypeKey}&contentUdi=${contentUdi}&settingsUdi=${settingsUdi}&culture=${culture}&blockIndex=${blockIndex}`, blockData),
                 'Failed getting block preview markup'
             );
         };
@@ -41,12 +42,13 @@
             culture,
             documentTypeKey,
             contentUdi,
-            settingsUdi)
+            settingsUdi,
+            blockIndex)
         {
             culture = culture || '';
 
             return umbRequestHelper.resourcePromise(
-                $http.post(`${apiListUrl}?nodeKey=${nodeKey}&blockEditorAlias=${blockEditorAlias}&contentElementAlias=${contentElementAlias}&culture=${culture}&documentTypeKey=${documentTypeKey}&contentUdi=${contentUdi}&settingsUdi=${settingsUdi}`, blockData),
+                $http.post(`${apiListUrl}?nodeKey=${nodeKey}&blockEditorAlias=${blockEditorAlias}&contentElementAlias=${contentElementAlias}&culture=${culture}&documentTypeKey=${documentTypeKey}&contentUdi=${contentUdi}&settingsUdi=${settingsUdi}&blockIndex=${blockIndex}`, blockData),
                 'Failed getting block preview markup'
             );
         };

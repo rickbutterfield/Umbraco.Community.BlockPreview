@@ -90,7 +90,8 @@
                         $scope.language,
                         $scope.documentTypeKey,
                         $scope.contentUdi,
-                        $scope.settingsUdi)
+                        $scope.settingsUdi,
+                        $scope.block.index)
                             .then(function (data) {
                                 $scope.markup = $sce.trustAsHtml(data);
                                 $scope.loading = false;
@@ -128,49 +129,18 @@
                 }
             }
 
-            loadPreview($scope.block.data, $scope.block.settingsData);
+            loadPreview();
 
             var timeoutPromise;
 
-            $scope.$watch('block.layout.columnSpan', function (newValue, oldValue) {
-                if (newValue !== oldValue) {
+            $scope.$watchGroup(['block.layout.columnSpan', 'block.layout.rowSpan', 'block.data', 'block.settingsData'], function (newValues, oldValues) {
+                if (newValues !== oldValues) {
                     $timeout.cancel(timeoutPromise);
-
-                    timeoutPromise = $timeout(function () {   //Set timeout
-                        loadPreview(newValue, null);
+                    timeoutPromise = $timeout(function () {
+                        loadPreview();
                     }, 500);
                 }
-            }, true);
-
-            $scope.$watch('block.layout.rowSpan', function (newValue, oldValue) {
-                if (newValue !== oldValue) {
-                    $timeout.cancel(timeoutPromise);
-
-                    timeoutPromise = $timeout(function () {   //Set timeout
-                        loadPreview(newValue, null);
-                    }, 500);
-                }
-            }, true);
-
-            $scope.$watch('block.data', function (newValue, oldValue) {
-                if (newValue !== oldValue) {
-                    $timeout.cancel(timeoutPromise);
-
-                    timeoutPromise = $timeout(function () {   //Set timeout
-                        loadPreview(newValue, null);
-                    }, 500);
-                }
-            }, true);
-
-            $scope.$watch('block.settingsData', function (newValue, oldValue) {
-                if (newValue !== oldValue) {
-                    $timeout.cancel(timeoutPromise);
-
-                    timeoutPromise = $timeout(function () {   //Set timeout
-                        loadPreview(null, newValue);
-                    }, 500);
-                }
-            }, true);
+            });
 
             $scope.editBlock = function ($event, block) {
                 var target = $event.target;
