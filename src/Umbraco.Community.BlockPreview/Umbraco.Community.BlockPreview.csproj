@@ -9,7 +9,7 @@
 		<RootNamespace>Umbraco.Community.BlockPreview</RootNamespace>
 		<Product>Umbraco.Community.BlockPreview</Product>
 		<PackageId>Umbraco.Community.BlockPreview</PackageId>
-		<Title>Umbraco.Community.BlockPreview</Title>
+		<Title>BlockPreview</Title>
 		<Description>Easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors</Description>
 		<PackageTags>umbraco plugin package block list grid umbraco-marketplace</PackageTags>
 		<PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -21,8 +21,8 @@
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
 
-		<PackageProjectUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/rickbutterfield/Umbraco.Community.BlockPreview</RepositoryUrl>
+		<PackageProjectUrl>https://github.com/rickbutterfield/BlockPreview</PackageProjectUrl>
+		<RepositoryUrl>https://github.com/rickbutterfield/BlockPreview</RepositoryUrl>
 		<PackageIcon>icon.png</PackageIcon>
 
 		<RepositoryType>git</RepositoryType>

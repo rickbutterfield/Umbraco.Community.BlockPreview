@@ -1,11 +1,11 @@
 # BlockPreview
 [![Platform](https://img.shields.io/badge/Umbraco-15+-%233544B1?style=flat&logo=umbraco)](https://umbraco.com/products/umbraco-cms/)
 [![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.BlockPreview.svg)](https://www.nuget.org/packages/Umbraco.Community.BlockPreview/)
-[![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.BlockPreview)](https://github.com/rickbutterfield/Umbraco.Community.BlockPreview/blob/develop/LICENSE)
+[![GitHub](https://img.shields.io/github/license/rickbutterfield/BlockPreview)](https://github.com/rickbutterfield/BlockPreview/blob/develop/LICENSE)
 
 **BlockPreview** enables easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors.
 
-<img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
+<img src="https://raw.githubusercontent.com/rickbutterfield/BlockPreview/develop/.github/assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
 
 ## Installation
 > [!IMPORTANT]
@@ -142,7 +142,7 @@ builder.AddBlockPreview(options =>
 This package installs a custom Web Component preview for both the Block List and Block Grid editors in the backoffice. Block Grid and Block List can be configured independently (v14.2+).
 
 Before and after of how components look within the Block Grid:
-![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/screenshot2.png "Before and after of how components look within the Block Grid")
+![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/develop/.github/assets/screenshot2.png "Before and after of how components look within the Block Grid")
 
 ### Grid-specific setup
 When using the new Block Grid, replace the references below in your default Grid template partial views, and and custom views that render areas:
@@ -240,4 +240,4 @@ This package is entirely based on the amazing work done by [Dave Woestenborghs](
 ## License
 Copyright &copy; 2022-2025 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
 
-Licensed under the [MIT License](https://github.com/rickbutterfield/Umbraco.Community.BlockPreview/blob/develop/LICENSE.md).
+Licensed under the [MIT License](https://github.com/rickbutterfield/BlockPreview/blob/develop/LICENSE.md).
