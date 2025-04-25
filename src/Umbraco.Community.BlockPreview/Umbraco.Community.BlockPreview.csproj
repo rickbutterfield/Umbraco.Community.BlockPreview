@@ -17,7 +17,7 @@
 		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
 		<VersionPrefix>1.13.0</VersionPrefix>
-		<VersionSuffix>beta</VersionSuffix>
+		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
 

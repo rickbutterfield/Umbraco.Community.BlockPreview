@@ -10,11 +10,8 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
     {
         private readonly IAppPolicyCache _runtimeCache;
 
-        public DataTypeSavedNotificationHandler(
-            AppCaches appCaches)
-        {
-            _runtimeCache = appCaches.RuntimeCache;
-        }
+        public DataTypeSavedNotificationHandler(AppCaches appCaches)
+            => _runtimeCache = appCaches.RuntimeCache;
 
         public void Handle(DataTypeSavedNotification notification)
         {

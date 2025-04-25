@@ -11,9 +11,7 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
         private readonly LinkGenerator _linkGenerator;
 
         public ServerVariablesParsingNotificationHandler(LinkGenerator linkGenerator)
-        {
-            _linkGenerator = linkGenerator;
-        }
+            => _linkGenerator = linkGenerator;
 
         public void Handle(ServerVariablesParsingNotification notification)
         {
