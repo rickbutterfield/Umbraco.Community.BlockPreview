@@ -9,6 +9,7 @@ using Umbraco.Community.BlockPreview.Configuration;
 using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Helpers;
 using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.NotificationHandlers;
 using Umbraco.Community.BlockPreview.Services;
 using Umbraco.Community.BlockPreview.ViewEngines;
 

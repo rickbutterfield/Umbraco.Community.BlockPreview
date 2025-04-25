@@ -4,17 +4,14 @@ using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Extensions;
 
-namespace Umbraco.Community.BlockPreview
+namespace Umbraco.Community.BlockPreview.NotificationHandlers
 {
     public class DataTypeSavedNotificationHandler : INotificationHandler<DataTypeSavedNotification>
     {
         private readonly IAppPolicyCache _runtimeCache;
 
-        public DataTypeSavedNotificationHandler(
-            AppCaches appCaches)
-        {
-            _runtimeCache = appCaches.RuntimeCache;
-        }
+        public DataTypeSavedNotificationHandler(AppCaches appCaches)
+            => _runtimeCache = appCaches.RuntimeCache;
 
         public void Handle(DataTypeSavedNotification notification)
         {
