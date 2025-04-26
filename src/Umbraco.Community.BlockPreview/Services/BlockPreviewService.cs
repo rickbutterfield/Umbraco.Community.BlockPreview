@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.AspNetCore.Hosting;
+﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -131,7 +130,7 @@ namespace Umbraco.Community.BlockPreview.Services
             }
 
             if (!Guid.TryParse(contentKey, out Guid contentGuidParsed))
-            return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentKey);
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentKey);
 
             Guid.TryParse(settingsKey!, out Guid settingsGuidParsed);
 
@@ -400,7 +399,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private void FormatBlockData(List<BlockItemData>? blockData)
         {
-            if (blockData == null) 
+            if (blockData == null)
                 return;
 
             if (blockData.Any() == false)

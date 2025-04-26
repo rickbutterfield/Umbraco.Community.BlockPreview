@@ -55,10 +55,20 @@ namespace Umbraco.Community.BlockPreview.Extensions
         {
             if (html.ViewData.IsBlockGridPreview())
             {
-                return await Task.FromResult<IHtmlContent>(
-                        new HtmlContentBuilder()
-                            .AppendHtml(AREA_TEMPLATE)
-                    );
+                var matchingBlockConfig = html.ViewData["matchingBlockConfig"];
+
+                if (matchingBlockConfig is not null && matchingBlockConfig is BlockGridConfiguration.BlockGridBlockConfiguration blockConfig)
+                {
+                    var matchingArea = blockConfig.Areas.FirstOrDefault(x => x.Alias == area.Alias);
+
+                    if (matchingArea != null)
+                    {
+                        return await Task.FromResult<IHtmlContent>(
+                            new HtmlContentBuilder()
+                                .AppendHtml($"<umb-block-grid-entries part=\"area\" class=\"umb-block-grid__area\" area-key=\"{matchingArea.Key}\"></umb-block-grid-entries>")
+                        );
+                    }
+                }
             }
 
             return await html.GetBlockGridItemAreaHtmlAsync(area, template);

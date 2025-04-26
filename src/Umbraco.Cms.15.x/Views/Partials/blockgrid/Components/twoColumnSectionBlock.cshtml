@@ -5,6 +5,9 @@
     var backgroundColor = Model.Settings.BackgroundColor;
     var noBackgroundColor = String.IsNullOrEmpty(backgroundColor);
     var hasBrightContrast = Model.Settings.Contrast == "ffffff";
+
+    var leftArea = Model.Areas.FirstOrDefault(x => x.Alias == "left");
+    var rightArea = Model.Areas.FirstOrDefault(x => x.Alias == "right");
 }
 
 <section
