@@ -7,7 +7,7 @@
 
 @* <pre>Dropdown: @Model.Content.Height</pre> *@
 @* <pre>Content Picker: @Model.Content.ContentPicker?.Name (@Model.Content.ContentPicker?.Url())</pre> *@
-@* <pre>MNTP: @Model.Content.Mntp?.Name() (@Model.Content.Mntp?.Id)</pre> *@
+<pre>MNTP: @Model.Content.Mntp?.Name() (@Model.Content.Mntp?.Id)</pre>
 @* <pre>MNTP: @(string.Join(", ", Model.Content.Mntp.Select(x => x.Name))) (@(string.Join(", ", Model.Content.Mntp.Select(x => x.Id))))</pre> *@
 @* <pre>Settings Dropdown: @Model.Settings?.Dropdown</pre> *@
 

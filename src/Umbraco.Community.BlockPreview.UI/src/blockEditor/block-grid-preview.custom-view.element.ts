@@ -10,6 +10,7 @@ import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
 import { BlockPreviewService, PreviewGridBlockData } from "../api";
 import BlockPreviewContext from '../context/block-preview.context';
 import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
+import { UUIButtonElement } from '@umbraco-cms/backoffice/external/uui';
 
 const elementName = "block-grid-preview";
 
@@ -260,6 +261,34 @@ export class BlockGridPreviewCustomView
         );
     }
 
+    _handleClick(event: PointerEvent) {
+        let blockEvent = true;
+        const path = event.composedPath();
+        const elements = [
+            'UUI-ACTION-BAR',
+            'UMB-BLOCK-SCALE-HANDLER'
+        ];
+
+        const containsElement = path.filter(x => x instanceof Element && elements.includes(x.tagName));
+
+        if (containsElement.length > 0) {
+            const containsEditButton = path.find(x => x instanceof Element && x.tagName === 'UUI-BUTTON');
+
+            if (containsEditButton != null) {
+                if (containsEditButton instanceof UUIButtonElement) {
+                    if (containsEditButton.href?.includes('block/edit')) {
+                        blockEvent = false;
+                    }
+                }
+            }
+
+            if (blockEvent) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+    }
+
     render() {
         if (this._isLoading) {
             return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
@@ -276,8 +305,9 @@ export class BlockGridPreviewCustomView
         if (this._htmlMarkup) {
             return html`
                 ${this._styleElement}
-                <a 
+                <a
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
+                    @click=${this._handleClick}
                     aria-label="Edit block"
                     role="button"
                 >
