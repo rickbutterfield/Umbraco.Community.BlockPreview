@@ -22,13 +22,13 @@ The Umbraco v15 version of this package is [available via NuGet](https://www.nug
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 3.3.1
+dotnet add package Umbraco.Community.BlockPreview --version 3.3.2
 ```
 
 or the NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 3.3.1
+Install-Package Umbraco.Community.BlockPreview -Version 3.3.2
 ```
 
 ## Setup
@@ -222,7 +222,7 @@ If your block partials are not in the usual `/Views/Partials/block[grid|list]/Co
 To raise a new bug, create an issue on the GitHub repository. To fix a bug or add new features, fork the repository and send a pull request with your changes. Feel free to add ideas to the repository's issues list if you would to discuss anything related to the library.
 
 ### Using the test sites
-The repo comes with a test site for Umbraco 14.2+. The site is configured with uSync out of the box to get you up and running with a test site quickly. Use the following credentials to log into the back office:
+The repo comes with a test site for Umbraco 15. The site is configured with uSync out of the box to get you up and running with a test site quickly. Use the following credentials to log into the back office:
 
 ```
 Username: admin@example.com
