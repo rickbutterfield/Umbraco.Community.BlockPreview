@@ -4,11 +4,17 @@
     var backgroundColor = Model.Settings.BackgroundColor;
     var noBackgroundColor = String.IsNullOrEmpty(backgroundColor);
     var hasBrightContrast = Model.Settings.Contrast == "ffffff";
+
+    var leftArea = Model.Areas.First(a => a.Alias == "left");
+    var rightArea = Model.Areas.First(a => a.Alias == "right");
+
 }
 
 <section
     style="background-color: #@backgroundColor"
     @(noBackgroundColor ? "nobackgroundcolor" : null)
     @(hasBrightContrast ? "bright-contrast" : null)>
+
     @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)
+
 </section>

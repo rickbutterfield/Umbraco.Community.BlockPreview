@@ -56,7 +56,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
             {
                 return await Task.FromResult<IHtmlContent>(
                         new HtmlContentBuilder()
-                            .AppendHtml(AREA_TEMPLATE)
+                            .AppendHtml($"<slot name=\"{area.Alias}\"></slot>")
                     );
             }
 
