@@ -105,7 +105,7 @@ const x = {
     request: new _e(),
     response: new _e()
   }
-}, M = (t) => typeof t == "string", F = (t) => M(t) && t !== "", ne = (t) => t instanceof Blob, ge = (t) => t instanceof FormData, ot = (t) => {
+}, $ = (t) => typeof t == "string", F = (t) => $(t) && t !== "", ne = (t) => t instanceof Blob, ge = (t) => t instanceof FormData, ot = (t) => {
   try {
     return btoa(t);
   } catch {
@@ -127,7 +127,7 @@ const x = {
 }, at = (t) => {
   if (t.formData) {
     const e = new FormData(), i = (r, o) => {
-      M(o) || ne(o) ? e.append(r, o) : e.append(r, JSON.stringify(o));
+      $(o) || ne(o) ? e.append(r, o) : e.append(r, JSON.stringify(o));
     };
     return Object.entries(t.formData).filter(([, r]) => r != null).forEach(([r, o]) => {
       Array.isArray(o) ? o.forEach((s) => i(r, s)) : i(r, o);
@@ -155,11 +155,11 @@ const x = {
     const a = ot(`${r}:${o}`);
     n.Authorization = `Basic ${a}`;
   }
-  return e.body !== void 0 && (e.mediaType ? n["Content-Type"] = e.mediaType : ne(e.body) ? n["Content-Type"] = e.body.type || "application/octet-stream" : M(e.body) ? n["Content-Type"] = "text/plain" : ge(e.body) || (n["Content-Type"] = "application/json")), new Headers(n);
+  return e.body !== void 0 && (e.mediaType ? n["Content-Type"] = e.mediaType : ne(e.body) ? n["Content-Type"] = e.body.type || "application/octet-stream" : $(e.body) ? n["Content-Type"] = "text/plain" : ge(e.body) || (n["Content-Type"] = "application/json")), new Headers(n);
 }, lt = (t) => {
   var e, i;
   if (t.body !== void 0)
-    return (e = t.mediaType) != null && e.includes("application/json") || (i = t.mediaType) != null && i.includes("+json") ? JSON.stringify(t.body) : M(t.body) || ne(t.body) || ge(t.body) ? t.body : JSON.stringify(t.body);
+    return (e = t.mediaType) != null && e.includes("application/json") || (i = t.mediaType) != null && i.includes("+json") ? JSON.stringify(t.body) : $(t.body) || ne(t.body) || ge(t.body) ? t.body : JSON.stringify(t.body);
 }, ut = async (t, e, i, r, o, s, n) => {
   const a = new AbortController();
   let c = {
@@ -175,7 +175,7 @@ const x = {
 }, ht = (t, e) => {
   if (e) {
     const i = t.headers.get(e);
-    if (M(i))
+    if ($(i))
       return i;
   }
 }, dt = async (t) => {
@@ -464,6 +464,12 @@ let b = class extends re {
       g(this, m, Pe).call(this);
     }, 500));
   }
+  _filterLayouts(t) {
+    if (!t || t.length === 0)
+      return [];
+    const e = t.filter((r) => r.contentKey === this._blockContext.contentUdi);
+    return e.length > 0 ? e : t.flatMap((r) => r.areas || []).flatMap((r) => (r == null ? void 0 : r.items) || []).filter((r) => r && r.contentKey === this._blockContext.contentUdi);
+  }
   _handleClick(t) {
     var s;
     let e = !0;
@@ -565,9 +571,7 @@ Be = async function() {
           contentData: (e == null ? void 0 : e.filter((n) => n.key == this._blockContext.contentUdi)) ?? [],
           settingsData: (i == null ? void 0 : i.filter((n) => n.key == this._blockContext.settingsUdi)) ?? [],
           expose: (o == null ? void 0 : o.filter((n) => n.contentKey == this._blockContext.contentUdi)) ?? [],
-          layout: {
-            "Umbraco.BlockGrid": (r == null ? void 0 : r.filter((n) => n.contentKey == this._blockContext.contentUdi)) ?? []
-          }
+          layout: { "Umbraco.BlockGrid": this._filterLayouts(r) }
         }, this._blockContext.blockIndex = e.indexOf(this.blockGridValue.contentData[0]);
       }
     );
@@ -687,7 +691,7 @@ var _t = Object.defineProperty, kt = Object.getOwnPropertyDescriptor, Se = (t) =
   for (var o = r > 1 ? void 0 : r ? kt(e, i) : e, s = t.length - 1, n; s >= 0; s--)
     (n = t[s]) && (o = (r ? n(e, i, o) : n(o)) || o);
   return r && o && _t(e, i, o), o;
-}, ce = (t, e, i) => e.has(t) || Se("Cannot " + i), v = (t, e, i) => (ce(t, e, "read from private field"), e.get(t)), J = (t, e, i) => e.has(t) ? Se("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), Oe = (t, e, i, r) => (ce(t, e, "write to private field"), e.set(t, i), i), w = (t, e, i) => (ce(t, e, "access private method"), i), f, j, y, Le, Ne, $e, Me, Y, Ie, le, Ve;
+}, ce = (t, e, i) => e.has(t) || Se("Cannot " + i), v = (t, e, i) => (ce(t, e, "read from private field"), e.get(t)), J = (t, e, i) => e.has(t) ? Se("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), Oe = (t, e, i, r) => (ce(t, e, "write to private field"), e.set(t, i), i), w = (t, e, i) => (ce(t, e, "access private method"), i), f, j, y, Le, Ne, Me, $e, Y, Ie, le, Ve;
 const vt = "block-list-preview";
 let h = class extends re {
   constructor() {
@@ -757,7 +761,7 @@ f = /* @__PURE__ */ new WeakMap();
 j = /* @__PURE__ */ new WeakMap();
 y = /* @__PURE__ */ new WeakSet();
 Le = function() {
-  w(this, y, Ne).call(this), w(this, y, $e).call(this), w(this, y, Me).call(this);
+  w(this, y, Ne).call(this), w(this, y, Me).call(this), w(this, y, $e).call(this);
 };
 Ne = function() {
   var t;
@@ -766,12 +770,12 @@ Ne = function() {
     (i = e == null ? void 0 : e.blockList) != null && i.stylesheet && (this._styleElement = document.createElement("link"), this._styleElement.rel = "stylesheet", this._styleElement.href = e.blockList.stylesheet);
   });
 };
-$e = function() {
+Me = function() {
   this.consumeContext(oe, async (t) => {
     this._blockContext.culture = t.getVariantId().culture ?? "";
   });
 };
-Me = function() {
+$e = function() {
   this.getContext(we).then((t) => {
     Oe(this, j, t), this.observe(
       A([t.unique, t.contentTypeUnique]),
@@ -1103,18 +1107,18 @@ const xt = [
     js: () => Promise.resolve().then(() => Ut)
   }
 ], At = [...xt];
-var $, O, B, P;
+var M, O, B, P;
 class Q extends ke {
   constructor(i) {
     super(i);
-    R(this, $);
+    R(this, M);
     R(this, O);
     R(this, B);
     R(this, P);
-    q(this, O, new ze(void 0)), this.settings = d(this, O).asObservable(), q(this, B, new be("")), this.unique = d(this, B).asObservable(), q(this, P, new be("")), this.documentTypeUnique = d(this, P).asObservable(), q(this, $, new Ce(i)), this.getSettings();
+    q(this, O, new ze(void 0)), this.settings = d(this, O).asObservable(), q(this, B, new be("")), this.unique = d(this, B).asObservable(), q(this, P, new be("")), this.documentTypeUnique = d(this, P).asObservable(), q(this, M, new Ce(i)), this.getSettings();
   }
   async getSettings() {
-    const i = await d(this, $).getSettings();
+    const i = await d(this, M).getSettings();
     d(this, O).setValue(i);
   }
   getUnique() {
@@ -1130,7 +1134,7 @@ class Q extends ke {
     i != "" && d(this, P).setValue(i);
   }
 }
-$ = new WeakMap(), O = new WeakMap(), B = new WeakMap(), P = new WeakMap();
+M = new WeakMap(), O = new WeakMap(), B = new WeakMap(), P = new WeakMap();
 const Ut = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   BlockPreviewContext: Q,

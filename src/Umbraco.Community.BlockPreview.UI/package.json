@@ -1,7 +1,7 @@
 {
   "name": "assets",
   "private": true,
-  "version": "3.3.2",
+  "version": "3.3.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,7 +18,7 @@
   },
   "devDependencies": {
     "@hey-api/openapi-ts": "^0.61.3",
-    "@umbraco-cms/backoffice": "15.4.0-rc",
+    "@umbraco-cms/backoffice": "15.4.0",
     "typescript": "^5.8.3",
     "vite": "^6.2.6"
   }

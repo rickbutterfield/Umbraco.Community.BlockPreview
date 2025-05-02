@@ -1,6 +1,6 @@
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
-import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
+import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
 import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
@@ -197,15 +197,31 @@ export class BlockGridPreviewCustomView
                         contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
                         settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
                         expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
-                        layout: {
-                            ['Umbraco.BlockGrid']: layouts?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? []
-                        }
+                        layout: { ['Umbraco.BlockGrid']: this._filterLayouts(layouts) },
                     };
 
                     this._blockContext.blockIndex = contents.indexOf(this.blockGridValue.contentData[0]);
                 }
             );
         });
+    }
+
+    _filterLayouts(layouts?: UmbBlockGridLayoutModel[]): UmbBlockGridLayoutModel[] {
+        if (!layouts || layouts.length === 0) {
+            return [];
+        }
+
+        const directMatches = layouts.filter(layout => layout.contentKey === this._blockContext.contentUdi);
+        if (directMatches.length > 0) {
+            return directMatches;
+        }
+
+        const nestedMatches = layouts
+            .flatMap(layout => layout.areas || [])
+            .flatMap(area => area?.items || [])
+            .filter(item => item && item.contentKey === this._blockContext.contentUdi);
+
+        return nestedMatches;
     }
 
     async #renderBlockPreview() {
