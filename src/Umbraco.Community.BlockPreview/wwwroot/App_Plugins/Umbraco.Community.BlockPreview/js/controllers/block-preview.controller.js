@@ -133,14 +133,45 @@
 
             var timeoutPromise;
 
-            $scope.$watchGroup(['block.layout.columnSpan', 'block.layout.rowSpan', 'block.data', 'block.settingsData'], function (newValues, oldValues) {
-                if (newValues !== oldValues) {
+            $scope.$watch('block.layout.columnSpan', function (newValue, oldValue) {
+                if (newValue !== oldValue) {
                     $timeout.cancel(timeoutPromise);
+
                     timeoutPromise = $timeout(function () {
-                        loadPreview();
+                        loadPreview(newValue, null);
                     }, 500);
                 }
-            });
+            }, true);
+
+            $scope.$watch('block.layout.rowSpan', function (newValue, oldValue) {
+                if (newValue !== oldValue) {
+                    $timeout.cancel(timeoutPromise);
+
+                    timeoutPromise = $timeout(function () {
+                        loadPreview(newValue, null);
+                    }, 500);
+                }
+            }, true);
+
+            $scope.$watch('block.data', function (newValue, oldValue) {
+                if (newValue !== oldValue) {
+                    $timeout.cancel(timeoutPromise);
+
+                    timeoutPromise = $timeout(function () {
+                        loadPreview(newValue, null);
+                    }, 500);
+                }
+            }, true);
+
+            $scope.$watch('block.settingsData', function (newValue, oldValue) {
+                if (newValue !== oldValue) {
+                    $timeout.cancel(timeoutPromise);
+
+                    timeoutPromise = $timeout(function () {
+                        loadPreview(null, newValue);
+                    }, 500);
+                }
+            }, true);
 
             $scope.editBlock = function ($event, block) {
                 var target = $event.target;
