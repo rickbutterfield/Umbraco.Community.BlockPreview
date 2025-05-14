@@ -13,7 +13,5 @@ namespace Umbraco.Community.BlockPreview.Interfaces
 #if NET8_0
         Task<string> RenderRichTextBlock(BlockValue blockData, ControllerContext controllerContext);
 #endif
-
-        IContentType? GetContentType(Guid documentTypeUnique);
     }
 }

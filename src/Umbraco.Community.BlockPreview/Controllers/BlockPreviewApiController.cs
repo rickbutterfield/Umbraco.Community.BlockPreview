@@ -281,10 +281,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             if (content != null)
                 return content;
 
-            var contentType = _blockPreviewService.GetContentType(documentTypeUnique.GetValueOrDefault());
-            if (contentType == null)
-                return null;
-
             var publishedContentType = context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
             if (publishedContentType == null)
                 return null;
