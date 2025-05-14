@@ -30,13 +30,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly IAppPolicyCache _runtimeCache;
         private readonly ITypeFinder _typeFinder;
 
-        private const string RENDER_ERROR = "<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{0}</pre></div>";
-        private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-warning\">Strongly typed models must be generated and exist on disk for BlockPreview to work.</div>";
-        private const string LOGGER_ERROR = "Error rendering preview for block {0}";
-
-        private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
-        private const string GENERATED_MODELS_KEY = "BlockPreview_GeneratedModels";
-
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
         #region Public
@@ -105,13 +98,13 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 }
                 catch (Exception ex)
                 {
-                    markup = string.Format(RENDER_ERROR, ex.Message);
-                    _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
+                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
                 }
             }
             else
             {
-                markup = MODELS_BUILDER_ERROR;
+                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -157,14 +150,14 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 }
                 catch (Exception ex)
                 {
-                    markup = string.Format(RENDER_ERROR, ex.Message);
-                    _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
+                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
                 }
             }
 
             else
             {
-                markup = MODELS_BUILDER_ERROR;
+                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -208,14 +201,14 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 }
                 catch (Exception ex)
                 {
-                    markup = string.Format(RENDER_ERROR, ex.Message);
-                    _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
+                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
                 }
             }
 
             else
             {
-                markup = MODELS_BUILDER_ERROR;
+                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -227,7 +220,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         #region Private
         private bool CheckGeneratedModelsExist()
         {
-            return _runtimeCache.GetCacheItem(GENERATED_MODELS_KEY, () =>
+            return _runtimeCache.GetCacheItem(Constants.CacheKeys.GeneratedModels, () =>
             {
                 return _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().Any();
             }, CacheDuration);
