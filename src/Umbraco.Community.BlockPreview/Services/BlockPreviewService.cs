@@ -298,7 +298,7 @@ namespace Umbraco.Community.BlockPreview.Services
             }, CacheDuration);
         }
 
-        private IContentType? GetContentType(Guid documentTypeUnique)
+        public IContentType? GetContentType(Guid documentTypeUnique)
         {
             var cacheKey = string.Format(Constants.CacheKeys.ContentType, documentTypeUnique);
             return _runtimeCache.GetCacheItem(cacheKey, () =>

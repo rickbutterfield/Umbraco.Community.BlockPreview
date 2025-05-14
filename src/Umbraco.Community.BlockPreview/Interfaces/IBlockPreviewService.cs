@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 
 namespace Umbraco.Community.BlockPreview.Interfaces
@@ -12,5 +13,7 @@ namespace Umbraco.Community.BlockPreview.Interfaces
 #if NET8_0
         Task<string> RenderRichTextBlock(BlockValue blockData, ControllerContext controllerContext);
 #endif
+
+        IContentType? GetContentType(Guid documentTypeUnique);
     }
 }

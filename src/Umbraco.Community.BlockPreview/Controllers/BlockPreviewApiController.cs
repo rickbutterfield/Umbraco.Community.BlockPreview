@@ -34,7 +34,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-warning\">Strongly typed models must be generated and exist on disk for BlockPreview to work.</div>";
         private const string LOGGER_ERROR = "Error rendering preview for block {0}";
 
-        private const string CONTENT_CACHE_KEY = "BlockPreview_Content_{0}";
         private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
         private const string GENERATED_MODELS_KEY = "BlockPreview_GeneratedModels";
 
@@ -270,35 +269,30 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             IPublishedContent? content = null;
 
+            var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
             if (nodeKey != default)
             {
-                var cacheKey = string.Format(CONTENT_CACHE_KEY, nodeKey);
-                content = _runtimeCache.GetCacheItem(cacheKey, () =>
+                content = _runtimeCache.GetCacheItem(contentCacheKey, () =>
                 {
                     return context.Content?.GetById(true, nodeKey.GetValueOrDefault());
                 }, CacheDuration);
             }
 
-            if (content == null)
+            if (content != null)
+                return content;
+
+            var contentType = _blockPreviewService.GetContentType(documentTypeUnique.GetValueOrDefault());
+            if (contentType == null)
+                return null;
+
+            var publishedContentType = context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
+            if (publishedContentType == null)
+                return null;
+
+            return _runtimeCache.GetCacheItem(contentCacheKey, () =>
             {
-                var typeCacheKey = string.Format(CONTENT_TYPE_CACHE_KEY, documentTypeUnique);
-                var contentType = _runtimeCache.GetCacheItem(typeCacheKey, () =>
-                {
-                    return context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
-                }, CacheDuration);
-
-                if (contentType != null)
-                {
-                    var cacheKey = string.Format(CONTENT_CACHE_KEY, nodeKey);
-                    var cache = _runtimeCache.GetCacheItem(CONTENT_CACHE_KEY, () =>
-                    {
-                        return context.Content?.GetByContentType(contentType).FirstOrDefault();
-                    }, CacheDuration);
-                    return cache;
-                }
-            }
-
-            return content;
+                return context.Content?.GetByContentType(publishedContentType).FirstOrDefault();
+            }, CacheDuration);
         }
 
         private static string CleanUpMarkup(string markup)
