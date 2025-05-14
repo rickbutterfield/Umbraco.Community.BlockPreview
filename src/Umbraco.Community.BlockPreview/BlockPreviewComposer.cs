@@ -22,6 +22,7 @@ namespace Umbraco.Community.BlockPreview
             builder.AddInternal(config => config.BindConfiguration(Constants.Configuration.AppSettingsRoot));
 
             builder.AddNotificationHandler<DataTypeSavedNotification, DataTypeSavedNotificationHandler>();
+            builder.AddNotificationHandler<ContentTypeSavedNotification, ContentTypeSavedNotificationHandler>();
 
             builder.Services.AddScoped<IViewComponentHelperWrapper>(sp =>
             {

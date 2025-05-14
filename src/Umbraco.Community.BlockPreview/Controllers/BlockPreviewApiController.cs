@@ -13,6 +13,7 @@ using Umbraco.Cms.Core.Routing;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.HybridCache;
+using Umbraco.Cms.Infrastructure.Scoping;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Community.BlockPreview.Services;
 using Umbraco.Extensions;
@@ -35,14 +36,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly BlockPreviewOptions _blockPreviewSettings;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly ITypeFinder _typeFinder;
-
-        private const string RENDER_ERROR = "<div class=\"preview-alert preview-alert-error\"><strong>Something went wrong rendering a preview.</strong><br/><pre>{0}</pre></div>";
-        private const string MODELS_BUILDER_ERROR = "<div class=\"preview-alert preview-alert-warning\">Strongly typed models must be generated and exist on disk for BlockPreview to work.</div>";
-        private const string LOGGER_ERROR = "Error rendering preview for block {0}";
-
-        private const string CONTENT_CACHE_KEY = "BlockPreview_Content_{0}";
-        private const string CONTENT_TYPE_CACHE_KEY = "BlockPreview_ContentType_{0}";
-        private const string GENERATED_MODELS_KEY = "BlockPreview_GeneratedModels";
+        private readonly IScopeProvider _scopeProvider;
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
@@ -59,7 +53,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IOptionsMonitor<BlockPreviewOptions> blockPreviewSettings,
             ITypeFinder typeFinder,
             AppCaches appCaches,
-            IElementsCache elementsCache)
+            IElementsCache elementsCache,
+            IScopeProvider scopeProvider)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -70,6 +65,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _blockPreviewSettings = blockPreviewSettings.CurrentValue;
             _typeFinder = typeFinder;
             _runtimeCache = appCaches.RuntimeCache;
+            _scopeProvider = scopeProvider;
         }
 
         #region Public
@@ -115,14 +111,14 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 }
                 catch (Exception ex)
                 {
-                    markup = string.Format(RENDER_ERROR, ex.Message);
-                    _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
+                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
                 }
             }
 
             else
             {
-                markup = MODELS_BUILDER_ERROR;
+                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -170,14 +166,14 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 }
                 catch (Exception ex)
                 {
-                    markup = string.Format(RENDER_ERROR, ex.Message);
-                    _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
+                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
                 }
             }
 
             else
             {
-                markup = MODELS_BUILDER_ERROR;
+                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -219,14 +215,14 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 }
                 catch (Exception ex)
                 {
-                    markup = string.Format(RENDER_ERROR, ex.Message);
-                    _logger.LogError(ex, string.Format(LOGGER_ERROR, contentElementAlias));
+                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
                 }
             }
 
             else
             {
-                markup = MODELS_BUILDER_ERROR;
+                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -246,7 +242,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         #region Private
         private bool CheckGeneratedModelsExist()
         {
-            return _runtimeCache.GetCacheItem(GENERATED_MODELS_KEY, () =>
+            return _runtimeCache.GetCacheItem(Constants.CacheKeys.GeneratedModels, () =>
             {
                 return _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().Any();
             }, CacheDuration);
@@ -287,35 +283,29 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             IPublishedContent? content = null;
 
+            var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
             if (nodeKey != default)
             {
-                var cacheKey = string.Format(CONTENT_CACHE_KEY, nodeKey);
-                content = _runtimeCache.GetCacheItem(cacheKey, () =>
+                content = _runtimeCache.GetCacheItem(contentCacheKey, () =>
                 {
                     return context.Content?.GetById(true, nodeKey.GetValueOrDefault());
                 }, CacheDuration);
             }
 
-            if (content == null)
+            if (content != null)
+                return content;
+
+            var publishedContentType = context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
+            if (publishedContentType == null)
+                return null;
+
+            using var scope = _scopeProvider.CreateScope();
+            var cacheItem = _runtimeCache.GetCacheItem(contentCacheKey, () =>
             {
-                var typeCacheKey = string.Format(CONTENT_TYPE_CACHE_KEY, documentTypeUnique);
-                var contentType = _runtimeCache.GetCacheItem(typeCacheKey, () =>
-                {
-                    return context.Content?.GetContentType(documentTypeUnique.GetValueOrDefault());
-                }, CacheDuration);
-
-                if (contentType != null)
-                {
-                    var cacheKey = string.Format(CONTENT_CACHE_KEY, nodeKey);
-                    var cache = _runtimeCache.GetCacheItem(CONTENT_CACHE_KEY, () =>
-                    {
-                        return context.Content?.GetByContentType(contentType).FirstOrDefault();
-                    }, CacheDuration);
-                    return cache;
-                }
-            }
-
-            return content;
+                return context.Content?.GetByContentType(publishedContentType).FirstOrDefault();
+            }, CacheDuration);
+            scope.Complete();
+            return cacheItem;
         }
 
         private static string CleanUpMarkup(string markup)
