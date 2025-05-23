@@ -1,7 +1,7 @@
 ﻿import { UmbControllerBase } from "@umbraco-cms/backoffice/class-api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { SettingsRepository } from "..";
-import { UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
+import { UmbBooleanState, UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
 import { BlockPreviewOptions } from "../api";
 
 export class BlockPreviewContext extends UmbControllerBase {
@@ -17,11 +17,15 @@ export class BlockPreviewContext extends UmbControllerBase {
     #documentTypeUnique = new UmbStringState('');
     public readonly documentTypeUnique = this.#documentTypeUnique.asObservable();
 
+    #sortModeActive = new UmbBooleanState(false);
+    public readonly sortModeActive = this.#sortModeActive.asObservable();
+
     constructor(host: UmbControllerHost) {
         super(host);
         this.#settingsRepository = new SettingsRepository(host);
 
         this.getSettings();
+        this.setSortMode(false);
     }
 
     async getSettings() {
@@ -47,6 +51,14 @@ export class BlockPreviewContext extends UmbControllerBase {
         if (documentTypeUnique != '') {
             this.#documentTypeUnique.setValue(documentTypeUnique);
         }
+    }
+
+    getSortMode(): boolean {
+        return this.#sortModeActive.getValue();
+    }
+
+    async setSortMode(sortMode: boolean) {
+        this.#sortModeActive.setValue(sortMode);
     }
 }
 

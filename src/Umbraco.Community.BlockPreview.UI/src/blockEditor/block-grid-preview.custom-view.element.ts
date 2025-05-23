@@ -2,7 +2,7 @@ import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/back
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
-import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, html, ifDefined, nothing, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
@@ -34,6 +34,15 @@ export class BlockGridPreviewCustomView
     @property({ attribute: false })
     config?: UmbBlockEditorCustomViewConfiguration;
 
+    @property({ attribute: false })
+    unpublished?: boolean;
+
+    @property({ attribute: false })
+    icon?: string;
+
+    @property({ attribute: false })
+    label?: string;
+
     @state()
     private _htmlMarkup: string = '';
 
@@ -46,6 +55,9 @@ export class BlockGridPreviewCustomView
     private _styleElement?: HTMLLinkElement;
 
     private _previewTimeout: number | undefined;
+
+    @state()
+    private _sortModeActive: boolean = false;
 
     private _blockContext = {
         unique: "",
@@ -103,9 +115,18 @@ export class BlockGridPreviewCustomView
     }
 
     #setupContextObservers() {
+        this.#observeSortMode();
         this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
         this.#observeDocumentWorkspace();
+    }
+
+    #observeSortMode() {
+        this.observe(this.#blockPreviewContext?.sortModeActive, (isActive) => {
+            if (isActive !== undefined) {
+                this._sortModeActive = isActive;
+            }
+        });
     }
 
     #observeBlockPreviewSettings() {
@@ -179,7 +200,7 @@ export class BlockGridPreviewCustomView
             );
         });
     }
-
+    
     async #observeBlockPropertyValue() {
         this.consumeContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, (context) => {
             this.observe(
@@ -305,34 +326,45 @@ export class BlockGridPreviewCustomView
         }
     }
 
-    render() {
-        if (this._isLoading) {
-            return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
-        }
+    override render() {
+        if (this._sortModeActive == false) {
+            if (this._isLoading) {
+                return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
+            }
 
-        if (this._error) {
-            return html`
+            if (this._error) {
+                return html`
                 <div class="preview-alert preview-alert-error" role="alert">
                     ${this._error}
                 </div>
             `;
+            }
+
+            if (this._htmlMarkup) {
+                return html`
+                    ${this._styleElement}
+                    <a
+                        href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
+                        @click=${this._handleClick}
+                        aria-label="Edit block"
+                        role="button"
+                    >
+                        ${unsafeHTML(this._htmlMarkup)}
+                    </a>
+                `;
+            }
         }
 
-        if (this._htmlMarkup) {
-            return html`
-                ${this._styleElement}
-                <a
-                    href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
-                    @click=${this._handleClick}
-                    aria-label="Edit block"
-                    role="button"
-                >
-                    ${unsafeHTML(this._htmlMarkup)}
-                </a>
-            `;
-        }
-
-        return null;
+        else return html`<umb-block-grid-block
+            class="umb-block-grid__block--view"
+            .label=${this.label}
+            .icon=${this.icon}
+            .unpublished=${this.unpublished}
+            .config=${this.config}
+            .content=${this.content}
+            .settings=${this.settingsData}>
+            </umb-block-grid-block>
+        `;
     }
 
     static styles = [

@@ -8,9 +8,10 @@ export * from './blockEditor';
 import { SettingsRepository } from './repository';
 import { BlockGridPreviewCustomView, RichTextPreviewCustomView, BlockListPreviewCustomView } from './blockEditor';
 import { manifests as contextManifests } from './context/manifests.ts';
+import { manifests as propertyActionManifests } from './propertyActions/manifests.ts';
 import { OpenAPI } from './api/index.ts';
 import { BLOCK_PREVIEW_CONTEXT } from './context/block-preview.context-token.ts';
-import BlockPreviewContext from './context/block-preview.context.ts';
+import { BlockPreviewContext } from './context/block-preview.context.ts';
 
 export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
 
@@ -71,7 +72,8 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
 
     extensionRegistry.registerMany([
         ...customViewManifests,
-        ...contextManifests
+        ...contextManifests,
+        ...propertyActionManifests
     ]);
 
     host.provideContext(BLOCK_PREVIEW_CONTEXT, new BlockPreviewContext(host));
