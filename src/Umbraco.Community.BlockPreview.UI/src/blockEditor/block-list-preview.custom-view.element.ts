@@ -205,8 +205,6 @@ export class BlockListPreviewCustomView
                     };
 
                     this._blockContext.blockIndex = contents?.indexOf(this.blockListValue.contentData[0]);
-
-                    this.#renderBlockPreview();
                 }
             );
         });
