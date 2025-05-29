@@ -539,7 +539,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private async Task<string> GetMarkup(ControllerContext controllerContext, string? contentAlias, ViewDataDictionary viewData, BlockType blockType)
         {
-            var viewComponent = _viewComponentSelector.SelectComponent(contentAlias);
+            var viewComponent = _viewComponentSelector.SelectComponent(contentAlias?.ToPascalCase());
 
             return viewComponent != null
                 ? await GetMarkupFromViewComponent(controllerContext, viewData, viewComponent)

@@ -1,7 +1,4 @@
-﻿using Newtonsoft.Json.Linq;
-using Newtonsoft.Json;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using Umbraco.Cms.Core.Models.Blocks;
@@ -43,7 +40,7 @@ public static class StringExtensions
             jObject.ContainsKey("ContentData") ||
             jObject.ContainsKey("SettingsData"))
         {
-            value = JsonConvert.DeserializeObject<BlockValue<BlockGridLayoutItem>>(rawPropValue?.ToString()!);
+            value = JsonSerializer.Deserialize<BlockValue<BlockGridLayoutItem>>(rawPropValue?.ToString()!);
             return true;
         }
 
