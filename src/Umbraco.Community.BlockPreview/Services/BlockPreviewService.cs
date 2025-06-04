@@ -326,27 +326,40 @@ namespace Umbraco.Community.BlockPreview.Services
                 var propValue = property.Value;
                 string? propertyAsString = propValue as string ?? JsonConvert.SerializeObject(propValue);
 
-                if (propertyAsString?.Contains(Aliases.BlockGrid) == true)
+                if (propertyAsString.DetectIsJson() && (propertyAsString.Contains(Aliases.BlockGrid) || propertyAsString.Contains(Aliases.BlockList)))
                 {
-                    var blockValue = _blockGridEditorValues.DeserializeAndClean(propValue);
-                    if (blockValue != null)
+                    var propertyAsJson = JsonConvert.DeserializeObject<JObject>(propertyAsString);
+
+                    if (propertyAsJson?.ContainsKey("layout") == true)
                     {
-                        FormatBlockData(blockValue.BlockValue.ContentData);
-                        FormatBlockData(blockValue.BlockValue.SettingsData);
+                        var layoutProperty = propertyAsJson.Value<JToken>("layout");
+                        var layoutPropertyString = layoutProperty?.ToString();
 
-                        newPropertyValues.Add(property.Key, JsonConvert.SerializeObject(blockValue.BlockValue));
-                    }
-                }
+                        if (layoutPropertyString?.Contains(Aliases.BlockGrid) == true)
+                        {
+                            var blockValue = _blockGridEditorValues.DeserializeAndClean(propValue);
+                            if (blockValue != null)
+                            {
+                                FormatBlockData(blockValue.BlockValue.ContentData);
+                                FormatBlockData(blockValue.BlockValue.SettingsData);
 
-                else if (propertyAsString?.Contains(Aliases.BlockList) == true)
-                {
-                    var blockValue = _blockListEditorValues.DeserializeAndClean(propValue);
-                    if (blockValue != null)
-                    {
-                        FormatBlockData(blockValue.BlockValue.ContentData);
-                        FormatBlockData(blockValue.BlockValue.SettingsData);
+                                newPropertyValues.Add(property.Key, JsonConvert.SerializeObject(blockValue.BlockValue));
+                            }
+                        }
 
-                        newPropertyValues.Add(property.Key, JsonConvert.SerializeObject(blockValue.BlockValue));
+                        else if (layoutPropertyString?.Contains(Aliases.BlockList) == true)
+                        {
+                            var blockValue = _blockListEditorValues.DeserializeAndClean(propValue);
+                            if (blockValue != null)
+                            {
+                                FormatBlockData(blockValue.BlockValue.ContentData);
+                                FormatBlockData(blockValue.BlockValue.SettingsData);
+
+                                newPropertyValues.Add(property.Key, JsonConvert.SerializeObject(blockValue.BlockValue));
+                            }
+                        }
+
+                        else newPropertyValues.Add(property.Key, property.Value);
                     }
                 }
 

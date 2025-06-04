@@ -1,0 +1,10 @@
+﻿@inherits UmbracoViewPage<BlockGridItem<Accordion, BlockSettings>>
+
+@if (Model.Content.AccordionItems == null || Model.Content.AccordionItems.Count == 0)
+{
+    <p>No items</p>
+}
+else
+{
+    <p>Items</p>
+}
