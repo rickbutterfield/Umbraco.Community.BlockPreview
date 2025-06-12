@@ -7,6 +7,7 @@
 
 <img src="https://raw.githubusercontent.com/rickbutterfield/BlockPreview/develop/.github/assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
 
+## Installation
 > [!IMPORTANT]
 > **v4.x** supports Umbraco v16
 > 
