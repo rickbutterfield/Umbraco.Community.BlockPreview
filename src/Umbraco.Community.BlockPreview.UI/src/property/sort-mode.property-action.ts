@@ -21,6 +21,7 @@ export class UmbSortModePropertyAction extends
 
             this.consumeContext(BLOCK_PREVIEW_CONTEXT, (context) => {
                 this.#blockPreviewContext = context;
+                this.#blockPreviewContext?.setSortMode(false);
             }).asPromise()
         ]);
     }

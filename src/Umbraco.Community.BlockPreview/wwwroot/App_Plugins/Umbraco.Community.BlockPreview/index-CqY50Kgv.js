@@ -459,7 +459,7 @@ let h = class extends ne {
     }
   }
   render() {
-    if (this._sortModeActive == !1) {
+    if (this._sortModeActive === !1) {
       if (this._isLoading)
         return A`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
       if (this._error)
@@ -750,7 +750,7 @@ let d = class extends ne {
     }
   }
   render() {
-    if (this._sortModeActive == !1) {
+    if (this._sortModeActive === !1) {
       if (this._isLoading)
         return A`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
       if (this._error)
@@ -1198,7 +1198,7 @@ const Dt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ...ut.manifest,
     type: "propertyAction",
     kind: "sortMode",
-    api: () => import("./sort-mode.property-action-B-dW03Y7.js"),
+    api: () => import("./sort-mode.property-action-BeCi9ZJX.js"),
     weight: 100,
     meta: {
       icon: "icon-navigation-vertical",
@@ -1214,7 +1214,7 @@ const Dt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     kind: "sortMode",
     alias: "BlockPreview.PropertyAction.Grid.SortMode",
     name: "Block Grid Sort Mode Property Action",
-    api: () => import("./block-grid-sort-mode-D5RH43u3.js"),
+    api: () => import("./block-grid-sort-mode-57Tm9XQK.js"),
     forPropertyEditorUis: [tt],
     conditions: [
       {
@@ -1228,7 +1228,7 @@ const Dt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     kind: "sortMode",
     alias: "BlockPreview.PropertyAction.List.SortMode",
     name: "Block List Sort Mode Property Action",
-    api: () => import("./block-list-sort-mode-DhqRrEJE.js"),
+    api: () => import("./block-list-sort-mode-BYQdCabR.js"),
     forPropertyEditorUis: [ct],
     conditions: [
       {
@@ -1318,4 +1318,4 @@ export {
   Ye as c,
   ii as o
 };
-//# sourceMappingURL=index-D7KHVidI.js.map
+//# sourceMappingURL=index-CqY50Kgv.js.map
