@@ -1,5 +1,5 @@
 import "@umbraco-cms/backoffice/auth";
-import { b as o, c as s, R as a, S as r, a as w, o as c } from "./index-CkuhgBTg.js";
+import { a as o, b as s, R as a, S as r, c as w, o as c } from "./index-D7KHVidI.js";
 export {
   o as BlockGridPreviewCustomView,
   s as BlockListPreviewCustomView,

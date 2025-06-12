@@ -3,7 +3,7 @@
 [![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.BlockPreview.svg)](https://www.nuget.org/packages/Umbraco.Community.BlockPreview/)
 [![GitHub](https://img.shields.io/github/license/rickbutterfield/BlockPreview)](https://github.com/rickbutterfield/BlockPreview/blob/develop/LICENSE)
 
-**BlockPreview** enables easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors.
+**BlockPreview** enables easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors, with full support for both Razor views and ViewComponents.
 
 <img src="https://raw.githubusercontent.com/rickbutterfield/BlockPreview/develop/.github/assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
 
@@ -22,13 +22,13 @@ The Umbraco v15 version of this package is [available via NuGet](https://www.nug
 To install the package, you can use either .NET CLI:
 
 ```
-dotnet add package Umbraco.Community.BlockPreview --version 3.3.4
+dotnet add package Umbraco.Community.BlockPreview --version 3.3.6
 ```
 
 or the NuGet Package Manager:
 
 ```
-Install-Package Umbraco.Community.BlockPreview -Version 3.3.4
+Install-Package Umbraco.Community.BlockPreview -Version 3.3.6
 ```
 
 ## Setup
@@ -139,13 +139,13 @@ builder.AddBlockPreview(options =>
 
 
 ## Usage
-This package installs a custom Web Component preview for both the Block List and Block Grid editors in the backoffice. Block Grid and Block List can be configured independently (v14.2+).
+This package installs a custom Web Component preview for both the Block List and Block Grid editors in the backoffice. Block Grid and Block List can be configured independently. You can use both Razor partial views and ViewComponents for your block previews - ViewComponents are automatically detected and rendered when used.
 
 Before and after of how components look within the Block Grid:
 ![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/develop/.github/assets/screenshot2.png "Before and after of how components look within the Block Grid")
 
 ### Grid-specific setup
-When using the new Block Grid, replace the references below in your default Grid template partial views, and and custom views that render areas:
+When using the new Block Grid, replace the references below in your default Grid template partial views and custom views that render areas:
 
 `/Views/Partials/blockgrid/default.cshtml`
 ```diff

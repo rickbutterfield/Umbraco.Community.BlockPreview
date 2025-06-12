@@ -1,29 +1,29 @@
 var be = (t) => {
   throw TypeError(t);
 };
-var _e = (t, e, i) => e.has(t) || be("Cannot " + i);
-var p = (t, e, i) => (_e(t, e, "read from private field"), i ? i.call(t) : e.get(t)), x = (t, e, i) => e.has(t) ? be("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), U = (t, e, i, o) => (_e(t, e, "write to private field"), o ? o.call(t, i) : e.set(t, i), i);
+var ye = (t, e, i) => e.has(t) || be("Cannot " + i);
+var p = (t, e, i) => (ye(t, e, "read from private field"), i ? i.call(t) : e.get(t)), x = (t, e, i) => e.has(t) ? be("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), U = (t, e, i, o) => (ye(t, e, "write to private field"), o ? o.call(t, i) : e.set(t, i), i);
 import { UMB_AUTH_CONTEXT as Qe } from "@umbraco-cms/backoffice/auth";
-import { tryExecuteAndNotify as H } from "@umbraco-cms/backoffice/resources";
-import { UmbControllerBase as Te } from "@umbraco-cms/backoffice/class-api";
-import { UMB_BLOCK_WORKSPACE_CONTEXT as ge } from "@umbraco-cms/backoffice/block";
+import { UMB_BLOCK_WORKSPACE_CONTEXT as we } from "@umbraco-cms/backoffice/block";
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT as Ze, UMB_BLOCK_GRID_MANAGER_CONTEXT as et, UMB_BLOCK_GRID_PROPERTY_EDITOR_UI_ALIAS as tt } from "@umbraco-cms/backoffice/block-grid";
-import { UMB_DOCUMENT_WORKSPACE_CONTEXT as Ee } from "@umbraco-cms/backoffice/document";
-import { css as ee, property as c, state as E, customElement as te, html as A, ifDefined as ie, unsafeHTML as oe } from "@umbraco-cms/backoffice/external/lit";
-import { UmbLitElement as re } from "@umbraco-cms/backoffice/lit-element";
-import { observeMultiple as P, UmbObjectState as it, UmbStringState as ye, UmbBooleanState as ot } from "@umbraco-cms/backoffice/observable-api";
-import { UMB_PROPERTY_DATASET_CONTEXT as ne, UMB_PROPERTY_CONTEXT as rt, UMB_WRITABLE_PROPERTY_CONDITION_ALIAS as me } from "@umbraco-cms/backoffice/property";
+import { UMB_DOCUMENT_WORKSPACE_CONTEXT as Te } from "@umbraco-cms/backoffice/document";
+import { css as te, property as c, state as g, customElement as ie, html as A, ifDefined as oe, unsafeHTML as re } from "@umbraco-cms/backoffice/external/lit";
+import { UmbLitElement as ne } from "@umbraco-cms/backoffice/lit-element";
+import { observeMultiple as P, UmbObjectState as it, UmbStringState as _e, UmbBooleanState as ot } from "@umbraco-cms/backoffice/observable-api";
+import { UMB_PROPERTY_DATASET_CONTEXT as se, UMB_PROPERTY_CONTEXT as rt, UMB_WRITABLE_PROPERTY_CONDITION_ALIAS as me } from "@umbraco-cms/backoffice/property";
+import { tryExecuteAndNotify as H } from "@umbraco-cms/backoffice/resources";
 import { UmbContextToken as nt } from "@umbraco-cms/backoffice/context-api";
-import { UUIButtonElement as Ce } from "@umbraco-cms/backoffice/external/uui";
+import { UUIButtonElement as ge } from "@umbraco-cms/backoffice/external/uui";
 import { UMB_BLOCK_LIST_ENTRY_CONTEXT as st, UMB_BLOCK_LIST_MANAGER_CONTEXT as at, UMB_BLOCK_LIST_PROPERTY_EDITOR_UI_ALIAS as ct } from "@umbraco-cms/backoffice/block-list";
 import { UMB_BLOCK_RTE_ENTRY_CONTEXT as lt } from "@umbraco-cms/backoffice/block-rte";
+import { UmbControllerBase as Ee } from "@umbraco-cms/backoffice/class-api";
 import { UMB_PROPERTY_ACTION_DEFAULT_KIND_MANIFEST as ut } from "@umbraco-cms/backoffice/property-action";
 class ke extends Error {
   constructor(e, i, o) {
     super(o), this.name = "ApiError", this.url = i.url, this.status = i.status, this.statusText = i.statusText, this.body = i.body, this.request = e;
   }
 }
-class ht extends Error {
+class dt extends Error {
   constructor(e) {
     super(e), this.name = "CancelError";
   }
@@ -31,7 +31,7 @@ class ht extends Error {
     return !0;
   }
 }
-class dt {
+class ht {
   constructor(e) {
     this._isResolved = !1, this._isRejected = !1, this._isCancelled = !1, this.cancelHandlers = [], this.promise = new Promise((i, o) => {
       this._resolve = i, this._reject = o;
@@ -73,7 +73,7 @@ class dt {
           console.warn("Cancellation threw an error", e);
           return;
         }
-      this.cancelHandlers.length = 0, this._reject && this._reject(new ht("Request aborted"));
+      this.cancelHandlers.length = 0, this._reject && this._reject(new dt("Request aborted"));
     }
   }
   get isCancelled() {
@@ -106,7 +106,7 @@ const R = {
     request: new ve(),
     response: new ve()
   }
-}, N = (t) => typeof t == "string", X = (t) => N(t) && t !== "", se = (t) => t instanceof Blob, Ae = (t) => t instanceof FormData, pt = (t) => {
+}, N = (t) => typeof t == "string", X = (t) => N(t) && t !== "", ae = (t) => t instanceof Blob, Ce = (t) => t instanceof FormData, pt = (t) => {
   try {
     return btoa(t);
   } catch {
@@ -125,16 +125,16 @@ const R = {
     return (a = e.path) != null && a.hasOwnProperty(n) ? i(String(e.path[n])) : s;
   }), r = t.BASE + o;
   return e.query ? r + ft(e.query) : r;
-}, _t = (t) => {
+}, yt = (t) => {
   if (t.formData) {
     const e = new FormData(), i = (o, r) => {
-      N(r) || se(r) ? e.append(o, r) : e.append(o, JSON.stringify(r));
+      N(r) || ae(r) ? e.append(o, r) : e.append(o, JSON.stringify(r));
     };
     return Object.entries(t.formData).filter(([, o]) => o != null).forEach(([o, r]) => {
       Array.isArray(r) ? r.forEach((s) => i(o, s)) : i(o, r);
     }), e;
   }
-}, V = async (t, e) => typeof e == "function" ? e(t) : e, yt = async (t, e) => {
+}, V = async (t, e) => typeof e == "function" ? e(t) : e, _t = async (t, e) => {
   const [i, o, r, s] = await Promise.all([
     // @ts-ignore
     V(e, t.TOKEN),
@@ -156,11 +156,11 @@ const R = {
     const a = pt(`${o}:${r}`);
     n.Authorization = `Basic ${a}`;
   }
-  return e.body !== void 0 && (e.mediaType ? n["Content-Type"] = e.mediaType : se(e.body) ? n["Content-Type"] = e.body.type || "application/octet-stream" : N(e.body) ? n["Content-Type"] = "text/plain" : Ae(e.body) || (n["Content-Type"] = "application/json")), new Headers(n);
+  return e.body !== void 0 && (e.mediaType ? n["Content-Type"] = e.mediaType : ae(e.body) ? n["Content-Type"] = e.body.type || "application/octet-stream" : N(e.body) ? n["Content-Type"] = "text/plain" : Ce(e.body) || (n["Content-Type"] = "application/json")), new Headers(n);
 }, mt = (t) => {
   var e, i;
   if (t.body !== void 0)
-    return (e = t.mediaType) != null && e.includes("application/json") || (i = t.mediaType) != null && i.includes("+json") ? JSON.stringify(t.body) : N(t.body) || se(t.body) || Ae(t.body) ? t.body : JSON.stringify(t.body);
+    return (e = t.mediaType) != null && e.includes("application/json") || (i = t.mediaType) != null && i.includes("+json") ? JSON.stringify(t.body) : N(t.body) || ae(t.body) || Ce(t.body) ? t.body : JSON.stringify(t.body);
 }, kt = async (t, e, i, o, r, s, n) => {
   const a = new AbortController();
   let l = {
@@ -257,16 +257,16 @@ const R = {
       `Generic Error: status: ${r}; status text: ${s}; body: ${n}`
     );
   }
-}, K = (t, e) => new dt(async (i, o, r) => {
+}, K = (t, e) => new ht(async (i, o, r) => {
   try {
-    const s = bt(t, e), n = _t(e), a = mt(e), l = await yt(t, e);
+    const s = bt(t, e), n = yt(e), a = mt(e), l = await _t(t, e);
     if (!r.isCancelled) {
       let u = await kt(t, e, s, a, n, l, r);
       for (const ze of t.interceptors.response._fns)
         u = await ze(u);
-      const de = await wt(u), Je = vt(u, e.responseHeader);
-      let pe = de;
-      e.responseTransformer && u.ok && (pe = await e.responseTransformer(de));
+      const he = await wt(u), Je = vt(u, e.responseHeader);
+      let pe = he;
+      e.responseTransformer && u.ok && (pe = await e.responseTransformer(he));
       const fe = {
         url: s,
         ok: u.ok,
@@ -397,43 +397,18 @@ class F {
     });
   }
 }
-var L;
-class gt {
-  constructor(e) {
-    x(this, L);
-    U(this, L, e);
-  }
-  async getSettings() {
-    return await H(p(this, L), F.getSettings());
-  }
-}
-L = new WeakMap();
-var I;
-class xe extends Te {
-  constructor(i) {
-    super(i);
-    x(this, I);
-    U(this, I, new gt(i));
-  }
-  async getSettings() {
-    const i = await p(this, I).getSettings();
-    if (i && (i != null && i.data))
-      return i.data;
-  }
-}
-I = new WeakMap();
-const ae = new nt("BlockPreviewContext");
-var Et = Object.defineProperty, Ct = Object.getOwnPropertyDescriptor, Ue = (t) => {
+const ce = new nt("BlockPreviewContext");
+var gt = Object.defineProperty, Et = Object.getOwnPropertyDescriptor, Ae = (t) => {
   throw TypeError(t);
-}, m = (t, e, i, o) => {
-  for (var r = o > 1 ? void 0 : o ? Ct(e, i) : e, s = t.length - 1, n; s >= 0; s--)
+}, _ = (t, e, i, o) => {
+  for (var r = o > 1 ? void 0 : o ? Et(e, i) : e, s = t.length - 1, n; s >= 0; s--)
     (n = t[s]) && (r = (o ? n(e, i, r) : n(r)) || r);
-  return o && r && Et(e, i, r), r;
-}, ce = (t, e, i) => e.has(t) || Ue("Cannot " + i), v = (t, e, i) => (ce(t, e, "read from private field"), e.get(t)), Y = (t, e, i) => e.has(t) ? Ue("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), Re = (t, e, i, o) => (ce(t, e, "write to private field"), e.set(t, i), i), C = (t, e, i) => (ce(t, e, "access private method"), i), b, G, k, Pe, Se, Be, Oe, De, z, qe, Me, Le;
-const At = "block-grid-preview";
-let d = class extends re {
+  return o && r && gt(e, i, r), r;
+}, le = (t, e, i) => e.has(t) || Ae("Cannot " + i), v = (t, e, i) => (le(t, e, "read from private field"), e.get(t)), Y = (t, e, i) => e.has(t) ? Ae("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), xe = (t, e, i, o) => (le(t, e, "write to private field"), e.set(t, i), i), E = (t, e, i) => (le(t, e, "access private method"), i), b, G, m, Ue, Re, Pe, Se, Be, z, Oe, De, qe;
+const Ct = "block-grid-preview";
+let h = class extends ne {
   constructor() {
-    super(), Y(this, k), Y(this, b), Y(this, G), this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._sortModeActive = !1, this._blockContext = {
+    super(), Y(this, m), Y(this, b), Y(this, G), this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._sortModeActive = !1, this._blockContext = {
       unique: "",
       documentTypeUnique: "",
       contentUdi: "",
@@ -449,8 +424,8 @@ let d = class extends re {
       expose: [],
       contentData: [],
       settingsData: []
-    }, this.consumeContext(ae, (t) => {
-      Re(this, b, t), C(this, k, Pe).call(this);
+    }, this.consumeContext(ce, (t) => {
+      xe(this, b, t), E(this, m, Ue).call(this);
     });
   }
   set blockGridValue(t) {
@@ -462,7 +437,7 @@ let d = class extends re {
   }
   async updated(t) {
     super.updated(t), t.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
-      C(this, k, Me).call(this);
+      E(this, m, De).call(this);
     }, 500));
   }
   _filterLayouts(t) {
@@ -480,7 +455,7 @@ let d = class extends re {
     ];
     if (i.filter((n) => n instanceof Element && o.includes(n.tagName)).length > 0) {
       const n = i.find((a) => a instanceof Element && a.tagName === "UUI-BUTTON");
-      n != null && n instanceof Ce && (s = n.href) != null && s.includes("block/edit") && (e = !1), e && (t.preventDefault(), t.stopPropagation());
+      n != null && n instanceof ge && (s = n.href) != null && s.includes("block/edit") && (e = !1), e && (t.preventDefault(), t.stopPropagation());
     }
   }
   render() {
@@ -497,12 +472,12 @@ let d = class extends re {
         return A`
                     ${this._styleElement}
                     <a
-                        href=${ie(this._blockContext.workspaceEditContentPath)} 
+                        href=${oe(this._blockContext.workspaceEditContentPath)} 
                         @click=${this._handleClick}
                         aria-label="Edit block"
                         role="button"
                     >
-                        ${oe(this._htmlMarkup)}
+                        ${re(this._htmlMarkup)}
                     </a>
                 `;
     } else return A`<umb-block-grid-block
@@ -519,41 +494,41 @@ let d = class extends re {
 };
 b = /* @__PURE__ */ new WeakMap();
 G = /* @__PURE__ */ new WeakMap();
-k = /* @__PURE__ */ new WeakSet();
-Pe = function() {
-  C(this, k, Se).call(this), C(this, k, Be).call(this), C(this, k, Oe).call(this), C(this, k, De).call(this);
+m = /* @__PURE__ */ new WeakSet();
+Ue = function() {
+  E(this, m, Re).call(this), E(this, m, Pe).call(this), E(this, m, Se).call(this), E(this, m, Be).call(this);
 };
-Se = function() {
+Re = function() {
   var t;
   this.observe((t = v(this, b)) == null ? void 0 : t.sortModeActive, (e) => {
     e !== void 0 && (this._sortModeActive = e);
   });
 };
-Be = function() {
+Pe = function() {
   var t;
   this.observe((t = v(this, b)) == null ? void 0 : t.settings, (e) => {
     var i;
     (i = e == null ? void 0 : e.blockGrid) != null && i.stylesheet && (this._styleElement = document.createElement("link"), this._styleElement.rel = "stylesheet", this._styleElement.href = e.blockGrid.stylesheet);
   });
 };
-Oe = function() {
-  this.consumeContext(ne, (t) => {
+Se = function() {
+  this.consumeContext(se, (t) => {
     this._blockContext.culture = t.getVariantId().culture ?? "";
   });
 };
-De = async function() {
-  this.getContext(Ee).then((t) => {
-    Re(this, G, t), this.observe(
+Be = async function() {
+  this.getContext(Te).then((t) => {
+    xe(this, G, t), this.observe(
       P([t.unique, t.contentTypeUnique]),
       async ([e, i]) => {
         var o, r;
-        this._blockContext.unique = (e == null ? void 0 : e.toString()) ?? "", (o = v(this, b)) == null || o.setUnique(this._blockContext.unique), this._blockContext.documentTypeUnique = i ?? "", (r = v(this, b)) == null || r.setDocumentTypeUnique(this._blockContext.documentTypeUnique), C(this, k, z).call(this);
+        this._blockContext.unique = (e == null ? void 0 : e.toString()) ?? "", (o = v(this, b)) == null || o.setUnique(this._blockContext.unique), this._blockContext.documentTypeUnique = i ?? "", (r = v(this, b)) == null || r.setDocumentTypeUnique(this._blockContext.documentTypeUnique), E(this, m, z).call(this);
       }
     );
-  }), v(this, G) == null && v(this, b) != null && this._blockContext.unique == "" && this.consumeContext(ge, (t) => {
+  }), v(this, G) == null && v(this, b) != null && this._blockContext.unique == "" && this.consumeContext(we, (t) => {
     this.observe(t.content.structure.contentTypeUniques, (e) => {
       var i;
-      this._blockContext.unique = ((i = v(this, b)) == null ? void 0 : i.getUnique()) ?? "", this._blockContext.documentTypeUnique = e[0] ?? "", C(this, k, z).call(this);
+      this._blockContext.unique = ((i = v(this, b)) == null ? void 0 : i.getUnique()) ?? "", this._blockContext.documentTypeUnique = e[0] ?? "", E(this, m, z).call(this);
     });
   });
 };
@@ -574,12 +549,12 @@ z = async function() {
         r,
         s
       ]) => {
-        this._blockContext.contentUdi = e ?? "", this._blockContext.settingsUdi = i ?? "", this._blockContext.workspaceEditContentPath = o ?? "", this._blockContext.contentElementTypeAlias = r ?? "", this._blockContext.contentElementTypeKey = s ?? "", await C(this, k, qe).call(this);
+        this._blockContext.contentUdi = e ?? "", this._blockContext.settingsUdi = i ?? "", this._blockContext.workspaceEditContentPath = o ?? "", this._blockContext.contentElementTypeAlias = r ?? "", this._blockContext.contentElementTypeKey = s ?? "", await E(this, m, Oe).call(this);
       }
     );
   });
 };
-qe = async function() {
+Oe = async function() {
   this.consumeContext(et, (t) => {
     this.observe(
       P([
@@ -600,9 +575,9 @@ qe = async function() {
     );
   });
 };
-Me = async function() {
+De = async function() {
   const t = this._blockContext;
-  if (v(this, b) != null && t.unique == "" && (t.unique = v(this, b).getUnique()), v(this, b) != null && t.documentTypeUnique == "" && (t.documentTypeUnique = v(this, b).getDocumentTypeUnique()), !C(this, k, Le).call(this, t)) {
+  if (v(this, b) != null && t.unique == "" && (t.unique = v(this, b).getUnique()), v(this, b) != null && t.documentTypeUnique == "" && (t.documentTypeUnique = v(this, b).getDocumentTypeUnique()), !E(this, m, qe).call(this, t)) {
     this._error = "Insufficient data for block preview", this._isLoading = !1;
     return;
   }
@@ -624,11 +599,11 @@ Me = async function() {
     this._error = "Failed to render block preview", this._isLoading = !1, console.error("Block preview error:", i);
   }
 };
-Le = function(t) {
+qe = function(t) {
   return t.unique != "" && t.blockEditorAlias != "" && t.contentUdi != "" && t.contentElementTypeAlias != "";
 };
-d.styles = [
-  ee`
+h.styles = [
+  te`
             a {
               display: block;
               color: inherit;
@@ -681,56 +656,56 @@ d.styles = [
             }
         `
 ];
-m([
+_([
   c({ attribute: !1 })
-], d.prototype, "content", 2);
-m([
+], h.prototype, "content", 2);
+_([
   c({ attribute: !1 })
-], d.prototype, "settingsData", 2);
-m([
+], h.prototype, "settingsData", 2);
+_([
   c({ attribute: !1 })
-], d.prototype, "contentKey", 2);
-m([
+], h.prototype, "contentKey", 2);
+_([
   c({ attribute: !1 })
-], d.prototype, "config", 2);
-m([
+], h.prototype, "config", 2);
+_([
   c({ attribute: !1 })
-], d.prototype, "unpublished", 2);
-m([
+], h.prototype, "unpublished", 2);
+_([
   c({ attribute: !1 })
-], d.prototype, "icon", 2);
-m([
+], h.prototype, "icon", 2);
+_([
   c({ attribute: !1 })
-], d.prototype, "label", 2);
-m([
-  E()
-], d.prototype, "_htmlMarkup", 2);
-m([
-  E()
-], d.prototype, "_isLoading", 2);
-m([
-  E()
-], d.prototype, "_error", 2);
-m([
-  E()
-], d.prototype, "_sortModeActive", 2);
-m([
+], h.prototype, "label", 2);
+_([
+  g()
+], h.prototype, "_htmlMarkup", 2);
+_([
+  g()
+], h.prototype, "_isLoading", 2);
+_([
+  g()
+], h.prototype, "_error", 2);
+_([
+  g()
+], h.prototype, "_sortModeActive", 2);
+_([
   c({ attribute: !1 })
-], d.prototype, "blockGridValue", 1);
-d = m([
-  te(At)
-], d);
-var xt = Object.defineProperty, Ut = Object.getOwnPropertyDescriptor, Ie = (t) => {
+], h.prototype, "blockGridValue", 1);
+h = _([
+  ie(Ct)
+], h);
+var At = Object.defineProperty, xt = Object.getOwnPropertyDescriptor, Me = (t) => {
   throw TypeError(t);
 }, f = (t, e, i, o) => {
-  for (var r = o > 1 ? void 0 : o ? Ut(e, i) : e, s = t.length - 1, n; s >= 0; s--)
+  for (var r = o > 1 ? void 0 : o ? xt(e, i) : e, s = t.length - 1, n; s >= 0; s--)
     (n = t[s]) && (r = (o ? n(e, i, r) : n(r)) || r);
-  return o && r && xt(e, i, r), r;
-}, le = (t, e, i) => e.has(t) || Ie("Cannot " + i), w = (t, e, i) => (le(t, e, "read from private field"), e.get(t)), J = (t, e, i) => e.has(t) ? Ie("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), $e = (t, e, i, o) => (le(t, e, "write to private field"), e.set(t, i), i), T = (t, e, i) => (le(t, e, "access private method"), i), _, j, y, Ne, Ve, Ke, Ge, je, Q, We, ue, He;
-const Rt = "block-list-preview";
-let h = class extends re {
+  return o && r && At(e, i, r), r;
+}, ue = (t, e, i) => e.has(t) || Me("Cannot " + i), w = (t, e, i) => (ue(t, e, "read from private field"), e.get(t)), J = (t, e, i) => e.has(t) ? Me("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), Le = (t, e, i, o) => (ue(t, e, "write to private field"), e.set(t, i), i), C = (t, e, i) => (ue(t, e, "access private method"), i), y, j, k, $e, Ie, Ne, Ve, Ke, Q, Ge, je, We;
+const Ut = "block-list-preview";
+let d = class extends ne {
   constructor() {
-    super(), J(this, y), J(this, _), J(this, j), this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._sortModeActive = !1, this._blockContext = {
+    super(), J(this, k), J(this, y), J(this, j), this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._sortModeActive = !1, this._blockContext = {
       unique: "",
       documentTypeUnique: "",
       contentUdi: "",
@@ -746,8 +721,8 @@ let h = class extends re {
       expose: [],
       contentData: [],
       settingsData: []
-    }, this.consumeContext(ae, (t) => {
-      $e(this, _, t), T(this, y, Ne).call(this);
+    }, this.consumeContext(ce, (t) => {
+      Le(this, y, t), C(this, k, $e).call(this);
     });
   }
   set blockListValue(t) {
@@ -759,7 +734,7 @@ let h = class extends re {
   }
   async updated(t) {
     super.updated(t), t.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
-      T(this, y, ue).call(this);
+      C(this, k, je).call(this);
     }, 500));
   }
   _handleClick(t) {
@@ -771,7 +746,7 @@ let h = class extends re {
     ];
     if (i.filter((n) => n instanceof Element && o.includes(n.tagName)).length > 0) {
       const n = i.find((a) => a instanceof Element && a.tagName === "UUI-BUTTON");
-      n != null && n instanceof Ce && (s = n.href) != null && s.includes("block/edit") && (e = !1), e && (t.preventDefault(), t.stopPropagation());
+      n != null && n instanceof ge && (s = n.href) != null && s.includes("block/edit") && (e = !1), e && (t.preventDefault(), t.stopPropagation());
     }
   }
   render() {
@@ -788,12 +763,12 @@ let h = class extends re {
         return A`
                 ${this._styleElement}
                 <a 
-                    href=${ie(this._blockContext.workspaceEditContentPath)}
+                    href=${oe(this._blockContext.workspaceEditContentPath)}
                     @click=${this._handleClick}
                     aria-label="Edit block"
                     role="button"
                 >
-                    ${oe(this._htmlMarkup)}
+                    ${re(this._htmlMarkup)}
                 </a>
             `;
     } else return A`<umb-ref-list-block
@@ -808,43 +783,43 @@ let h = class extends re {
         `;
   }
 };
-_ = /* @__PURE__ */ new WeakMap();
+y = /* @__PURE__ */ new WeakMap();
 j = /* @__PURE__ */ new WeakMap();
-y = /* @__PURE__ */ new WeakSet();
-Ne = function() {
-  T(this, y, Ve).call(this), T(this, y, Ke).call(this), T(this, y, Ge).call(this), T(this, y, je).call(this);
+k = /* @__PURE__ */ new WeakSet();
+$e = function() {
+  C(this, k, Ie).call(this), C(this, k, Ne).call(this), C(this, k, Ve).call(this), C(this, k, Ke).call(this);
 };
-Ve = function() {
+Ie = function() {
   var t;
-  this.observe((t = w(this, _)) == null ? void 0 : t.sortModeActive, (e) => {
+  this.observe((t = w(this, y)) == null ? void 0 : t.sortModeActive, (e) => {
     e !== void 0 && (this._sortModeActive = e);
   });
 };
-Ke = function() {
+Ne = function() {
   var t;
-  this.observe((t = w(this, _)) == null ? void 0 : t.settings, (e) => {
+  this.observe((t = w(this, y)) == null ? void 0 : t.settings, (e) => {
     var i;
     (i = e == null ? void 0 : e.blockList) != null && i.stylesheet && (this._styleElement = document.createElement("link"), this._styleElement.rel = "stylesheet", this._styleElement.href = e.blockList.stylesheet);
   });
 };
-Ge = function() {
-  this.consumeContext(ne, async (t) => {
+Ve = function() {
+  this.consumeContext(se, async (t) => {
     this._blockContext.culture = t.getVariantId().culture ?? "";
   });
 };
-je = function() {
-  this.getContext(Ee).then((t) => {
-    $e(this, j, t), this.observe(
+Ke = function() {
+  this.getContext(Te).then((t) => {
+    Le(this, j, t), this.observe(
       P([t.unique, t.contentTypeUnique]),
       async ([e, i]) => {
         var o, r;
-        this._blockContext.unique = (e == null ? void 0 : e.toString()) ?? "", (o = w(this, _)) == null || o.setUnique(this._blockContext.unique), this._blockContext.documentTypeUnique = i ?? "", (r = w(this, _)) == null || r.setDocumentTypeUnique(this._blockContext.documentTypeUnique), T(this, y, Q).call(this);
+        this._blockContext.unique = (e == null ? void 0 : e.toString()) ?? "", (o = w(this, y)) == null || o.setUnique(this._blockContext.unique), this._blockContext.documentTypeUnique = i ?? "", (r = w(this, y)) == null || r.setDocumentTypeUnique(this._blockContext.documentTypeUnique), C(this, k, Q).call(this);
       }
     );
-  }), w(this, j) == null && w(this, _) != null && this._blockContext.unique == "" && this.consumeContext(ge, (t) => {
+  }), w(this, j) == null && w(this, y) != null && this._blockContext.unique == "" && this.consumeContext(we, (t) => {
     this.observe(t.content.structure.contentTypeUniques, (e) => {
       var i;
-      this._blockContext.unique = ((i = w(this, _)) == null ? void 0 : i.getUnique()) ?? "", this._blockContext.documentTypeUnique = e[0] ?? "", T(this, y, Q).call(this);
+      this._blockContext.unique = ((i = w(this, y)) == null ? void 0 : i.getUnique()) ?? "", this._blockContext.documentTypeUnique = e[0] ?? "", C(this, k, Q).call(this);
     });
   });
 };
@@ -865,12 +840,12 @@ Q = function() {
         r,
         s
       ]) => {
-        this._blockContext.contentUdi = e ?? "", this._blockContext.settingsUdi = i ?? "", this._blockContext.workspaceEditContentPath = o ?? "", this._blockContext.contentElementTypeAlias = r ?? "", this._blockContext.contentElementTypeKey = s ?? "", await T(this, y, We).call(this);
+        this._blockContext.contentUdi = e ?? "", this._blockContext.settingsUdi = i ?? "", this._blockContext.workspaceEditContentPath = o ?? "", this._blockContext.contentElementTypeAlias = r ?? "", this._blockContext.contentElementTypeKey = s ?? "", await C(this, k, Ge).call(this);
       }
     );
   });
 };
-We = function() {
+Ge = function() {
   this.consumeContext(at, (t) => {
     this.observe(
       P([
@@ -888,14 +863,14 @@ We = function() {
           layout: {
             "Umbraco.BlockList": (o == null ? void 0 : o.filter((n) => n.contentKey == this._blockContext.contentUdi)) ?? []
           }
-        }, this._blockContext.blockIndex = e == null ? void 0 : e.indexOf(this.blockListValue.contentData[0]), T(this, y, ue).call(this);
+        }, this._blockContext.blockIndex = e == null ? void 0 : e.indexOf(this.blockListValue.contentData[0]);
       }
     );
   });
 };
-ue = async function() {
+je = async function() {
   const t = this._blockContext;
-  if (w(this, _) != null && t.unique == "" && (t.unique = w(this, _).getUnique()), w(this, _) != null && t.documentTypeUnique == "" && (t.documentTypeUnique = w(this, _).getDocumentTypeUnique()), !T(this, y, He).call(this, t)) {
+  if (w(this, y) != null && t.unique == "" && (t.unique = w(this, y).getUnique()), w(this, y) != null && t.documentTypeUnique == "" && (t.documentTypeUnique = w(this, y).getDocumentTypeUnique()), !C(this, k, We).call(this, t)) {
     this._error = "Insufficient data for block preview", this._isLoading = !1;
     return;
   }
@@ -917,11 +892,11 @@ ue = async function() {
     this._error = "Failed to render block preview", this._isLoading = !1, console.error("Block preview error:", i);
   }
 };
-He = function(t) {
+We = function(t) {
   return t.unique != "" && t.blockEditorAlias != "" && t.contentUdi != "" && t.contentElementTypeAlias != "";
 };
-h.styles = [
-  ee`
+d.styles = [
+  te`
         a {
           display: block;
           color: inherit;
@@ -976,65 +951,65 @@ h.styles = [
 ];
 f([
   c({ attribute: !1 })
-], h.prototype, "content", 2);
+], d.prototype, "content", 2);
 f([
   c({ attribute: !1 })
-], h.prototype, "settingsData", 2);
+], d.prototype, "settingsData", 2);
 f([
   c({ attribute: !1 })
-], h.prototype, "contentKey", 2);
+], d.prototype, "contentKey", 2);
 f([
   c({ attribute: !1 })
-], h.prototype, "config", 2);
+], d.prototype, "config", 2);
 f([
   c({ attribute: !1 })
-], h.prototype, "unpublished", 2);
+], d.prototype, "unpublished", 2);
 f([
   c({ attribute: !1 })
-], h.prototype, "icon", 2);
+], d.prototype, "icon", 2);
 f([
   c({ attribute: !1 })
-], h.prototype, "label", 2);
+], d.prototype, "label", 2);
 f([
-  E()
-], h.prototype, "_htmlMarkup", 2);
+  g()
+], d.prototype, "_htmlMarkup", 2);
 f([
-  E()
-], h.prototype, "_isLoading", 2);
+  g()
+], d.prototype, "_isLoading", 2);
 f([
-  E()
-], h.prototype, "_error", 2);
+  g()
+], d.prototype, "_error", 2);
 f([
-  E()
-], h.prototype, "_sortModeActive", 2);
+  g()
+], d.prototype, "_sortModeActive", 2);
 f([
-  E()
-], h.prototype, "_blockListValue", 2);
+  g()
+], d.prototype, "_blockListValue", 2);
 f([
   c({ attribute: !1 })
-], h.prototype, "blockListValue", 1);
-h = f([
-  te(Rt)
-], h);
-var Pt = Object.defineProperty, St = Object.getOwnPropertyDescriptor, Fe = (t) => {
+], d.prototype, "blockListValue", 1);
+d = f([
+  ie(Ut)
+], d);
+var Rt = Object.defineProperty, Pt = Object.getOwnPropertyDescriptor, He = (t) => {
   throw TypeError(t);
 }, S = (t, e, i, o) => {
-  for (var r = o > 1 ? void 0 : o ? St(e, i) : e, s = t.length - 1, n; s >= 0; s--)
+  for (var r = o > 1 ? void 0 : o ? Pt(e, i) : e, s = t.length - 1, n; s >= 0; s--)
     (n = t[s]) && (r = (o ? n(e, i, r) : n(r)) || r);
-  return o && r && Pt(e, i, r), r;
-}, Bt = (t, e, i) => e.has(t) || Fe("Cannot " + i), Ot = (t, e, i) => e.has(t) ? Fe("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), W = (t, e, i) => (Bt(t, e, "access private method"), i), q, Xe, Ye, he;
-const Dt = "rich-text-preview";
-let g = class extends re {
+  return o && r && Rt(e, i, r), r;
+}, St = (t, e, i) => e.has(t) || He("Cannot " + i), Bt = (t, e, i) => e.has(t) ? He("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, i), W = (t, e, i) => (St(t, e, "access private method"), i), q, Fe, Xe, de;
+const Ot = "rich-text-preview";
+let T = class extends ne {
   constructor() {
     var t;
-    super(), Ot(this, q), this.htmlMarkup = "", this.unique = "", this.documentTypeUnique = "", this.blockEditorAlias = "", this.culture = "", this._blockRteValue = {
+    super(), Bt(this, q), this.htmlMarkup = "", this.unique = "", this.documentTypeUnique = "", this.blockEditorAlias = "", this.culture = "", this._blockRteValue = {
       layout: {},
       expose: [],
       contentData: [],
       settingsData: []
-    }, this.consumeContext(ne, async (e) => {
+    }, this.consumeContext(se, async (e) => {
       this.culture = e.getVariantId().culture ?? "";
-    }), this.unique = (t = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)) == null ? void 0 : t[0], W(this, q, Xe).call(this);
+    }), this.unique = (t = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)) == null ? void 0 : t[0], W(this, q, Fe).call(this);
   }
   set blockRteValue(t) {
     const e = t ? { ...t } : {};
@@ -1045,19 +1020,19 @@ let g = class extends re {
   }
   async updated(t) {
     super.updated(t), t.has("content") && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
-      W(this, q, he).call(this);
+      W(this, q, de).call(this);
     }, 500));
   }
   render() {
     if (this.htmlMarkup !== "")
       return A`
-                <a href=${ie(this.workspaceEditContentPath)}>
-                    ${oe(this.htmlMarkup)}
+                <a href=${oe(this.workspaceEditContentPath)}>
+                    ${re(this.htmlMarkup)}
                 </a>`;
   }
 };
 q = /* @__PURE__ */ new WeakSet();
-Xe = function() {
+Fe = function() {
   this.consumeContext(rt, (t) => {
     this.observe(
       P([t.alias, t.value]),
@@ -1068,22 +1043,22 @@ Xe = function() {
           settingsData: i.blocks.settingsData,
           expose: i.blocks.expose,
           layout: i.blocks.layout
-        }), W(this, q, Ye).call(this));
+        }), W(this, q, Xe).call(this));
       }
     );
   });
 };
-Ye = function() {
+Xe = function() {
   this.consumeContext(lt, (t) => {
     this.observe(
       P([t.workspaceEditContentPath, t.contentElementTypeAlias]),
       async ([e, i]) => {
-        this.contentElementTypeAlias = i, this.workspaceEditContentPath = e, await W(this, q, he).call(this);
+        this.contentElementTypeAlias = i, this.workspaceEditContentPath = e, await W(this, q, de).call(this);
       }
     );
   });
 };
-he = async function() {
+de = async function() {
   if (!this.unique || !this.blockEditorAlias || !this.contentElementTypeAlias || !this.blockRteValue.contentData || !this.blockRteValue.layout) return;
   const t = {
     blockEditorAlias: this.blockEditorAlias,
@@ -1094,8 +1069,8 @@ he = async function() {
   }, { data: e } = await H(this, F.previewRichTextMarkup(t));
   e && (this.htmlMarkup = e);
 };
-g.styles = [
-  ee`
+T.styles = [
+  te`
             a {
               display: block;
               color: inherit;
@@ -1146,90 +1121,41 @@ g.styles = [
 ];
 S([
   c({ attribute: !1 })
-], g.prototype, "content", 2);
+], T.prototype, "content", 2);
 S([
   c({ attribute: !1 })
-], g.prototype, "settingsData", 2);
+], T.prototype, "settingsData", 2);
 S([
   c({ attribute: !1 })
-], g.prototype, "contentKey", 2);
+], T.prototype, "contentKey", 2);
 S([
   c({ attribute: !1 })
-], g.prototype, "config", 2);
+], T.prototype, "config", 2);
 S([
-  E()
-], g.prototype, "htmlMarkup", 2);
+  g()
+], T.prototype, "htmlMarkup", 2);
 S([
-  E()
-], g.prototype, "_blockRteValue", 2);
+  g()
+], T.prototype, "_blockRteValue", 2);
 S([
   c({ attribute: !1 })
-], g.prototype, "blockRteValue", 1);
-g = S([
-  te(Dt)
-], g);
-const qt = [
-  {
-    type: "globalContext",
-    alias: "BlockPreview.Context",
-    name: "BlockPreview Context",
-    js: () => Promise.resolve().then(() => It)
-  }
-], Mt = [...qt], we = {
-  manifest: {
-    ...ut.manifest,
-    type: "propertyAction",
-    kind: "sortMode",
-    api: () => import("./sort-mode.property-action-DfzUiOvt.js"),
-    weight: 100,
-    meta: {
-      icon: "icon-navigation-vertical",
-      label: "Sort Mode"
-    }
-  }
-}, Lt = [
-  {
-    ...we.manifest,
-    type: "propertyAction",
-    kind: "sortMode",
-    alias: "BlockPreview.PropertyAction.Grid.SortMode",
-    name: "Block Grid Sort Mode Property Action",
-    api: () => import("./block-grid-sort-mode-DbrGyHaF.js"),
-    forPropertyEditorUis: [tt],
-    conditions: [
-      {
-        alias: me
-      }
-    ]
-  },
-  {
-    ...we.manifest,
-    type: "propertyAction",
-    kind: "sortMode",
-    alias: "BlockPreview.PropertyAction.List.SortMode",
-    name: "Block List Sort Mode Property Action",
-    api: () => import("./block-list-sort-mode-zmTpM9zG.js"),
-    forPropertyEditorUis: [ct],
-    conditions: [
-      {
-        alias: me
-      }
-    ]
-  }
-];
-var $, M, B, O, D;
-class Z extends Te {
+], T.prototype, "blockRteValue", 1);
+T = S([
+  ie(Ot)
+], T);
+var L, M, B, O, D;
+class Z extends Ee {
   constructor(i) {
     super(i);
-    x(this, $);
+    x(this, L);
     x(this, M);
     x(this, B);
     x(this, O);
     x(this, D);
-    U(this, M, new it(void 0)), this.settings = p(this, M).asObservable(), U(this, B, new ye("")), this.unique = p(this, B).asObservable(), U(this, O, new ye("")), this.documentTypeUnique = p(this, O).asObservable(), U(this, D, new ot(!1)), this.sortModeActive = p(this, D).asObservable(), U(this, $, new xe(i)), this.getSettings(), this.setSortMode(!1);
+    U(this, M, new it(void 0)), this.settings = p(this, M).asObservable(), U(this, B, new _e("")), this.unique = p(this, B).asObservable(), U(this, O, new _e("")), this.documentTypeUnique = p(this, O).asObservable(), U(this, D, new ot(!1)), this.sortModeActive = p(this, D).asObservable(), U(this, L, new Ye(i)), this.getSettings(), this.setSortMode(!1);
   }
   async getSettings() {
-    const i = await p(this, $).getSettings();
+    const i = await p(this, L).getSettings();
     p(this, M).setValue(i);
   }
   getUnique() {
@@ -1251,14 +1177,94 @@ class Z extends Te {
     p(this, D).setValue(i);
   }
 }
-$ = new WeakMap(), M = new WeakMap(), B = new WeakMap(), O = new WeakMap(), D = new WeakMap();
-const It = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
+L = new WeakMap(), M = new WeakMap(), B = new WeakMap(), O = new WeakMap(), D = new WeakMap();
+const Dt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   __proto__: null,
   BlockPreviewContext: Z,
   default: Z
-}, Symbol.toStringTag, { value: "Module" })), ti = async (t, e) => {
+}, Symbol.toStringTag, { value: "Module" })), qt = [
+  {
+    type: "globalContext",
+    alias: "BlockPreview.Context",
+    name: "BlockPreview Context",
+    js: () => Promise.resolve().then(() => Dt)
+  }
+], Mt = [...qt], ee = {
+  type: "kind",
+  alias: "Umb.PropertyAction.SortMode",
+  matchKind: "sortMode",
+  matchType: "propertyAction",
+  manifest: {
+    ...ut.manifest,
+    type: "propertyAction",
+    kind: "sortMode",
+    api: () => import("./sort-mode.property-action-B-dW03Y7.js"),
+    weight: 100,
+    meta: {
+      icon: "icon-navigation-vertical",
+      label: "Sort Mode"
+    }
+  }
+}, Lt = [
+  ee
+], $t = [
+  {
+    ...ee.manifest,
+    type: "propertyAction",
+    kind: "sortMode",
+    alias: "BlockPreview.PropertyAction.Grid.SortMode",
+    name: "Block Grid Sort Mode Property Action",
+    api: () => import("./block-grid-sort-mode-D5RH43u3.js"),
+    forPropertyEditorUis: [tt],
+    conditions: [
+      {
+        alias: me
+      }
+    ]
+  },
+  {
+    ...ee.manifest,
+    type: "propertyAction",
+    kind: "sortMode",
+    alias: "BlockPreview.PropertyAction.List.SortMode",
+    name: "Block List Sort Mode Property Action",
+    api: () => import("./block-list-sort-mode-DhqRrEJE.js"),
+    forPropertyEditorUis: [ct],
+    conditions: [
+      {
+        alias: me
+      }
+    ]
+  }
+];
+var $;
+class It {
+  constructor(e) {
+    x(this, $);
+    U(this, $, e);
+  }
+  async getSettings() {
+    return await H(p(this, $), F.getSettings());
+  }
+}
+$ = new WeakMap();
+var I;
+class Ye extends Ee {
+  constructor(i) {
+    super(i);
+    x(this, I);
+    U(this, I, new It(i));
+  }
+  async getSettings() {
+    const i = await p(this, I).getSettings();
+    if (i && (i != null && i.data))
+      return i.data;
+  }
+}
+I = new WeakMap();
+const ii = async (t, e) => {
   var s, n, a;
-  const o = await new xe(t).getSettings();
+  const o = await new Ye(t).getSettings();
   let r = [];
   if (o) {
     if (o.blockGrid.enabled) {
@@ -1266,7 +1272,7 @@ const It = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         type: "blockEditorCustomView",
         alias: "BlockPreview.GridCustomView",
         name: "BlockPreview Grid Custom View",
-        element: d,
+        element: h,
         forBlockEditor: "block-grid"
       };
       ((s = o.blockGrid.contentTypes) == null ? void 0 : s.length) !== 0 && (l.forContentTypeAlias = o.blockGrid.contentTypes), r.push(l);
@@ -1276,7 +1282,7 @@ const It = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         type: "blockEditorCustomView",
         alias: "BlockPreview.ListCustomView",
         name: "BlockPreview List Custom View",
-        element: h,
+        element: d,
         forBlockEditor: "block-list"
       };
       ((n = o.blockList.contentTypes) == null ? void 0 : n.length) !== 0 && (l.forContentTypeAlias = o.blockList.contentTypes), r.push(l);
@@ -1286,7 +1292,7 @@ const It = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
         type: "blockEditorCustomView",
         alias: "BlockPreview.RichTextCustomView",
         name: "BlockPreview Rich Text Custom View",
-        element: g,
+        element: T,
         forBlockEditor: "block-rte"
       };
       ((a = o.richText.contentTypes) == null ? void 0 : a.length) !== 0 && (l.forContentTypeAlias = o.richText.contentTypes), r.push(l);
@@ -1295,20 +1301,21 @@ const It = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
   e.registerMany([
     ...r,
     ...Mt,
-    ...Lt
-  ]), t.provideContext(ae, new Z(t)), t.consumeContext(Qe, async (l) => {
+    ...Lt,
+    ...$t
+  ]), t.provideContext(ce, new Z(t)), t.consumeContext(Qe, async (l) => {
     if (!l) return;
     const u = l.getOpenApiConfiguration();
     R.BASE = u.base, R.TOKEN = u.token, R.WITH_CREDENTIALS = u.withCredentials, R.CREDENTIALS = u.credentials;
   });
 };
 export {
-  ae as B,
-  g as R,
-  gt as S,
-  xe as a,
+  ce as B,
+  T as R,
+  It as S,
+  h as a,
   d as b,
-  h as c,
-  ti as o
+  Ye as c,
+  ii as o
 };
-//# sourceMappingURL=index-CkuhgBTg.js.map
+//# sourceMappingURL=index-D7KHVidI.js.map

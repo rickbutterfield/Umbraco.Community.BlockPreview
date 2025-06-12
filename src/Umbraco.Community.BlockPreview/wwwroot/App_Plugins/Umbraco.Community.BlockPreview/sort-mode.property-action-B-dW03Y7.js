@@ -5,7 +5,7 @@ var P = (t, e, o) => e.has(t) || p("Cannot " + o);
 var i = (t, e, o) => (P(t, e, "read from private field"), o ? o.call(t) : e.get(t)), c = (t, e, o) => e.has(t) ? p("Cannot add the same private member more than once") : e instanceof WeakSet ? e.add(t) : e.set(t, o), m = (t, e, o, a) => (P(t, e, "write to private field"), a ? a.call(t, o) : e.set(t, o), o);
 import { UmbPropertyActionBase as w } from "@umbraco-cms/backoffice/property-action";
 import { UMB_PROPERTY_CONTEXT as x } from "@umbraco-cms/backoffice/property";
-import { B as d } from "./index-CkuhgBTg.js";
+import { B as d } from "./index-D7KHVidI.js";
 var s, n, r;
 class l extends w {
   constructor(o, a) {
@@ -34,4 +34,4 @@ export {
   l as UmbSortModePropertyAction,
   l as api
 };
-//# sourceMappingURL=sort-mode.property-action-DfzUiOvt.js.map
+//# sourceMappingURL=sort-mode.property-action-B-dW03Y7.js.map

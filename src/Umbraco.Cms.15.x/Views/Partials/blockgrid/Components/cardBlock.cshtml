@@ -1,8 +1,6 @@
 ﻿@using System.Text.Json
 @inherits UmbracoViewPage<BlockGridItem<CardBlock>>
 
-<pre>Block Index: @ViewData["blockIndex"]</pre>
-
 <div class="card @(Model.ColumnSpan == 6 ? "--medium" : null)">
 
     <div class="card-media">

@@ -25,6 +25,7 @@
 	
 	<ItemGroup>
 	  <Folder Include="umbraco\" />
+	  <Folder Include="ViewComponents\" />
 	</ItemGroup>
 
 	<PropertyGroup>
