@@ -16,7 +16,7 @@
 
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<VersionPrefix>3.3.6</VersionPrefix>
+		<VersionPrefix>3.4.0</VersionPrefix>
 		<VersionSuffix></VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
@@ -56,9 +56,5 @@
 		<ProjectReference Include="..\Umbraco.Community.BlockPreview.UI\Umbraco.Community.BlockPreview.UI.esproj">
 			<ReferenceOutputAssembly>False</ReferenceOutputAssembly>
 		</ProjectReference>
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="PropertyValueConverters\" />
 	</ItemGroup>
 </Project>
