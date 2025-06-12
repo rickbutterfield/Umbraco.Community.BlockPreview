@@ -10,6 +10,8 @@
 ## Getting started
 ### Installation
 > [!IMPORTANT]
+> **v4.x** supports Umbraco v16
+> 
 > **v3.x** supports Umbraco v15
 > 
 > **v2.x** supports Umbraco v14.2+
