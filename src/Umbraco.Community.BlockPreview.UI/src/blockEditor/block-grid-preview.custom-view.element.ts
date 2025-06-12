@@ -327,7 +327,7 @@ export class BlockGridPreviewCustomView
     }
 
     override render() {
-        if (this._sortModeActive == false) {
+        if (this._sortModeActive === false) {
             if (this._isLoading) {
                 return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
             }
