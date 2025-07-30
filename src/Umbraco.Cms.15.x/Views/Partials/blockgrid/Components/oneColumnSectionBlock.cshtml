@@ -7,7 +7,7 @@
 }
 
 <section
-    style="background-color:#@backgroundColor"
+    style="background-color:@backgroundColor"
     @(noBackgroundColor ? "nobackgroundcolor" : null)
     @(hasBrightContrast ? "bright-contrast" : null)>
     @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)
