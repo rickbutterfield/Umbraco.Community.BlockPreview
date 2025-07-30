@@ -1,7 +1,7 @@
 import { UMB_BLOCK_LIST_ENTRY_CONTEXT, UMB_BLOCK_LIST_MANAGER_CONTEXT, UmbBlockListValueModel } from "@umbraco-cms/backoffice/block-list";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
-import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, html, ifDefined, property, PropertyValueMap, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
@@ -26,13 +26,22 @@ export class BlockListPreviewCustomView
     content?: UmbBlockDataType;
 
     @property({ attribute: false })
-    settingsData?: UmbBlockDataType;
+    settings?: UmbBlockDataType;
 
     @property({ attribute: false })
     contentKey?: string;
 
     @property({ attribute: false })
     config?: UmbBlockEditorCustomViewConfiguration;
+
+    @property({ attribute: false })
+    unpublished?: boolean;
+
+    @property({ attribute: false })
+    icon?: string;
+
+    @property({ attribute: false })
+    label?: string;
 
     @state()
     private _htmlMarkup: string = '';
@@ -46,6 +55,9 @@ export class BlockListPreviewCustomView
     private _styleElement?: HTMLLinkElement;
 
     private _previewTimeout: number | undefined;
+
+    @state()
+    private _sortModeActive: boolean = false;
 
     private _blockContext = {
         unique: '',
@@ -91,10 +103,10 @@ export class BlockListPreviewCustomView
         });
     }
 
-    async updated(changedProperties: Map<string | number | symbol, unknown>) {
-        super.updated(changedProperties);
+    protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+        super.updated(_changedProperties);
 
-        if (changedProperties.has('content')) {
+        if (_changedProperties.has('content') || _changedProperties.has('settings')) {
             if (this._previewTimeout) {
                 clearTimeout(this._previewTimeout);
             }
@@ -105,9 +117,18 @@ export class BlockListPreviewCustomView
     }
 
     #setupContextObservers() {
+        this.#observeSortMode();
         this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
         this.#observeDocumentWorkspace();
+    }
+
+    #observeSortMode() {
+        this.observe(this.#blockPreviewContext?.sortModeActive, (isActive) => {
+            if (isActive !== undefined) {
+                this._sortModeActive = isActive;
+            }
+        });
     }
 
     #observeBlockPreviewSettings() {
@@ -290,21 +311,22 @@ export class BlockListPreviewCustomView
         }
     }
 
-    render() {
-        if (this._isLoading) {
-            return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
-        }
+    override render() {
+        if (this._sortModeActive === false) {
+            if (this._isLoading) {
+                return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
+            }
 
-        if (this._error) {
-            return html`
+            if (this._error) {
+                return html`
                 <div class="preview-alert preview-alert-error" role="alert">
                     ${this._error}
                 </div>
             `;
-        }
+            }
 
-        if (this._htmlMarkup) {
-            return html`
+            if (this._htmlMarkup) {
+                return html`
                 ${this._styleElement}
                 <a 
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)}
@@ -315,9 +337,19 @@ export class BlockListPreviewCustomView
                     ${unsafeHTML(this._htmlMarkup)}
                 </a>
             `;
+            }
         }
 
-        return null;
+        else return html`<umb-ref-list-block
+            class="umb-block-grid__block--view"
+            .label=${this.label}
+            .icon=${this.icon}
+            .unpublished=${this.unpublished}
+            .config=${this.config}
+            .content=${this.content}
+            .settings=${this.settings}>
+            </umb-ref-list-block>
+        `;
     }
 
     static styles = [
