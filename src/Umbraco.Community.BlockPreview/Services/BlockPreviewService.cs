@@ -638,48 +638,86 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private ViewEngineResult? GetViewResult(string? contentAlias, BlockType blockType)
         {
+            _logger.LogInformation("GetViewResult called with contentAlias: {ContentAlias}, blockType: {BlockType}", contentAlias, blockType);
+
             if (string.IsNullOrEmpty(contentAlias))
-                return null;
-
-            var viewPaths = _options.GetViewLocations(blockType);
-
-            if (viewPaths == null || !viewPaths.Any())
-                return null;
-
-            ViewEngineResult? viewResult = null;
-            string appRoot = _webHostEnvironment.ContentRootPath;
-
-            foreach (var viewPath in viewPaths)
             {
-                string baseViewPath = viewPath.TrimStart($"~{Path.DirectorySeparatorChar}").TrimStart("/");
-
-                var pathNonPascal = string.Format(baseViewPath, contentAlias ?? "");
-                var viewPathNonPascal = Path.Combine(appRoot, pathNonPascal);
-
-                if (System.IO.File.Exists(viewPathNonPascal))
-                {
-                    viewResult = _razorViewEngine.GetView("", pathNonPascal, false);
-
-                    if (viewResult.Success)
-                        return viewResult;
-                }
-
-                else
-                {
-                    var pathPascal = string.Format(baseViewPath, contentAlias?.ToPascalCase() ?? "");
-                    var viewPathPascal = Path.Combine(appRoot, pathPascal);
-
-                    if (System.IO.File.Exists(viewPathPascal))
-                    {
-                        viewResult = _razorViewEngine.GetView("", pathPascal, false);
-
-                        if (viewResult.Success)
-                            return viewResult;
-                    }
-                }
+                _logger.LogInformation("ContentAlias is null or empty, returning null");
                 return null;
             }
 
+            var viewPaths = _options.GetViewLocations(blockType);
+            _logger.LogInformation("Retrieved {ViewPathCount} view paths for blockType {BlockType}", viewPaths?.Count ?? 0, blockType);
+
+            if (viewPaths == null || !viewPaths.Any())
+            {
+                _logger.LogInformation("No view paths found for blockType {BlockType}, returning null", blockType);
+                return null;
+            }
+
+            ViewEngineResult? viewResult = null;
+            string appRoot = _webHostEnvironment.ContentRootPath;
+            _logger.LogInformation("App root path: {AppRoot}", appRoot);
+
+            foreach (var viewPath in viewPaths)
+            {
+                _logger.LogInformation("Processing view path: {ViewPath}", viewPath);
+                string baseViewPath = viewPath.TrimStart($"~{Path.DirectorySeparatorChar}").TrimStart("/");
+                _logger.LogInformation("Base view path after trimming: {BaseViewPath}", baseViewPath);
+
+                var pathNonPascal = string.Format(baseViewPath, contentAlias ?? "");
+                var viewPathNonPascal = Path.Combine(appRoot, pathNonPascal);
+                _logger.LogInformation("Checking non-Pascal case path: {ViewPathNonPascal}", viewPathNonPascal);
+
+                if (System.IO.File.Exists(viewPathNonPascal))
+                {
+                    _logger.LogInformation("Non-Pascal case file exists, attempting to get view");
+                    viewResult = _razorViewEngine.GetView("", pathNonPascal, false);
+
+                    if (viewResult.Success)
+                    {
+                        _logger.LogInformation("Successfully found view using non-Pascal case path: {Path}", pathNonPascal);
+                        return viewResult;
+                    }
+                    else
+                    {
+                        _logger.LogInformation("View engine failed to get view for non-Pascal case path: {Path}, Success: {Success}", pathNonPascal, viewResult.Success);
+                    }
+                }
+                else
+                {
+                    _logger.LogInformation("Non-Pascal case file does not exist: {ViewPathNonPascal}", viewPathNonPascal);
+
+                    var pathPascal = string.Format(baseViewPath, contentAlias?.ToPascalCase() ?? "");
+                    var viewPathPascal = Path.Combine(appRoot, pathPascal);
+                    _logger.LogInformation("Checking Pascal case path: {ViewPathPascal}", viewPathPascal);
+
+                    if (System.IO.File.Exists(viewPathPascal))
+                    {
+                        _logger.LogInformation("Pascal case file exists, attempting to get view");
+                        viewResult = _razorViewEngine.GetView("", pathPascal, false);
+
+                        if (viewResult.Success)
+                        {
+                            _logger.LogInformation("Successfully found view using Pascal case path: {Path}", pathPascal);
+                            return viewResult;
+                        }
+                        else
+                        {
+                            _logger.LogInformation("View engine failed to get view for Pascal case path: {Path}, Success: {Success}", pathPascal, viewResult.Success);
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation("Pascal case file does not exist: {ViewPathPascal}", viewPathPascal);
+                    }
+                }
+                
+                _logger.LogInformation("Returning null for view path: {ViewPath}", viewPath);
+                return null;
+            }
+
+            _logger.LogInformation("No matching view found after checking all paths, returning null");
             return null;
         }
 

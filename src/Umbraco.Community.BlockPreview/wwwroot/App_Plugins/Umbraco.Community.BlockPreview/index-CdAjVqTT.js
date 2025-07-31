@@ -337,7 +337,7 @@ let p = class extends ue {
     return this._blockGridValue;
   }
   updated(e) {
-    super.updated(e), console.log("changedProperties", e), (e.has("content") || e.has("settings")) && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
+    super.updated(e), (e.has("content") || e.has("settings")) && (this._previewTimeout && clearTimeout(this._previewTimeout), this._previewTimeout = window.setTimeout(() => {
       x(this, v, Ne).call(this);
     }, 500));
   }
@@ -1113,7 +1113,7 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ..._t.manifest,
     type: "propertyAction",
     kind: "sortMode",
-    api: () => import("./sort-mode.property-action-BLNt1EvK.js"),
+    api: () => import("./sort-mode.property-action-gA92yW3Q.js"),
     weight: 100,
     meta: {
       icon: "icon-navigation-vertical",
@@ -1129,7 +1129,7 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     kind: "sortMode",
     alias: "BlockPreview.PropertyAction.Grid.SortMode",
     name: "Block Grid Sort Mode Property Action",
-    api: () => import("./block-grid-sort-mode-lcelcuNo.js"),
+    api: () => import("./block-grid-sort-mode-Dromlcan.js"),
     forPropertyEditorUis: [ct],
     conditions: [
       {
@@ -1143,7 +1143,7 @@ const Gt = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     kind: "sortMode",
     alias: "BlockPreview.PropertyAction.List.SortMode",
     name: "Block List Sort Mode Property Action",
-    api: () => import("./block-list-sort-mode-Ch21YhyN.js"),
+    api: () => import("./block-list-sort-mode-DIHYxH_D.js"),
     forPropertyEditorUis: [mt],
     conditions: [
       {
@@ -1238,4 +1238,4 @@ export {
   rt as c,
   pr as o
 };
-//# sourceMappingURL=index-Dxmyl6jm.js.map
+//# sourceMappingURL=index-CdAjVqTT.js.map
