@@ -615,14 +615,16 @@ namespace Umbraco.Community.BlockPreview.Services
                 foreach (var viewPathCandidate in candidates)
                 {
                     var fullPath = Path.GetFullPath(viewPathCandidate);
-                    _logger.LogInformation("Checking candidate view path: '{ViewPathCandidate}' (full path: '{FullPath}')", viewPathCandidate, fullPath);
+                    var fileName = Path.GetFileName(fullPath);
+
+                    _logger.LogInformation("Checking candidate view path: '{ViewPathCandidate}' (full path: '{FullPath}', file name: '{FileName}')", viewPathCandidate, fullPath, fileName);
                     
                     if (System.IO.File.Exists(fullPath))
                     {
                         _logger.LogInformation("View file found at '{FullPath}', attempting Razor view engine resolution", fullPath);
-                        viewResult = _razorViewEngine.GetView(viewPathCandidate, viewPathCandidate, false);
+                        viewResult = _razorViewEngine.GetView(viewPathCandidate, fileName, false);
 
-                        _logger.LogInformation("View result for '{ViewPathCandidate}': Success = {Success}, View = {View}, ViewName = {ViewName}, SearchedLocations = {SearchedLocation}",
+                        _logger.LogInformation("View result for '{ViewPathCandidate}': Success = {Success}, View = {View}, ViewName = {ViewName}, SearchedLocations = {SearchedLocations}",
                             viewPathCandidate, viewResult.Success, viewResult.View, viewResult.ViewName, string.Join(", ", viewResult.SearchedLocations));
 
                         if (viewResult.Success)
