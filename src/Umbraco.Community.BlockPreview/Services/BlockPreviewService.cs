@@ -49,7 +49,6 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly IDataTypeService _dataTypeService;
         private readonly IContentTypeService _contentTypeService;
         private readonly IAppPolicyCache _runtimeCache;
-        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly BlockEditorValues<BlockGridValue, BlockGridLayoutItem> _blockGridEditorValues;
         private readonly BlockEditorValues<BlockListValue, BlockListLayoutItem> _blockListEditorValues;
         private readonly BlockEditorValues<RichTextBlockValue, RichTextBlockLayoutItem> _richTextBlockEditorValues;
@@ -71,7 +70,6 @@ namespace Umbraco.Community.BlockPreview.Services
             IContentTypeService contentTypeService,
             IDataTypeService dataTypeService,
             AppCaches appCaches,
-            IWebHostEnvironment webHostEnvironment,
             IBlockEditorElementTypeCache elementTypeCache,
             ILogger<BlockPreviewService> logger)
         {
@@ -86,7 +84,6 @@ namespace Umbraco.Community.BlockPreview.Services
             _jsonSerializer = jsonSerializer;
             _dataTypeService = dataTypeService;
             _contentTypeService = contentTypeService;
-            _webHostEnvironment = webHostEnvironment;
             _runtimeCache = appCaches.RuntimeCache;
             _logger = logger;
 
@@ -623,8 +620,11 @@ namespace Umbraco.Community.BlockPreview.Services
                     if (System.IO.File.Exists(fullPath))
                     {
                         _logger.LogInformation("View file found at '{FullPath}', attempting Razor view engine resolution", fullPath);
-                        viewResult = _razorViewEngine.GetView("", viewPathCandidate, false);
-                        
+                        viewResult = _razorViewEngine.GetView(viewPathCandidate, viewPathCandidate, false);
+
+                        _logger.LogInformation("View result for '{ViewPathCandidate}': Success = {Success}, View = {View}, ViewName = {ViewName}, SearchedLocations = {SearchedLocation}",
+                            viewPathCandidate, viewResult.Success, viewResult.View, viewResult.ViewName, string.Join(", ", viewResult.SearchedLocations));
+
                         if (viewResult.Success)
                         {
                             _logger.LogInformation("Successfully resolved view '{ViewName}' for content alias '{ContentAlias}'", viewResult.ViewName, contentAlias);

@@ -17,7 +17,7 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
 		<VersionPrefix>4.0.2</VersionPrefix>
-		<VersionSuffix>beta2</VersionSuffix>
+		<VersionSuffix>beta3</VersionSuffix>
 		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
 		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
 
