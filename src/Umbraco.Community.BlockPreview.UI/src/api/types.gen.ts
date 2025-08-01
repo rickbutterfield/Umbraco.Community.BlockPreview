@@ -76,13 +76,7 @@ export type AvailableMemberTypeCompositionResponseModel = {
 export type BlockPreviewOptions = {
     blockGrid: (BlockWithStylesheetSettings);
     blockList: (BlockWithStylesheetSettings);
-    richText: (BlockTypeSettings);
-};
-
-export type BlockTypeSettings = {
-    enabled: boolean;
-    viewLocations?: Array<(string)> | null;
-    contentTypes?: Array<(string)> | null;
+    richText: (BlockWithStylesheetSettings);
 };
 
 export type BlockWithStylesheetSettings = {
@@ -3582,6 +3576,12 @@ export type PutDocumentBlueprintByIdMoveData = {
 };
 
 export type PutDocumentBlueprintByIdMoveResponse = (string);
+
+export type GetDocumentBlueprintByIdScaffoldData = {
+    id: string;
+};
+
+export type GetDocumentBlueprintByIdScaffoldResponse = ((DocumentBlueprintResponseModel));
 
 export type PostDocumentBlueprintFolderData = {
     requestBody?: (CreateFolderRequestModel);

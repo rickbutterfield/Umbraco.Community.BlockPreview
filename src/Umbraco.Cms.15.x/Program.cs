@@ -19,7 +19,11 @@ builder.CreateUmbracoBuilder()
             Enabled = true,
             Stylesheet = "/css/myblockgridlayout.css"
         };
-        options.RichText.Enabled = true;
+        options.RichText = new()
+        {
+            Enabled = true,
+            Stylesheet = "/css/myblockgridlayout.css"
+        };
     })
     .Build();
 

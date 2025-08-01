@@ -324,6 +324,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 foreach (var link in links)
                 {
                     link.SetAttributeValue("href", "javascript:;");
+                    link.SetAttributeValue("data-block-preview-link", "true");
                 }
             }
 

@@ -1,12 +1,16 @@
+import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
-import { UMB_BLOCK_RTE_ENTRY_CONTEXT, UmbBlockRteValueModel } from "@umbraco-cms/backoffice/block-rte";
-import { css, customElement, html, ifDefined, property, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
+import { UMB_BLOCK_RTE_ENTRY_CONTEXT, UMB_BLOCK_RTE_MANAGER_CONTEXT, UmbBlockRteValueModel } from "@umbraco-cms/backoffice/block-rte";
+import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from '@umbraco-cms/backoffice/document';
+import { css, customElement, html, ifDefined, property, PropertyValueMap, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
+import { UUIButtonElement } from '@umbraco-cms/backoffice/external/uui';
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
-import { UMB_PROPERTY_CONTEXT, UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
+import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
-import { BlockPreviewService, PreviewRichTextMarkupData } from "../api";
-import { UmbBlockDataType } from '@umbraco-cms/backoffice/block';
+import { BlockPreviewService } from "../api";
+import BlockPreviewContext from '../context/block-preview.context';
+import { BLOCK_PREVIEW_CONTEXT } from '../context/block-preview.context-token';
 
 const elementName = "rich-text-preview";
 
@@ -15,11 +19,14 @@ export class RichTextPreviewCustomView
     extends UmbLitElement
     implements UmbBlockEditorCustomViewElement {
 
+    #blockPreviewContext?: BlockPreviewContext;
+    #documentWorkspaceContext?: UmbDocumentWorkspaceContext;
+
     @property({ attribute: false })
     content?: UmbBlockDataType;
 
     @property({ attribute: false })
-    settingsData?: UmbBlockDataType;
+    settings?: UmbBlockDataType;
 
     @property({ attribute: false })
     contentKey?: string;
@@ -28,16 +35,29 @@ export class RichTextPreviewCustomView
     config?: UmbBlockEditorCustomViewConfiguration;
 
     @state()
-    htmlMarkup: string | undefined = "";
+    _htmlMarkup: string | undefined = "";
 
-    unique?: string = '';
-    documentTypeUnique?: string = '';
-    blockEditorAlias?: string = '';
-    culture?: string = '';
-    workspaceEditContentPath?: string;
-    contentElementTypeAlias?: string;
+    @state()
+    private _isLoading: boolean = false;
+
+    @state()
+    private _error: string | null = null;
+
+    private _styleElement?: HTMLLinkElement;
 
     private _previewTimeout: number | undefined;
+
+    private _blockContext = {
+        unique: '',
+        documentTypeUnique: '',
+        contentUdi: '',
+        settingsUdi: '',
+        blockEditorAlias: '',
+        culture: '',
+        workspaceEditContentPath: '',
+        contentElementTypeAlias: '',
+        contentElementTypeKey: ''
+    };
 
     @state()
     private _blockRteValue: UmbBlockRteValueModel = {
@@ -63,19 +83,16 @@ export class RichTextPreviewCustomView
     constructor() {
         super();
 
-        this.consumeContext(UMB_PROPERTY_DATASET_CONTEXT, async (instance) => {
-            this.culture = instance.getVariantId().culture ?? "";
+        this.consumeContext(BLOCK_PREVIEW_CONTEXT, (context) => {
+            this.#blockPreviewContext = context;
+            this.#setupContextObservers();
         });
-
-        this.unique = window.location.pathname.match(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/)?.[0];
-
-        this.#observeBlockRteValue();
     }
 
-    async updated(changedProperties: Map<string | number | symbol, unknown>) {
-        super.updated(changedProperties);
+    protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
+        super.updated(_changedProperties);
 
-        if (changedProperties.has('content')) {
+        if (_changedProperties.has('content') || _changedProperties.has('settings')) {
             if (this._previewTimeout) {
                 clearTimeout(this._previewTimeout);
             }
@@ -85,68 +102,226 @@ export class RichTextPreviewCustomView
         }
     }
 
-    #observeBlockRteValue(): void {
-        this.consumeContext(UMB_PROPERTY_CONTEXT, (context) => {
-            this.observe(
-                observeMultiple([context.alias, context.value]),
-                async ([alias, value]) => {
-                    this.blockEditorAlias = alias;
+    #setupContextObservers() {
+        this.#observeBlockPreviewSettings();
+        this.#observePropertyDataset();
+        this.#observeDocumentWorkspace();
+    }
 
-                    if (value.hasOwnProperty('blocks')) {
-                        if (value.blocks.length !== 0) {
-                            this.blockRteValue = {
-                                ...this.blockRteValue,
-                                contentData: value.blocks.contentData!,
-                                settingsData: value.blocks.settingsData!,
-                                expose: value.blocks.expose!,
-                                layout: value.blocks.layout!
-                            }
-                        }
+    #observeBlockPreviewSettings() {
+        this.observe(this.#blockPreviewContext?.settings, (settings) => {
+            if (settings?.richText?.stylesheet) {
+                this._styleElement = document.createElement('link');
+                this._styleElement.rel = 'stylesheet';
+                this._styleElement.href = settings.richText.stylesheet as string;
+            }
+        });
+    }
 
+    #observePropertyDataset() {
+        this.consumeContext(UMB_PROPERTY_DATASET_CONTEXT, async (instance) => {
+            if (instance) {
+                this._blockContext.culture = instance.getVariantId().culture ?? "";
+            }
+        });
+    }
+
+    #observeDocumentWorkspace() {
+        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+            if (context) {
+                this.#documentWorkspaceContext = context;
+                this.observe(
+                    observeMultiple([context.unique, context.contentTypeUnique]),
+                    async ([unique, documentTypeUnique]) => {
+                        this._blockContext.unique = unique?.toString() ?? '';
+                        this.#blockPreviewContext?.setUnique(this._blockContext.unique);
+
+                        this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
+                        this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
                     }
-                });
+                );
+            }
         });
+
+        if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
+            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+                if (context) {
+                    this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                        this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
+                        this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
+                        this.#observeBlockValue();
+                    });
+                }
+            });
+        }
     }
 
     #observeBlockValue(): void {
         this.consumeContext(UMB_BLOCK_RTE_ENTRY_CONTEXT, (context) => {
             this.observe(
-                observeMultiple([context.workspaceEditContentPath, context.contentElementTypeAlias]),
-                async ([workspaceEditContentPath, contentElementTypeAlias]) => {
-                    this.contentElementTypeAlias = contentElementTypeAlias;
-                    this.workspaceEditContentPath = workspaceEditContentPath;
+                observeMultiple([
+                    context.contentKey,
+                    context.settingsKey,
+                    context.workspaceEditContentPath,
+                    context.contentElementTypeAlias,
+                    context.contentElementTypeKey
+                ]),
+                async ([
+                    contentUdi,
+                    settingsUdi,
+                    workspaceEditContentPath,
+                    contentElementTypeAlias,
+                    contentElementTypeKey
+                ]) => {
+                    this._blockContext.contentUdi = contentUdi ?? '';
+                    this._blockContext.settingsUdi = settingsUdi ?? '';
+                    this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
+                    this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
+                    this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
 
-                    await this.#renderBlockPreview();
+                    await this.#observeBlockPropertyValue();
                 });
         });
     }
 
-    async #renderBlockPreview() {
-        if (!this.unique ||
-            !this.blockEditorAlias ||
-            !this.contentElementTypeAlias ||
-            !this.blockRteValue.contentData ||
-            !this.blockRteValue.layout) return;
+    #observeBlockPropertyValue(): void {
+        this.consumeContext(UMB_BLOCK_RTE_MANAGER_CONTEXT, (context) => {
+            this.observe(
+                observeMultiple([
+                    context.contents,
+                    context.settings,
+                    context.layouts,
+                    context.exposes,
+                    context.propertyAlias
+                ]),
+                async ([
+                    contents,
+                    settings,
+                    layouts,
+                    exposes,
+                    propertyAlias
+                ]) => {
+                    this._blockContext.blockEditorAlias = propertyAlias ?? '';
 
-        const previewData: PreviewRichTextMarkupData = {
-            blockEditorAlias: this.blockEditorAlias,
-            nodeKey: this.unique,
-            contentElementAlias: this.contentElementTypeAlias,
-            culture: this.culture,
-            requestBody: JSON.stringify(this.blockRteValue)
-        };
-
-        const { data } = await tryExecuteAndNotify(this, BlockPreviewService.previewRichTextMarkup(previewData));
-
-        if (data) this.htmlMarkup = data;
+                    this.blockRteValue = {
+                        contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
+                        settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
+                        expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
+                        layout: {
+                            ['Umbraco.RichText']: layouts?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? []
+                        }
+                    };
+                });
+        });
     }
 
-    render() {
-        if (this.htmlMarkup !== "") {
+
+    async #renderBlockPreview() {
+        const context = this._blockContext;
+        if (this.#blockPreviewContext != null && context.unique == '') {
+            context.unique = this.#blockPreviewContext.getUnique();
+        }
+        if (this.#blockPreviewContext != null && context.documentTypeUnique == '') {
+            context.documentTypeUnique = this.#blockPreviewContext.getDocumentTypeUnique();
+        }
+        const isDataValid = this.#validatePreviewData(context);
+
+        if (!isDataValid) {
+            this._error = 'Insufficient data for block preview';
+            this._isLoading = false;
+            return;
+        }
+
+        this._isLoading = true;
+        this._error = null;
+
+        try {
+            const { data, error } = await tryExecuteAndNotify(this, BlockPreviewService.previewRichTextMarkup({
+                requestBody: JSON.stringify(this.blockRteValue),
+                blockEditorAlias: this._blockContext.blockEditorAlias,
+                nodeKey: this._blockContext.unique,
+                contentElementAlias: this._blockContext.contentElementTypeAlias,
+                culture: this._blockContext.culture,
+            }));
+
+            debugger;
+            if (data) {
+                this._htmlMarkup = data ?? '';
+                this._isLoading = false;
+            }
+            else if (error) {
+                this._error = error.message ?? 'An error occurred while fetching block preview';
+                this._isLoading = false;
+            }
+        }
+        catch (error) {
+            this._error = 'Failed to render block preview';
+            this._isLoading = false;
+            console.error('Block preview error:', error);
+        }
+    }
+
+    #validatePreviewData(context: typeof this._blockContext): boolean {
+        return !!(
+            context.unique != '' &&
+            context.blockEditorAlias != '' &&
+            context.contentElementTypeAlias != ''
+        );
+    }
+
+    _handleClick(event: PointerEvent) {
+        let blockEvent = true;
+        const path = event.composedPath();
+        const elements = [
+            'UUI-ACTION-BAR',
+            'UMB-BLOCK-SCALE-HANDLER'
+        ];
+
+        const containsElement = path.filter(x => x instanceof Element && elements.includes(x.tagName));
+
+        if (containsElement.length > 0) {
+            const containsEditButton = path.find(x => x instanceof Element && x.tagName === 'UUI-BUTTON');
+
+            if (containsEditButton != null) {
+                if (containsEditButton instanceof UUIButtonElement) {
+                    if (containsEditButton.href?.includes('block/edit')) {
+                        blockEvent = false;
+                    }
+                }
+            }
+
+            if (blockEvent) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+        }
+    }
+
+    override render() {
+        if (this._isLoading) {
+            return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
+        }
+
+        if (this._error) {
             return html`
-                <a href=${ifDefined(this.workspaceEditContentPath)}>
-                    ${unsafeHTML(this.htmlMarkup)}
+                <div class="preview-alert preview-alert-error" role="alert">
+                    ${this._error}
+                </div>
+            `;
+        }
+
+        if (this._htmlMarkup) {
+            return html`
+                ${this._styleElement}
+                <a
+                    href=${ifDefined(this._blockContext.workspaceEditContentPath)}
+                    @click=${this._handleClick}
+                    aria-label="Edit block"
+                    class="block-preview-edit"
+                    role="button"
+                >
+                    ${unsafeHTML(this._htmlMarkup)}
                 </a>`;
         }
         return;
@@ -154,7 +329,7 @@ export class RichTextPreviewCustomView
 
     static styles = [
         css`
-            a {
+            a.block-preview-edit {
               display: block;
               color: inherit;
               text-decoration: inherit;
@@ -162,7 +337,7 @@ export class RichTextPreviewCustomView
               border-radius: 2px;
             }
 
-            a:hover {
+            a.block-preview-edit:hover {
                 border-color: var(--uui-color-interactive-emphasis, #3544b1);
             }
 

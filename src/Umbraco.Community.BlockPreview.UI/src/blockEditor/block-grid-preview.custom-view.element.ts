@@ -7,7 +7,7 @@ import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
-import { BlockPreviewService, PreviewGridBlockData } from "../api";
+import { BlockPreviewService } from "../api";
 import BlockPreviewContext from '../context/block-preview.context';
 import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
 import { UUIButtonElement } from '@umbraco-cms/backoffice/external/uui';
@@ -200,7 +200,7 @@ export class BlockGridPreviewCustomView
             );
         });
     }
-    
+
     async #observeBlockPropertyValue() {
         this.consumeContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, (context) => {
             this.observe(
@@ -266,7 +266,8 @@ export class BlockGridPreviewCustomView
         this._error = null;
 
         try {
-            const previewData: PreviewGridBlockData = {
+            const { data, error } = await tryExecuteAndNotify(this, BlockPreviewService.previewGridBlock({
+                requestBody: JSON.stringify(this.blockGridValue),
                 blockEditorAlias: context.blockEditorAlias,
                 nodeKey: context.unique,
                 contentElementAlias: context.contentElementTypeAlias,
@@ -274,14 +275,18 @@ export class BlockGridPreviewCustomView
                 contentUdi: context.contentUdi,
                 settingsUdi: context.settingsUdi,
                 culture: context.culture,
-                requestBody: JSON.stringify(this.blockGridValue),
                 blockIndex: context.blockIndex
-            };
+            }));
 
-            const { data } = await tryExecuteAndNotify(this, BlockPreviewService.previewGridBlock(previewData));
-
-            this._htmlMarkup = data ?? '';
-            this._isLoading = false;
+            debugger;
+            if (data) {
+                this._htmlMarkup = data ?? '';
+                this._isLoading = false;
+            }
+            else if (error) {
+                this._error = error.message ?? 'An error occurred while fetching block preview';
+                this._isLoading = false;
+            }
         } catch (error) {
             this._error = 'Failed to render block preview';
             this._isLoading = false;
@@ -347,6 +352,7 @@ export class BlockGridPreviewCustomView
                         href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
                         @click=${this._handleClick}
                         aria-label="Edit block"
+                        class="block-preview-edit"
                         role="button"
                     >
                         ${unsafeHTML(this._htmlMarkup)}
@@ -369,7 +375,7 @@ export class BlockGridPreviewCustomView
 
     static styles = [
         css`
-            a {
+            a.block-preview-edit {
               display: block;
               color: inherit;
               text-decoration: inherit;
@@ -377,7 +383,7 @@ export class BlockGridPreviewCustomView
               border-radius: 2px;
             }
 
-            a:hover {
+            a.block-preview-edit:hover {
                 border-color: var(--uui-color-interactive-emphasis, #3544b1);
             }
 

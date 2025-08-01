@@ -2,7 +2,7 @@
   "$schema": "../umbraco-package-schema.json",
   "name": "Umbraco.Community.BlockPreview",
   "id": "Umbraco.Community.BlockPreview",
-  "version": "3.4.1",
+  "version": "3.4.2",
   "allowTelemetry": true,
   "extensions": [
     {

@@ -6,7 +6,7 @@ import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecuteAndNotify } from "@umbraco-cms/backoffice/resources";
-import { BlockPreviewService, PreviewListBlockData } from "../api";
+import { BlockPreviewService } from "../api";
 import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
 import BlockPreviewContext from "../context/block-preview.context";
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from "@umbraco-cms/backoffice/block";
@@ -251,7 +251,8 @@ export class BlockListPreviewCustomView
         this._error = null;
 
         try {
-            const previewData: PreviewListBlockData = {
+            const { data, error } = await tryExecuteAndNotify(this, BlockPreviewService.previewListBlock({
+                requestBody: JSON.stringify(this.blockListValue),
                 blockEditorAlias: context.blockEditorAlias,
                 nodeKey: context.unique,
                 contentElementAlias: context.contentElementTypeAlias,
@@ -260,13 +261,17 @@ export class BlockListPreviewCustomView
                 settingsUdi: context.settingsUdi,
                 culture: context.culture,
                 blockIndex: context.blockIndex,
-                requestBody: JSON.stringify(this.blockListValue),
-            };
+            }));
 
-            const { data } = await tryExecuteAndNotify(this, BlockPreviewService.previewListBlock(previewData));
-
-            this._htmlMarkup = data ?? '';
-            this._isLoading = false;
+            debugger;
+            if (data) {
+                this._htmlMarkup = data ?? '';
+                this._isLoading = false;
+            }
+            else if (error) {
+                this._error = error.message ?? 'An error occurred while fetching block preview';
+                this._isLoading = false;
+            }
         } catch (error) {
             this._error = 'Failed to render block preview';
             this._isLoading = false;
@@ -332,6 +337,7 @@ export class BlockListPreviewCustomView
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)}
                     @click=${this._handleClick}
                     aria-label="Edit block"
+                    class="block-preview-edit"
                     role="button"
                 >
                     ${unsafeHTML(this._htmlMarkup)}
@@ -354,57 +360,57 @@ export class BlockListPreviewCustomView
 
     static styles = [
         css`
-        a {
-          display: block;
-          color: inherit;
-          text-decoration: inherit;
-          border: 1px solid transparent;
-          border-radius: 2px;
-        }
+            a.block-preview-edit {
+              display: block;
+              color: inherit;
+              text-decoration: inherit;
+              border: 1px solid transparent;
+              border-radius: 2px;
+            }
 
-        a:hover {
-            border-color: var(--uui-color-interactive-emphasis, #3544b1);
-        }
+            a.block-preview-edit:hover {
+                border-color: var(--uui-color-interactive-emphasis, #3544b1);
+            }
 
-        .preview-alert {
-            background-color: var(--uui-color-danger, #f0ac00);
-            border: 1px solid transparent;
-            border-radius: 0;
-            margin-bottom: 20px;
-            padding: 8px 35px 8px 14px;
-            position: relative;
+            .preview-alert {
+                background-color: var(--uui-color-danger, #f0ac00);
+                border: 1px solid transparent;
+                border-radius: 0;
+                margin-bottom: 20px;
+                padding: 8px 35px 8px 14px;
+                position: relative;
 
-            &, a, h4 {
+                &, a, h4 {
+                    color: #fff;
+                }
+
+                pre {
+                    white-space: normal;
+                }
+
+                uui-loader {
+                    margin-right: 16px;
+                }
+            }
+
+            .preview-alert-warning {
+                background-color: var(--uui-color-warning, #f0ac00);
+                border-color: transparent;
+                color: #000;
+            }
+
+            .preview-alert-info {
+                background-color: var(--uui-color-default, #3544b1);
+                border-color: transparent;
                 color: #fff;
             }
 
-            pre {
-                white-space: normal;
+            .preview-alert-danger, .preview-alert-error {
+                background-color: var(--uui-color-danger, #f0ac00);
+                border-color: transparent;
+                color: #fff;
             }
-
-            uui-loader {
-                margin-right: 16px;
-            }
-        }
-
-        .preview-alert-warning {
-            background-color: var(--uui-color-warning, #f0ac00);
-            border-color: transparent;
-            color: #000;
-        }
-
-        .preview-alert-info {
-            background-color: var(--uui-color-default, #3544b1);
-            border-color: transparent;
-            color: #fff;
-        }
-
-        .preview-alert-danger, .preview-alert-error {
-            background-color: var(--uui-color-danger, #f0ac00);
-            border-color: transparent;
-            color: #fff;
-        }
-    `
+        `
     ]
 }
 

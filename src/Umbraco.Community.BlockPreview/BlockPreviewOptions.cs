@@ -6,7 +6,7 @@ namespace Umbraco.Community.BlockPreview
     {
         public BlockWithStylesheetSettings BlockGrid { get; set; }
         public BlockWithStylesheetSettings BlockList { get; set; }
-        public BlockTypeSettings RichText { get; set; }
+        public BlockWithStylesheetSettings RichText { get; set; }
 
         public List<string>? GetViewLocations(BlockType blockType)
         {
