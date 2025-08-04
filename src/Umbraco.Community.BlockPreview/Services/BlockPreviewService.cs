@@ -399,7 +399,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private void FormatBlockData(List<BlockItemData>? blockData)
         {
-            if (blockData == null || blockData.Count != 0)
+            if (blockData == null || blockData.Count == 0)
                 return;
 
             foreach (var contentData in blockData)
