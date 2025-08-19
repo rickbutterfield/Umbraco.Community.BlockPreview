@@ -4,7 +4,8 @@ using Umbraco.Cms.Web.Common.PublishedModels;
 
 namespace Umbraco.Cms._13.x.ViewComponents
 {
-    public class HeroBlockViewComponent : ViewComponent
+    [ViewComponent(Name = HeroBlock.ModelTypeAlias)]
+    public class HeroBlockComponent : ViewComponent
     {
         public IViewComponentResult Invoke(BlockGridItem<HeroBlock, BlockSettings> model)
         {

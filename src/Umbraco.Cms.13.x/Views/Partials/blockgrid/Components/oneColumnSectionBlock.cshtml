@@ -12,5 +12,3 @@
     @(hasBrightContrast ? "bright-contrast" : null)>
     @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)
 </section>
-
-@await Html.GetBlockGridHtmlAsync(Model.Content.NestedBlockGrid)
