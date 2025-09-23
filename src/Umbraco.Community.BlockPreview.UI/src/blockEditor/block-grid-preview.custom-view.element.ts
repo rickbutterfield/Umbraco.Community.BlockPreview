@@ -148,21 +148,24 @@ export class BlockGridPreviewCustomView
     }
 
     async #observeDocumentWorkspace() {
-        this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT).then((context) => {
-            if (context) {
-                this.#documentWorkspaceContext = context;
-                this.observe(
-                    observeMultiple([context.unique, context.contentTypeUnique]),
-                    async ([unique, documentTypeUnique]) => {
-                        this._blockContext.unique = unique?.toString() ?? '';
-                        this.#blockPreviewContext?.setUnique(this._blockContext.unique);
+        
+        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT,(context)=>{
+            if(!context)
+                return;
 
-                        this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
-                        this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
-                        this.#observeBlockValue();
-                    }
-                );
-            }
+            this.#documentWorkspaceContext = context;
+            this.observe(
+                observeMultiple([context.unique, context.contentTypeUnique]),
+                async ([unique, documentTypeUnique]) => {
+                    this._blockContext.unique = unique?.toString() ?? '';
+                    this.#blockPreviewContext?.setUnique(this._blockContext.unique);
+
+                    this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
+                    this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
+                    this.#observeBlockValue();
+                }
+            );
+            
         });
 
         if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
