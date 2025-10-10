@@ -6,8 +6,8 @@
 
         internal class BlockPreviewDefinition
         {
-            public BlockWithStylesheetSettings BlockGrid { get; set; }
-            public BlockWithStylesheetSettings BlockList { get; set; }
+            public BlockTypeSettings BlockGrid { get; set; }
+            public BlockTypeSettings BlockList { get; set; }
             public BlockTypeSettings RichText { get; set; }
         }
     }

@@ -25,7 +25,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
     /// Represents the Block Preview API controller.
     /// </summary>
     [ApiVersion("1.0")]
-    [VersionedApiBackOfficeRoute("block-preview")]
+    [ApiExplorerSettings(GroupName = "BlockPreview")]
     public class BlockPreviewApiController : BlockPreviewApiControllerBase
     {
         private readonly IPublishedRouter _publishedRouter;
@@ -246,7 +246,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
         [AllowAnonymous]
         [HttpGet("settings")]
         [ProducesResponseType(typeof(BlockPreviewOptions), 200)]
-        public BlockPreviewOptions GetSettings() => _blockPreviewSettings.Value;
+        public BlockPreviewOptions GetSettings() =>
+            _blockPreviewSettings.Value;
+
         #endregion
 
         #region Private

@@ -348,33 +348,9 @@ namespace Umbraco.Community.BlockPreview.Services
                 var value = property.Value;
                 string? propertyAsString = value?.ToString();
 
-                if (propertyAsString?.Contains(nameof(BlockGridLayoutItem)) == true)
+                if (property.EditorAlias == PropertyEditors.Aliases.RichText)
                 {
-                    var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
-                    if (blockValue != null)
-                    {
-                        FormatBlockData(blockValue.BlockValue.ContentData);
-                        FormatBlockData(blockValue.BlockValue.SettingsData);
-                        property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
-                    }
-                }
-
-                if (propertyAsString?.Contains(nameof(BlockListLayoutItem)) == true)
-                {
-                    var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
-                    if (blockValue != null)
-                    {
-                        FormatBlockData(blockValue.BlockValue.ContentData);
-                        FormatBlockData(blockValue.BlockValue.SettingsData);
-                        property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
-                    }
-                }
-
-                if (propertyAsString?.Contains(nameof(RichTextBlockLayoutItem)) == true)
-                {
-                    RichTextPropertyEditorHelper.TryParseRichTextEditorValue(value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue);
-
-                    if (richTextEditorValue != null)
+                    if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
                     {
                         var blockValue = _richTextBlockEditorValues.DeserializeAndClean(_jsonSerializer.Serialize(richTextEditorValue.Blocks));
                         if (blockValue != null)
@@ -386,6 +362,26 @@ namespace Umbraco.Community.BlockPreview.Services
 
                             property.Value = JsonSerializer.Serialize(richTextEditorValue, _jsonSerializerOptions);
                         }
+                    }
+                }
+                if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
+                {
+                    var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
+                    if (blockValue != null)
+                    {
+                        FormatBlockData(blockValue.BlockValue.ContentData);
+                        FormatBlockData(blockValue.BlockValue.SettingsData);
+                        property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+                    }
+                }
+                if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
+                {
+                    var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
+                    if (blockValue != null)
+                    {
+                        FormatBlockData(blockValue.BlockValue.ContentData);
+                        FormatBlockData(blockValue.BlockValue.SettingsData);
+                        property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                     }
                 }
             }
@@ -411,6 +407,25 @@ namespace Umbraco.Community.BlockPreview.Services
                         if (Guid.TryParse(propertyData.Value?.ToString(), out Guid parsedGuid))
                         {
                             propertyData.Value = StringUdi.Create("document", parsedGuid).UriValue.ToString();
+                        }
+                    }
+
+                    if (propertyData.EditorAlias == PropertyEditors.Aliases.RichText)
+                    {
+                        if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(propertyData.Value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
+                        {
+                            var blockValue = _richTextBlockEditorValues.DeserializeAndClean(_jsonSerializer.Serialize(richTextEditorValue.Blocks));
+                            if (blockValue != null)
+                            {
+                                FormatBlockData(blockValue.BlockValue.ContentData);
+                                FormatBlockData(blockValue.BlockValue.SettingsData);
+
+                                richTextEditorValue.Blocks = blockValue.BlockValue;
+
+                                propertyData.Value = JsonSerializer.Serialize(richTextEditorValue, _jsonSerializerOptions);
+
+                                propertyData.Value = propertyData.Value.ToString()?.Replace("\"Layout\"", "\"layout\"");
+                            }
                         }
                     }
 

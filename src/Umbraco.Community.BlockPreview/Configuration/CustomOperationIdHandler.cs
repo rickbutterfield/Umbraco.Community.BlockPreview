@@ -4,7 +4,7 @@ using Umbraco.Cms.Api.Common.OpenApi;
 
 namespace Umbraco.Community.BlockPreview.Configuration
 {
-    public class BlockPreviewCustomOperationIdHandler : IOperationIdHandler
+    public class CustomOperationIdHandler : IOperationIdHandler
     {
         public bool CanHandle(ApiDescription apiDescription)
         {

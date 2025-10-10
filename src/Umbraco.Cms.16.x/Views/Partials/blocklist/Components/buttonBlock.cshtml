@@ -1,0 +1,5 @@
+﻿@inherits UmbracoViewPage<BlockListItem<ButtonBlock>>
+
+<a href="@Model.Content.Button?.Url" class="btn">
+    @Model.Content.Button?.Name
+</a>

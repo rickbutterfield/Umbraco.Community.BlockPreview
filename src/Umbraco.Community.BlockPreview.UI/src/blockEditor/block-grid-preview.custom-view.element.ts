@@ -33,7 +33,7 @@ export class BlockGridPreviewCustomView
 
     @property({ attribute: false })
     config?: UmbBlockEditorCustomViewConfiguration;
-    
+
     @property({ attribute: false })
     unpublished?: boolean;
 
@@ -148,9 +148,9 @@ export class BlockGridPreviewCustomView
     }
 
     async #observeDocumentWorkspace() {
-        
-        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT,(context)=>{
-            if(!context)
+
+        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+            if (!context)
                 return;
 
             this.#documentWorkspaceContext = context;
@@ -165,7 +165,7 @@ export class BlockGridPreviewCustomView
                     this.#observeBlockValue();
                 }
             );
-            
+
         });
 
         if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {

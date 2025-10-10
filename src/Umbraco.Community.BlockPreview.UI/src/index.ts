@@ -22,9 +22,14 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
         const config = authContext.getOpenApiConfiguration();
 
         client.setConfig({
-            auth: () => authContext.getLatestToken(),
             baseUrl: config.base,
             credentials: config.credentials,
+        });
+
+        client.interceptors.request.use(async (request, _options) => {
+            const token = await config.token();
+            request.headers.set('Authorization', `Bearer ${token}`);
+            return request;
         });
 
         const settingsRepository = new SettingsRepository(host);

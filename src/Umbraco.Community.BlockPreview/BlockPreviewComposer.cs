@@ -21,6 +21,8 @@ namespace Umbraco.Community.BlockPreview
         {
             builder.AddInternal(config => config.BindConfiguration(Constants.Configuration.AppSettingsRoot));
 
+            builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
+
             builder.AddNotificationHandler<DataTypeSavedNotification, DataTypeSavedNotificationHandler>();
             builder.AddNotificationHandler<ContentTypeSavedNotification, ContentTypeSavedNotificationHandler>();
 
@@ -34,7 +36,7 @@ namespace Umbraco.Community.BlockPreview
                 throw new InvalidOperationException($"Expected {nameof(DefaultViewComponentHelper)} when resolving {nameof(IViewComponentHelperWrapper)}");
             });
 
-            builder.Services.AddSingleton<IOperationIdHandler, BlockPreviewCustomOperationIdHandler>();
+            builder.Services.AddSingleton<IOperationIdHandler, CustomOperationIdHandler>();
 
             builder.Services.AddScoped<IBlockPreviewService, BlockPreviewService>();
             builder.Services.AddScoped<ContextCultureService>();

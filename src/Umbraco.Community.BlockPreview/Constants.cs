@@ -4,16 +4,18 @@
     {
         public static partial class DefaultViewLocations
         {
-            public static string BlockGrid => "/Views/Partials/blockgrid/Components/{0}.cshtml";
-            public static string BlockList => "/Views/Partials/blocklist/Components/{0}.cshtml";
-            public static string RichText => "/Views/Partials/richtext/Components/{0}.cshtml";
+            public const string BlockGrid = "/Views/Partials/blockgrid/Components/{0}.cshtml";
+            public const string BlockList = "/Views/Partials/blocklist/Components/{0}.cshtml";
+            public const string RichText = "/Views/Partials/richtext/Components/{0}.cshtml";
         }
 
         public static partial class Configuration
         {
-            public static string PackageName => "Umbraco.Community.BlockPreview";
-            public static string AppSettingsRoot => "BlockPreview";
-            public static string AppPluginsRoot => $"App_Plugins/{PackageName}";
+            public const string PackageName = "Umbraco.Community.BlockPreview";
+            public const string AppSettingsRoot = "BlockPreview";
+            public const string ApiName = "block-preview";
+            public const string ApiPath = "/block-preview/api";
+            public const string AppPluginsRoot = $"App_Plugins/{PackageName}";
         }
 
         public static partial class ErrorMessages
@@ -56,8 +58,8 @@
             public static string Content = "BlockPreview_Content_{0}";
             public static string GeneratedModels = "BlockPreview_GeneratedModels";
             public static string BlockType = "BlockPreview_BlockType_{0}";
-            public static string ContentType => "BlockPreview_ContentType_{0}";
-            public static string DataType => "BlockPreview_DataType_{0}";
+            public static string ContentType = "BlockPreview_ContentType_{0}";
+            public static string DataType = "BlockPreview_DataType_{0}";
         }
     }
 }
