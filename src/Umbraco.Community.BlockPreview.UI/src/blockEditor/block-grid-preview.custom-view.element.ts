@@ -2,7 +2,7 @@ import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/back
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
-import { css, customElement, html, ifDefined, property, PropertyValueMap, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, html, ifDefined, property, PropertyValueMap, PropertyValues, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
@@ -52,13 +52,24 @@ export class BlockGridPreviewCustomView
     @state()
     private _error: string | null = null;
 
+    @state()
+    private _columnSpan: number = 0;
+
+    @state()
+    private _rowSpan: number = 0;
+
     private _styleElement?: HTMLLinkElement;
 
-    private _previewTimeout: number | undefined;
+    @state()
+    private _isFirstLoad: boolean = true;
 
     @state()
     private _sortModeActive: boolean = false;
 
+    private _pointerDownPos: { x: number; y: number } | null = null;
+    private _isDragging: boolean = false;
+
+    @state()
     private _blockContext = {
         unique: "",
         documentTypeUnique: "",
@@ -101,17 +112,35 @@ export class BlockGridPreviewCustomView
         });
     }
 
-    protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-        super.updated(_changedProperties);
-
-        if (_changedProperties.has('content') || _changedProperties.has('settings')) {
-            if (this._previewTimeout) {
-                clearTimeout(this._previewTimeout);
-            }
-            this._previewTimeout = window.setTimeout(() => {
+    protected override willUpdate(_changedProperties: PropertyValues): void {
+        if (!this._isFirstLoad && !_changedProperties.has('_isFirstLoad') && !_changedProperties.has('_isLoading')) {
+            if (
+                (_changedProperties.has('content') && this.content) ||
+                (_changedProperties.has('settings') && this.settings)) {
                 this.#renderBlockPreview();
-            }, 500);
+            }
+
+            if (_changedProperties.has('blockGridValue') ||
+                (_changedProperties.has('_columnSpan') && this._columnSpan) ||
+                (_changedProperties.has('_rowSpan') && this._rowSpan)) {
+                const value = _changedProperties.get('blockGridValue') as UmbBlockGridValueModel | undefined;
+                if (value) {
+                    const layouts = value.layout ? value.layout['Umbraco.BlockGrid'] : undefined;
+                    if (layouts) {
+                        const newColumnSpan = this._getColumnSpan(layouts);
+                        const newRowSpan = this._getRowSpan(layouts);
+
+                        if (newColumnSpan !== this._columnSpan || newRowSpan !== this._rowSpan) {
+                            this._columnSpan = newColumnSpan;
+                            this._rowSpan = newRowSpan;
+                            this.#renderBlockPreview();
+                        }
+                    }
+                }
+            }
         }
+
+        super.willUpdate(_changedProperties);
     }
 
     #setupContextObservers() {
@@ -119,6 +148,7 @@ export class BlockGridPreviewCustomView
         this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
         this.#observeDocumentWorkspace();
+        this.#observeBlockContexts();
     }
 
     #observeSortMode() {
@@ -148,7 +178,6 @@ export class BlockGridPreviewCustomView
     }
 
     async #observeDocumentWorkspace() {
-
         this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
             if (!context)
                 return;
@@ -162,10 +191,8 @@ export class BlockGridPreviewCustomView
 
                     this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
                     this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
-                    this.#observeBlockValue();
                 }
             );
-
         });
 
         if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
@@ -174,69 +201,77 @@ export class BlockGridPreviewCustomView
                     this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
                         this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
                         this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
-                        this.#observeBlockValue();
                     });
                 }
             });
         }
     }
 
-    async #observeBlockValue() {
-        this.consumeContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, async (context) => {
-            if (context) {
+    async #observeBlockContexts() {
+        // Consume all contexts first, then observe them together
+        this.consumeContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, (entryContext) => {
+            if (!entryContext) return;
+
+            this.consumeContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, (managerContext) => {
+                if (!managerContext) return;
+
+                // Now observe all properties from both contexts together
                 this.observe(
                     observeMultiple([
-                        context.contentKey,
-                        context.settingsKey,
-                        context.workspaceEditContentPath,
-                        context.contentElementTypeAlias,
-                        context.contentElementTypeKey
+                        entryContext.contentKey,
+                        entryContext.settingsKey,
+                        entryContext.workspaceEditContentPath,
+                        entryContext.contentElementTypeAlias,
+                        entryContext.contentElementTypeKey,
+                        managerContext.contents,
+                        managerContext.settings,
+                        managerContext.layouts,
+                        managerContext.exposes,
+                        managerContext.propertyAlias
                     ]),
                     async ([
                         contentUdi,
                         settingsUdi,
                         workspaceEditContentPath,
                         contentElementTypeAlias,
-                        contentElementTypeKey
+                        contentElementTypeKey,
+                        contents,
+                        settings,
+                        layouts,
+                        exposes,
+                        propertyAlias
                     ]) => {
+                        // Update block context from entry context
                         this._blockContext.contentUdi = contentUdi ?? '';
                         this._blockContext.settingsUdi = settingsUdi ?? '';
                         this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
 
-                        await this.#observeBlockPropertyValue();
-                    }
-                );
-            }
-        });
-    }
-
-    async #observeBlockPropertyValue() {
-        this.consumeContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, (context) => {
-            if (context) {
-                this.observe(
-                    observeMultiple([
-                        context.contents,
-                        context.settings,
-                        context.layouts,
-                        context.exposes,
-                        context.propertyAlias
-                    ]),
-                    async ([contents, settings, layouts, exposes, propertyAlias]) => {
+                        // Update block context from manager context
                         this._blockContext.blockEditorAlias = propertyAlias ?? '';
 
+                        const filteredLayouts = this._filterLayouts(layouts);
+
+                        // Update block grid value
                         this.blockGridValue = {
                             contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
                             settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
                             expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
-                            layout: { ['Umbraco.BlockGrid']: this._filterLayouts(layouts) }
+                            layout: { ['Umbraco.BlockGrid']: filteredLayouts }
                         };
 
+                        this._columnSpan = this._getColumnSpan(filteredLayouts);
+                        this._rowSpan = this._getRowSpan(filteredLayouts);
+
                         this._blockContext.blockIndex = contents.indexOf(this.blockGridValue.contentData[0]);
+                        if (this._isFirstLoad) {
+                            this._isFirstLoad = false;
+                            this.#renderBlockPreview();
+                        }
                     }
                 );
-            }
+            });
         });
     }
 
@@ -256,6 +291,22 @@ export class BlockGridPreviewCustomView
             .filter(item => item && item.contentKey === this._blockContext.contentUdi);
 
         return nestedMatches;
+    }
+
+    _getColumnSpan(layouts?: UmbBlockGridLayoutModel[] | undefined): number {
+        if (!layouts || layouts.length === 0) {
+            return 0;
+        }
+
+        return layouts[0]?.columnSpan ?? 0;
+    }
+
+    _getRowSpan(layouts?: UmbBlockGridLayoutModel[] | undefined): number {
+        if (!layouts || layouts.length === 0) {
+            return 0;
+        }
+
+        return layouts[0]?.rowSpan ?? 0;
     }
 
     async #renderBlockPreview() {
@@ -292,13 +343,13 @@ export class BlockGridPreviewCustomView
                 }
             }));
 
+            this._isLoading = false;
+
             if (data) {
                 this._htmlMarkup = data ?? '';
-                this._isLoading = false;
             }
             else if (UmbApiError.isUmbApiError(error)) {
                 this._error = error.message;
-                this._isLoading = false;
             }
 
         } catch (error) {
@@ -317,7 +368,35 @@ export class BlockGridPreviewCustomView
         );
     }
 
+    _handlePointerDown(event: PointerEvent) {
+        this._pointerDownPos = { x: event.clientX, y: event.clientY };
+        this._isDragging = false;
+    }
+
+    _handlePointerMove(event: PointerEvent) {
+        if (this._pointerDownPos) {
+            const deltaX = Math.abs(event.clientX - this._pointerDownPos.x);
+            const deltaY = Math.abs(event.clientY - this._pointerDownPos.y);
+            if (deltaX > 5 || deltaY > 5) {
+                this._isDragging = true;
+            }
+        }
+    }
+
+    _handlePointerUp() {
+        this._pointerDownPos = null;
+        setTimeout(() => {
+            this._isDragging = false;
+        }, 10);
+    }
+
     _handleClick(event: PointerEvent) {
+        if (this._isDragging) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
         let blockEvent = true;
         const path = event.composedPath();
         const elements = [
@@ -364,6 +443,9 @@ export class BlockGridPreviewCustomView
                 ${this._styleElement}
                 <a
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
+                    @pointerdown=${this._handlePointerDown}
+                    @pointermove=${this._handlePointerMove}
+                    @pointerup=${this._handlePointerUp}
                     @click=${this._handleClick}
                     aria-label="Edit block"
                     class="block-preview-edit"
@@ -389,7 +471,13 @@ export class BlockGridPreviewCustomView
 
     static styles = [
         css`
+    :host {
+      display: block;
+      height: 100%;
+    }
+
             a.block-preview-edit {
+              height: 100%;
               display: block;
               color: inherit;
               text-decoration: inherit;
