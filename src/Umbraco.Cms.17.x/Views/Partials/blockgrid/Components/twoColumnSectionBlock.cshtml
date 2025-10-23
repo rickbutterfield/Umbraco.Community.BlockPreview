@@ -2,9 +2,9 @@
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 
 @{
-    var backgroundColor = Model.Settings.BackgroundColor;
+    var backgroundColor = Model.Settings?.BackgroundColor?.Color;
     var noBackgroundColor = String.IsNullOrEmpty(backgroundColor);
-    var hasBrightContrast = Model.Settings.Contrast == "ffffff";
+    var hasBrightContrast = Model.Settings?.Contrast?.Color == "ffffff";
 
     var leftArea = Model.Areas.FirstOrDefault(x => x.Alias == "left");
     var rightArea = Model.Areas.FirstOrDefault(x => x.Alias == "right");
