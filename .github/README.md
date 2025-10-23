@@ -9,6 +9,8 @@
 
 ## Installation
 > [!IMPORTANT]
+> **v5.x** supports Umbraco v17
+> 
 > **v4.x** supports Umbraco v16
 > 
 > **v3.x** supports Umbraco v15
