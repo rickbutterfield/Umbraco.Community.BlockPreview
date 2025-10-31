@@ -27,9 +27,9 @@ jobs:
           ${{ runner.os }}-dotnet-
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v4
+      uses: actions/setup-dotnet@v5
       with:
-        dotnet-version: 9.0.x
+        dotnet-version: 10.0.x
   
     - name: Build project
       run: dotnet build src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj --configuration Release
