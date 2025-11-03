@@ -115,6 +115,12 @@
                 }
 
                 if ($scope.isRte) {
+                    $scope.modelValue = {
+                        contentData: [$scope.block.data],
+                        settingsData: [$scope.block.settingsData],
+                        layout: $scope.block.layout
+                    }
+
                     previewResource.getRichTextPreview(
                         $scope.nodeKey,
                         $scope.modelValue,
@@ -138,7 +144,7 @@
                     $timeout.cancel(timeoutPromise);
 
                     timeoutPromise = $timeout(function () {
-                        loadPreview(newValue, null);
+                        loadPreview();
                     }, 500);
                 }
             }, true);
@@ -148,7 +154,7 @@
                     $timeout.cancel(timeoutPromise);
 
                     timeoutPromise = $timeout(function () {
-                        loadPreview(newValue, null);
+                        loadPreview();
                     }, 500);
                 }
             }, true);
@@ -158,7 +164,7 @@
                     $timeout.cancel(timeoutPromise);
 
                     timeoutPromise = $timeout(function () {
-                        loadPreview(newValue, null);
+                        loadPreview();
                     }, 500);
                 }
             }, true);
@@ -168,7 +174,7 @@
                     $timeout.cancel(timeoutPromise);
 
                     timeoutPromise = $timeout(function () {
-                        loadPreview(null, newValue);
+                        loadPreview();
                     }, 500);
                 }
             }, true);
