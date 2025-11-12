@@ -12,6 +12,7 @@ export type BlockTypeSettings = {
     contentTypes?: Array<string> | null;
     ignoredContentTypes: Array<string>;
     stylesheet?: string | null;
+    javaScript?: string | null;
 };
 
 export enum EventMessageTypeModel {

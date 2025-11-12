@@ -75,5 +75,6 @@ namespace Umbraco.Community.BlockPreview
         public List<string>? ContentTypes { get; set; } = [];
         public List<string> IgnoredContentTypes { get; set; } = [];
         public string? Stylesheet { get; set; }
+        public string? JavaScript { get; set; }
     }
 }

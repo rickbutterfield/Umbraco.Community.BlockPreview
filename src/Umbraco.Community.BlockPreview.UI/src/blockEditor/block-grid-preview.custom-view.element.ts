@@ -54,6 +54,8 @@ export class BlockGridPreviewCustomView
 
     private _styleElement?: HTMLLinkElement;
 
+    private _scriptElement?: HTMLScriptElement;
+
     private _previewTimeout: number | undefined;
 
     @state()
@@ -136,6 +138,11 @@ export class BlockGridPreviewCustomView
                 this._styleElement.rel = 'stylesheet';
                 this._styleElement.href = settings.blockGrid.stylesheet as string;
             }
+            if (settings?.blockGrid?.javaScript !== undefined) {
+                this._scriptElement = document.createElement('script');
+                this._scriptElement.src = settings.blockGrid.javaScript as string;
+            }
+            
         });
     }
 
@@ -371,6 +378,7 @@ export class BlockGridPreviewCustomView
                 >
                     ${unsafeHTML(this._htmlMarkup)}
                 </a>
+                ${this._scriptElement}
             `;
             }
         }
