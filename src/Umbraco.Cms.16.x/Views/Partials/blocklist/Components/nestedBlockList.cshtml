@@ -1,7 +1,7 @@
-﻿@inherits UmbracoViewPage<BlockListItem<NestedBlockList, BlockSettings>>
+﻿@inherits UmbracoViewPage<BlockListItem<NestedBlockList>>
 
 @if (Context.Request.IsBlockPreviewRequest())
 {
-    <pre>Dropdown: @Model.Settings?.Dropdown</pre>
+    @* <pre>Dropdown: @Model.Settings?.Dropdown</pre> *@
 }
 @await Html.GetBlockListHtmlAsync(Model.Content.BlockList)

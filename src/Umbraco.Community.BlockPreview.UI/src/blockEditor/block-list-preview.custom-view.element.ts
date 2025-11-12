@@ -97,9 +97,9 @@ export class BlockListPreviewCustomView
     constructor() {
         super();
 
-        this.consumeContext(BLOCK_PREVIEW_CONTEXT, (context) => {
+        this.consumeContext(BLOCK_PREVIEW_CONTEXT, async (context) => {
             this.#blockPreviewContext = context;
-            this.#setupContextObservers();
+            await this.#setupContextObservers();
         });
     }
 
@@ -116,11 +116,11 @@ export class BlockListPreviewCustomView
         }
     }
 
-    #setupContextObservers() {
+    async #setupContextObservers() {
         this.#observeSortMode();
         this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
-        this.#observeDocumentWorkspace();
+        await this.#observeDocumentWorkspace();
     }
 
     #observeSortMode() {
@@ -149,9 +149,14 @@ export class BlockListPreviewCustomView
         });
     }
 
-    #observeDocumentWorkspace() {
-        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
-            if (context) {
+    async #observeDocumentWorkspace() {
+        try {
+            await this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT);
+
+            this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+                if (!context)
+                    return;
+
                 this.#documentWorkspaceContext = context;
                 this.observe(
                     observeMultiple([context.unique, context.contentTypeUnique]),
@@ -164,19 +169,19 @@ export class BlockListPreviewCustomView
                         this.#observeBlockValue();
                     }
                 );
-            }
-        });
-
-        if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
-            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
-                if (context) {
-                    this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
-                        this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
-                        this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
-                        this.#observeBlockValue();
-                    });
-                }
             });
+        } catch (ex) {
+            if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
+                this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+                    if (context) {
+                        this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                            this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
+                            this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
+                            this.#observeBlockValue();
+                        });
+                    }
+                });
+            }
         }
     }
 
