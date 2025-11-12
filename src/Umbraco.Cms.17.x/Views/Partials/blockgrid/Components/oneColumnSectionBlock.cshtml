@@ -1,7 +1,7 @@
 ﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem<OneColumnSectionBlock, SectionSettingsBlock>>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @{
-    var backgroundColor = Model.Settings?.BackgroundColor.Color;
+    var backgroundColor = Model.Settings?.BackgroundColor?.Color;
     var noBackgroundColor = string.IsNullOrEmpty(backgroundColor);
     var hasBrightContrast = Model.Settings?.Contrast?.Color == "ffffff";
 }

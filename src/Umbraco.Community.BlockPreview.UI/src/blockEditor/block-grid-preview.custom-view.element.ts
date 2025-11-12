@@ -95,9 +95,9 @@ export class BlockGridPreviewCustomView
     constructor() {
         super();
 
-        this.consumeContext(BLOCK_PREVIEW_CONTEXT, (context) => {
+        this.consumeContext(BLOCK_PREVIEW_CONTEXT, async (context) => {
             this.#blockPreviewContext = context;
-            this.#setupContextObservers();
+            await this.#setupContextObservers();
         });
     }
 
@@ -114,11 +114,11 @@ export class BlockGridPreviewCustomView
         }
     }
 
-    #setupContextObservers() {
+    async #setupContextObservers() {
         this.#observeSortMode();
         this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
-        this.#observeDocumentWorkspace();
+        await this.#observeDocumentWorkspace();
     }
 
     #observeSortMode() {
@@ -148,36 +148,40 @@ export class BlockGridPreviewCustomView
     }
 
     async #observeDocumentWorkspace() {
+        try {
+            await this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT);
 
-        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
-            if (!context)
-                return;
+            this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+                if (!context)
+                    return;
 
-            this.#documentWorkspaceContext = context;
-            this.observe(
-                observeMultiple([context.unique, context.contentTypeUnique]),
-                async ([unique, documentTypeUnique]) => {
-                    this._blockContext.unique = unique?.toString() ?? '';
-                    this.#blockPreviewContext?.setUnique(this._blockContext.unique);
+                this.#documentWorkspaceContext = context;
+                this.observe(
+                    observeMultiple([context.unique, context.contentTypeUnique]),
+                    async ([unique, documentTypeUnique]) => {
+                        this._blockContext.unique = unique?.toString() ?? '';
+                        this.#blockPreviewContext?.setUnique(this._blockContext.unique);
 
-                    this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
-                    this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
-                    this.#observeBlockValue();
-                }
-            );
-
-        });
-
-        if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
-            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
-                if (context) {
-                    this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
-                        this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
-                        this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
+                        this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
+                        this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
-                    });
-                }
+                    }
+                );
+
             });
+        }
+        catch (ex) {
+            if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
+                this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+                    if (context) {
+                        this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                            this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
+                            this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
+                            this.#observeBlockValue();
+                        });
+                    }
+                });
+            }
         }
     }
 
@@ -353,93 +357,93 @@ export class BlockGridPreviewCustomView
 
             if (this._error) {
                 return html`
-                <div class="preview-alert preview-alert-error" role="alert">
-                    ${this._error}
-                </div>
-            `;
+ <div class="preview-alert preview-alert-error" role="alert">
+ ${this._error}
+ </div>
+ `;
             }
 
             if (this._htmlMarkup) {
                 return html`
-                ${this._styleElement}
-                <a
-                    href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
-                    @click=${this._handleClick}
-                    aria-label="Edit block"
-                    class="block-preview-edit"
-                    role="button"
-                >
-                    ${unsafeHTML(this._htmlMarkup)}
-                </a>
-            `;
+ ${this._styleElement}
+ <a
+ href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
+ @click=${this._handleClick}
+ aria-label="Edit block"
+ class="block-preview-edit"
+ role="button"
+ >
+ ${unsafeHTML(this._htmlMarkup)}
+ </a>
+ `;
             }
         }
 
         else return html`<umb-block-grid-block
-            class="umb-block-grid__block--view"
-            .label=${this.label}
-            .icon=${this.icon}
-            .unpublished=${this.unpublished}
-            .config=${this.config}
-            .content=${this.content}
-            .settings=${this.settings}>
-            </umb-block-grid-block>
-        `;
+ class="umb-block-grid__block--view"
+ .label=${this.label}
+ .icon=${this.icon}
+ .unpublished=${this.unpublished}
+ .config=${this.config}
+ .content=${this.content}
+ .settings=${this.settings}>
+ </umb-block-grid-block>
+ `;
     }
 
     static styles = [
         css`
-            a.block-preview-edit {
-              display: block;
-              color: inherit;
-              text-decoration: inherit;
-              border: 1px solid transparent;
-              border-radius: 2px;
-            }
+ a.block-preview-edit {
+ display: block;
+ color: inherit;
+ text-decoration: inherit;
+ border:1px solid transparent;
+ border-radius:2px;
+ }
 
-            a.block-preview-edit:hover {
-                border-color: var(--uui-color-interactive-emphasis, #3544b1);
-            }
+ a.block-preview-edit:hover {
+ border-color: var(--uui-color-interactive-emphasis, #3544b1);
+ }
 
-            .preview-alert {
-                background-color: var(--uui-color-danger, #f0ac00);
-                border: 1px solid transparent;
-                border-radius: 0;
-                margin-bottom: 20px;
-                padding: 8px 35px 8px 14px;
-                position: relative;
+ .preview-alert {
+ background-color: var(--uui-color-danger, #f0ac00);
+ border:1px solid transparent;
+ border-radius:0;
+ margin-bottom:20px;
+ padding: 8px 35px 8px 14px;
+ position: relative;
 
-                &, a, h4 {
-                    color: #fff;
-                }
+ &, a, h4 {
+ color: #fff;
+ }
 
-                pre {
-                    white-space: normal;
-                }
+ pre {
+ white-space: normal;
+ }
 
-                uui-loader {
-                    margin-right: 16px;
-                }
-            }
+ uui-loader {
+ margin-right:16px;
+ }
+ }
 
-            .preview-alert-warning {
-                background-color: var(--uui-color-warning, #f0ac00);
-                border-color: transparent;
-                color: #000;
-            }
+ .preview-alert-warning {
+ background-color: var(--uui-color-warning, #f0ac00);
+ border-color: transparent;
+ color: #000;
+ }
 
-            .preview-alert-info {
-                background-color: var(--uui-color-default, #3544b1);
-                border-color: transparent;
-                color: #fff;
-            }
+ .preview-alert-info {
+ background-color: var(--uui-color-default, #3544b1);
+ border-color: transparent;
+ color: #fff;
+ }
 
-            .preview-alert-danger, .preview-alert-error {
-                background-color: var(--uui-color-danger, #f0ac00);
-                border-color: transparent;
-                color: #fff;
-            }
-        `
+ .preview-alert-danger, .preview-alert-error {
+ background-color: var(--uui-color-danger, #f0ac00);
+ border-color: transparent;
+ color: #fff;
+ }
+ `
     ]
 }
 
