@@ -22,7 +22,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
 
             bool isBlockPreviewController = requestControllerMatches && (isBlockGridPreview || isBlockListPreview || isRichTextPreview);
 
-            return isBackOffice && isBlockPreviewController;
+            return isBackOffice || isBlockPreviewController;
         }
     }
 }
