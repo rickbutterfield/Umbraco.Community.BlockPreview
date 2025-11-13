@@ -5,4 +5,9 @@
     <StaticWebAssetSourceId>Umbraco.Community.BlockPreview</StaticWebAssetSourceId>
     <DebugAssetsDirectory>$(MSBuildProjectDirectory)\dist</DebugAssetsDirectory>
   </PropertyGroup>
+  <ProjectExtensions>
+    <VisualStudio>
+      <UserProperties package_1json__JsonSchema="https://www.schemastore.org/pantsbuild-2.26.0.json" />
+    </VisualStudio>
+  </ProjectExtensions>
 </Project>

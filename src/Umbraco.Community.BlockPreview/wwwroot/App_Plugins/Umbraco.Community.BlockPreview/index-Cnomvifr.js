@@ -839,7 +839,7 @@ p.styles = [
  border:1px solid transparent;
  border-radius:0;
  margin-bottom:20px;
- padding:8px35px8px14px;
+ padding:8px 35px 8px 14px;
  position: relative;
 
  &, a, h4 {
@@ -1544,7 +1544,7 @@ const fr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     ...Vt.manifest,
     type: "propertyAction",
     kind: "sortMode",
-    api: () => import("./sort-mode.property-action-Dqu45inp.js"),
+    api: () => import("./sort-mode.property-action-C4u0Z1CU.js"),
     weight: 100,
     meta: {
       icon: "icon-navigation-vertical",
@@ -1560,7 +1560,7 @@ const fr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     kind: "sortMode",
     alias: "BlockPreview.PropertyAction.Grid.SortMode",
     name: "Block Grid Sort Mode Property Action",
-    api: () => import("./block-grid-sort-mode-J7zzfv-C.js"),
+    api: () => import("./block-grid-sort-mode-CwzRNINf.js"),
     forPropertyEditorUis: [$t],
     conditions: [
       {
@@ -1574,7 +1574,7 @@ const fr = /* @__PURE__ */ Object.freeze(/* @__PURE__ */ Object.defineProperty({
     kind: "sortMode",
     alias: "BlockPreview.PropertyAction.List.SortMode",
     name: "Block List Sort Mode Property Action",
-    api: () => import("./block-list-sort-mode-CpEqukW3.js"),
+    api: () => import("./block-list-sort-mode-Bz5g-7hv.js"),
     forPropertyEditorUis: [It],
     conditions: [
       {
@@ -1671,4 +1671,4 @@ export {
   Et as c,
   Mr as o
 };
-//# sourceMappingURL=index-Dntp6xj8.js.map
+//# sourceMappingURL=index-Cnomvifr.js.map
