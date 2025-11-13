@@ -104,5 +104,21 @@ namespace Umbraco.Cms.Web.Common.PublishedModels
 		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
 		[ImplementPropertyType("mntp")]
 		public virtual global::Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent Mntp => this.Value<global::Umbraco.Cms.Core.Models.PublishedContent.IPublishedContent>(_publishedValueFallback, "mntp");
+
+		///<summary>
+		/// Multi URL
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.0.0-rc2+cbdb1d5")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("multiUrl")]
+		public virtual global::System.Collections.Generic.IEnumerable<global::Umbraco.Cms.Core.Models.Link> MultiUrl => this.Value<global::System.Collections.Generic.IEnumerable<global::Umbraco.Cms.Core.Models.Link>>(_publishedValueFallback, "multiUrl");
+
+		///<summary>
+		/// Single URL
+		///</summary>
+		[global::System.CodeDom.Compiler.GeneratedCodeAttribute("Umbraco.ModelsBuilder.Embedded", "17.0.0-rc2+cbdb1d5")]
+		[global::System.Diagnostics.CodeAnalysis.MaybeNull]
+		[ImplementPropertyType("singleUrl")]
+		public virtual global::Umbraco.Cms.Core.Models.Link SingleUrl => this.Value<global::Umbraco.Cms.Core.Models.Link>(_publishedValueFallback, "singleUrl");
 	}
 }

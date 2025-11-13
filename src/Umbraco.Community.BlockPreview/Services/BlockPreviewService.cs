@@ -438,10 +438,30 @@ namespace Umbraco.Community.BlockPreview.Services
                     {
                         if (propertyData.EditorAlias == PropertyEditors.Aliases.MultiNodeTreePicker)
                         {
-                            List<EditorEntityReference>? convertedReferences = JsonSerializer.Deserialize<List<EditorEntityReference>>(propertyData.Value.ToString()!);
+                            List<EditorEntityReference>? convertedReferences = JsonSerializer.Deserialize<List<EditorEntityReference>>(propertyData.Value.ToString()!, _jsonSerializerOptions);
                             IEnumerable<Udi>? convertedData = convertedReferences?.Select(x => StringUdi.Create(x.Type, x.Unique));
                             string? stringifiedData = string.Join(",", convertedData!);
                             propertyData.Value = stringifiedData;
+                        }
+
+                        if (propertyData.EditorAlias == PropertyEditors.Aliases.MultiUrlPicker)
+                        {
+                            List<MultiUrlPickerValueEditor.LinkDto> convertedReferences = new();
+                            foreach (var arr in jsonArray)
+                            {
+                                var deserializedLink = JsonSerializer.Deserialize<MultiUrlPickerValueEditor.LinkDto>(arr, _jsonSerializerOptions);
+                                if (deserializedLink != null)
+                                {
+                                    if (deserializedLink.Unique.HasValue && !string.IsNullOrEmpty(deserializedLink.Type))
+                                    {
+                                        deserializedLink.Udi = new GuidUdi(deserializedLink.Type, deserializedLink.Unique.Value);
+                                    }
+
+                                    convertedReferences.Add(deserializedLink);
+                                }
+                            }
+
+                            propertyData.Value = JsonSerializer.Serialize(convertedReferences, _jsonSerializerOptions);
                         }
 
                         else propertyData.Value = JsonSerializer.Serialize(jsonArray, _jsonSerializerOptions);
