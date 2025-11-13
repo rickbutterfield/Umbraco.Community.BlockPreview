@@ -410,7 +410,7 @@ export class BlockGridPreviewCustomView
  border:1px solid transparent;
  border-radius:0;
  margin-bottom:20px;
- padding:8px35px8px14px;
+ padding:8px 35px 8px 14px;
  position: relative;
 
  &, a, h4 {
