@@ -366,7 +366,7 @@ namespace Umbraco.Community.BlockPreview.Services
                             }
                         }
                     }
-                    if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
+                    else if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
                     {
                         var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
                         if (blockValue != null)
@@ -376,7 +376,7 @@ namespace Umbraco.Community.BlockPreview.Services
                             property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                         }
                     }
-                    if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
+                    else if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
                     {
                         var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
                         if (blockValue != null)
@@ -413,7 +413,7 @@ namespace Umbraco.Community.BlockPreview.Services
                         }
                     }
 
-                    if (propertyData.EditorAlias == PropertyEditors.Aliases.RichText)
+                    else if (propertyData.EditorAlias == PropertyEditors.Aliases.RichText)
                     {
                         if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(propertyData.Value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
                         {
@@ -447,7 +447,7 @@ namespace Umbraco.Community.BlockPreview.Services
                             propertyData.Value = stringifiedData;
                         }
 
-                        if (propertyData.EditorAlias == PropertyEditors.Aliases.MultiUrlPicker)
+                        else if (propertyData.EditorAlias == PropertyEditors.Aliases.MultiUrlPicker)
                         {
                             List<MultiUrlPickerValueEditor.LinkDto> convertedReferences = new();
                             foreach (var arr in jsonArray)
