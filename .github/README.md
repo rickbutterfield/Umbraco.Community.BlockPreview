@@ -85,7 +85,7 @@ Alternatively, it can be configured in `appsettings.json`:
       "Enabled": true
     },
     "RichText": {
-      "Enabled: false
+      "Enabled": false
     }
   }
 }
