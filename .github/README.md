@@ -8,7 +8,7 @@
 <img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
 
 ## Installation
-> [!IMPORTANT]
+> [!NOTE]
 > **v5.x** supports Umbraco v17
 > 
 > **v4.x** supports Umbraco v16
@@ -36,19 +36,21 @@ Install-Package Umbraco.Community.BlockPreview -Version 5.0.0-rc2.2
 ```
 
 ## Setup
-Generated strongly typed models must exist on disk for BlockPreview to work. `Umbraco:Cms:ModelsBuilder:ModelsMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` in your development environment and generated files committed to disk before deploying.
+> [!IMPORTANT]
+> Generated strongly typed models must exist on disk for BlockPreview to work. `Umbraco:Cms:ModelsBuilder:ModelsMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` in your development environment and generated files committed to disk before deploying.
+> 
+> If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Limbo.Umbraco.ModelsBuilder), the default configuration is to have `ModelsMode` set to nothing. Once this is set, generate models in the backoffice as normal.
+> ```json
+> "Umbraco": {
+>  "CMS": {
+>    "ModelsBuilder": {
+>      "ModelsMode": "SourceCodeAuto"
+>    }
+>  }
+>}
+>```
 
-If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Limbo.Umbraco.ModelsBuilder), the default configuration is to have `ModelsMode` set to nothing. Once this is set, generate models in the backoffice as normal.
-```json
-"Umbraco": {
-  "CMS": {
-    "ModelsBuilder": {
-      "ModelsMode": "SourceCodeAuto"
-    }
-  }
-}
-```
-The package can then be configured in the `Program.cs` file, before the call to the `.Build()` method:
+BlockPreview can be configured in the `Program.cs` file, before the call to the `.Build()` method:
 ```diff
 +using Umbraco.Community.BlockPreview.Extensions;
 
