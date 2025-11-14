@@ -3,17 +3,15 @@
 [![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.BlockPreview.svg)](https://www.nuget.org/packages/Umbraco.Community.BlockPreview/)
 [![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.BlockPreview)](https://github.com/rickbutterfield/Umbraco.Community.BlockPreview/blob/develop/LICENSE)
 
-**BlockPreview** enables easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors, with full support for both Razor views and ViewComponents.
+**BlockPreview** enables easy to use rich HTML backoffice previews for the Umbraco Block Grid, Block List and Rich Text editors, with full support for both Razor views and ViewComponents.
 
 <img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
 
 ## Installation
-> [!IMPORTANT]
+> [!NOTE]
+> **v5.x** supports Umbraco v17
+> 
 > **v4.x** supports Umbraco v16
-> 
-> **v3.x** supports Umbraco v15
-> 
-> **v2.x** supports Umbraco v14.2+
 > 
 > **v1.x** supports Umbraco v10.x - v13.x
 > 
@@ -34,21 +32,24 @@ Install-Package Umbraco.Community.BlockPreview -Version 4.0.5
 ```
 
 ## Setup
-Generated strongly typed models must exist on disk for BlockPreview to work. `Umbraco:Cms:ModelsBuilder:ModelsMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` in your development environment and generated files committed to disk before deploying.
+> [!IMPORTANT]
+> Generated strongly typed models must exist on disk for BlockPreview to work. `Umbraco:Cms:ModelsBuilder:ModelsMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` in your development environment and generated files committed to disk before deploying.
+> 
+> If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Limbo.Umbraco.ModelsBuilder), the default configuration is to have `ModelsMode` set to nothing. Once this is set, generate models in the backoffice as normal.
+> ```json
+> "Umbraco": {
+>  "CMS": {
+>    "ModelsBuilder": {
+>      "ModelsMode": "SourceCodeAuto"
+>    }
+>  }
+>}
+>```
 
-If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Limbo.Umbraco.ModelsBuilder), the default configuration is to have `ModelsMode` set to nothing. Once this is set, generate models in the backoffice as normal.
-```json
-"Umbraco": {
-  "CMS": {
-    "ModelsBuilder": {
-      "ModelsMode": "SourceCodeAuto"
-    }
-  }
-}
-```
-The package can then be configured in the `Program.cs` file, before the call to the `.Build()` method:
+BlockPreview can be configured in the `Program.cs` file, before the call to the `.Build()` method:
 ```diff
 +using Umbraco.Community.BlockPreview.Extensions;
+
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
     .AddWebsite()
@@ -61,10 +62,13 @@ builder.CreateUmbracoBuilder()
 +           Enabled = true,
 +           ContentTypes = [RichTextBlock.ModelTypeAlias]
 +       };
++
 +       options.BlockList = new()
 +       {
-+           Enabled = false
++           Enabled = true
 +       };
++
++       options.RichText.Enabled = false;
 +   })
     .Build();
 ```
@@ -78,7 +82,10 @@ Alternatively, it can be configured in `appsettings.json`:
       "ContentTypes": ["richTextBlock"]
     },
     "BlockList": {
-      "Enabled": false
+      "Enabled": true
+    },
+    "RichText": {
+      "Enabled: false
     }
   }
 }
@@ -101,7 +108,16 @@ builder.AddBlockPreview(options =>
   {
       Enabled = true,
       ContentTypes = [],
-      ViewLocations = []
+      ViewLocations = [],
+      Stylesheet = ""
+  };
+
+  options.RichText = new()
+  {
+      Enabled = true,
+      ContentTypes = [],
+      ViewLocations = [],
+      Stylesheet = ""
   };
 })
 ```
@@ -118,7 +134,14 @@ builder.AddBlockPreview(options =>
     "BlockList": {
       "Enabled": false,
       "ContentTypes": [],
-      "ViewLocations": []
+      "ViewLocations": [],
+      "Stylesheet": ""
+    },
+    "RichText": {
+      "Enabled": false,
+      "ContentTypes": [],
+      "ViewLocations": [],
+      "Stylesheet": ""
     }
   }
 }
@@ -130,6 +153,7 @@ builder.AddBlockPreview(options =>
 |-----------|-------------------------------------------|------------------------------------------------|
 | BlockGrid | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Block Grid previews |
 | BlockList | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Block List previews |
+| RichText  | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Rich Text previews  |
 
 #### BlockTypeSettings
 | Property      | Type                     | Description                                                                                                     |
@@ -137,11 +161,11 @@ builder.AddBlockPreview(options =>
 | Enabled       | boolean                  | Toggle previews on or off for a given data type.                                                                |
 | ContentTypes  | string[] \| List<string> | A list of content type aliases to enable the previews for. If left blank, all blocks will be enabled.           |
 | ViewLocations | string[] \| List<string> | A list of custom locations to be searched for your partial views. The default paths are included automatically. |
-| Stylesheet    | string                   | **`BlockGrid` only** - path to a stylesheet that exists in /wwwroot, to be loaded for every block preview       |
+| Stylesheet    | string                   | Path to a stylesheet that exists in /wwwroot, to be loaded for every block preview       |
 
 
 ## Usage
-This package installs a custom Web Component preview for both the Block List and Block Grid editors in the backoffice. Block Grid and Block List can be configured independently (v14.2+).
+This package installs a custom Web Component preview for the Block Grid, Block List and Rich Text editors in the backoffice.
 
 Before and after of how components look within the Block Grid:
 ![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/screenshot2.png "Before and after of how components look within the Block Grid")
@@ -224,7 +248,7 @@ If your block partials are not in the usual `/Views/Partials/block[grid|list]/Co
 To raise a new bug, create an issue on the GitHub repository. To fix a bug or add new features, fork the repository and send a pull request with your changes. Feel free to add ideas to the repository's issues list if you would to discuss anything related to the library.
 
 ### Using the test sites
-The repo comes with a test site for Umbraco 14.2+. The site is configured with uSync out of the box to get you up and running with a test site quickly. Use the following credentials to log into the back office:
+The repo comes with a test site for Umbraco 16. The site is configured with uSync out of the box to get you up and running with a test site quickly. Use the following credentials to log into the back office:
 
 ```
 Username: admin@example.com
