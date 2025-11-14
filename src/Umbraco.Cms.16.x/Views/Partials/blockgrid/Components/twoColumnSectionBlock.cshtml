@@ -2,17 +2,15 @@
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 
 @{
-    var backgroundColor = Model.Settings.BackgroundColor;
-    var noBackgroundColor = String.IsNullOrEmpty(backgroundColor);
-    var hasBrightContrast = Model.Settings.Contrast == "ffffff";
-
-    var leftArea = Model.Areas.FirstOrDefault(x => x.Alias == "left");
-    var rightArea = Model.Areas.FirstOrDefault(x => x.Alias == "right");
+    var backgroundColor = Model.Settings?.BackgroundColor;
+    var noBackgroundColor = string.IsNullOrEmpty(backgroundColor);
+    var hasBrightContrast = Model.Settings?.Contrast == "ffffff";
 }
 
 <section
     style="background-color: #@backgroundColor"
     @(noBackgroundColor ? "nobackgroundcolor" : null)
     @(hasBrightContrast ? "bright-contrast" : null)>
+
     @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)
 </section>

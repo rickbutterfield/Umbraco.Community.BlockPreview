@@ -1,15 +1,16 @@
+import { BlockPreviewService } from "../api";
+import BlockPreviewContext from '../context/block-preview.context';
+import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
+import { BlockGridContext } from './types';
+import { css, customElement, html, ifDefined, property, PropertyValues, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
-import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
+import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
-import { css, customElement, html, ifDefined, property, PropertyValueMap, PropertyValues, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecute, UmbApiError } from "@umbraco-cms/backoffice/resources";
-import { BlockPreviewService } from "../api";
-import BlockPreviewContext from '../context/block-preview.context';
-import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
 import { UUIButtonElement } from '@umbraco-cms/backoffice/external/uui';
 
 const elementName = "block-grid-preview";
@@ -61,7 +62,7 @@ export class BlockGridPreviewCustomView
     private _styleElement?: HTMLLinkElement;
 
     @state()
-    private _isFirstLoad: boolean = true;
+    private _isFirstLoad: boolean = false;
 
     @state()
     private _sortModeActive: boolean = false;
@@ -69,8 +70,12 @@ export class BlockGridPreviewCustomView
     private _pointerDownPos: { x: number; y: number } | null = null;
     private _isDragging: boolean = false;
 
+    // Track element instance creation with unique ID
+    private readonly _instanceId: string = `${elementName}-${Math.random().toString(36).substr(2, 9)}`;
+    private _connectionCount: number = 0;
+
     @state()
-    private _blockContext = {
+    private _blockContext: BlockGridContext = {
         unique: "",
         documentTypeUnique: "",
         contentUdi: "",
@@ -80,6 +85,9 @@ export class BlockGridPreviewCustomView
         workspaceEditContentPath: "",
         contentElementTypeAlias: "",
         contentElementTypeKey: "",
+        areas: [],
+        layout: undefined,
+        layoutAreas: undefined,
         blockIndex: 0
     };
 
@@ -106,10 +114,24 @@ export class BlockGridPreviewCustomView
     constructor() {
         super();
 
-        this.consumeContext(BLOCK_PREVIEW_CONTEXT, (context) => {
+        console.log(`[${this._instanceId}] Constructor called - NEW INSTANCE CREATED`);
+
+        this.consumeContext(BLOCK_PREVIEW_CONTEXT, async (context) => {
             this.#blockPreviewContext = context;
-            this.#setupContextObservers();
+            await this.#setupContextObservers();
         });
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this._connectionCount++;
+        console.log(`[${this._instanceId}] connectedCallback #${this._connectionCount} - Element CONNECTED to DOM`);
+        this._isFirstLoad = true;
+    }
+
+    disconnectedCallback() {
+        super.disconnectedCallback();
+        console.log(`[${this._instanceId}] disconnectedCallback - Element DISCONNECTED from DOM (connection count was: ${this._connectionCount})`);
     }
 
     protected override willUpdate(_changedProperties: PropertyValues): void {
@@ -117,6 +139,11 @@ export class BlockGridPreviewCustomView
             if (
                 (_changedProperties.has('content') && this.content) ||
                 (_changedProperties.has('settings') && this.settings)) {
+                console.log(`[${this._instanceId}] willUpdate - Re-rendering due to content/settings change`, {
+                    contentChanged: _changedProperties.has('content'),
+                    settingsChanged: _changedProperties.has('settings')
+                });
+                debugger;
                 this.#renderBlockPreview();
             }
 
@@ -131,6 +158,13 @@ export class BlockGridPreviewCustomView
                         const newRowSpan = this._getRowSpan(layouts);
 
                         if (newColumnSpan !== this._columnSpan || newRowSpan !== this._rowSpan) {
+                            console.log(`[${this._instanceId}] willUpdate - Re-rendering due to layout change`, {
+                                oldColumnSpan: this._columnSpan,
+                                newColumnSpan,
+                                oldRowSpan: this._rowSpan,
+                                newRowSpan
+                            });
+                            debugger;
                             this._columnSpan = newColumnSpan;
                             this._rowSpan = newRowSpan;
                             this.#renderBlockPreview();
@@ -143,12 +177,12 @@ export class BlockGridPreviewCustomView
         super.willUpdate(_changedProperties);
     }
 
-    #setupContextObservers() {
+    async #setupContextObservers() {
         this.#observeSortMode();
         this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
-        this.#observeDocumentWorkspace();
-        this.#observeBlockContexts();
+        await this.#observeDocumentWorkspace();
+        await this.#observeBlockContexts();
     }
 
     #observeSortMode() {
@@ -178,32 +212,41 @@ export class BlockGridPreviewCustomView
     }
 
     async #observeDocumentWorkspace() {
-        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
-            if (!context)
-                return;
+        try {
+            await this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT);
 
-            this.#documentWorkspaceContext = context;
-            this.observe(
-                observeMultiple([context.unique, context.contentTypeUnique]),
-                async ([unique, documentTypeUnique]) => {
-                    this._blockContext.unique = unique?.toString() ?? '';
-                    this.#blockPreviewContext?.setUnique(this._blockContext.unique);
+            this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+                if (!context)
+                    return;
 
-                    this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
-                    this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
-                }
-            );
-        });
+                this.#documentWorkspaceContext = context;
 
-        if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
-            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
-                if (context) {
-                    this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
-                        this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
-                        this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
-                    });
-                }
+                this.observe(
+                    observeMultiple([context.unique, context.contentTypeUnique]),
+                    async ([unique, documentTypeUnique]) => {
+                        this._blockContext.unique = unique?.toString() ?? '';
+                        this.#blockPreviewContext?.setUnique(this._blockContext.unique);
+
+                        this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
+                        this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
+                        this.#observeBlockContexts();
+                    }
+                );
+
             });
+        }
+        catch (ex) {
+            if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
+                this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+                    if (context) {
+                        this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                            this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
+                            this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
+                            this.#observeBlockContexts();
+                        });
+                    }
+                });
+            }
         }
     }
 
@@ -223,9 +266,11 @@ export class BlockGridPreviewCustomView
                         entryContext.workspaceEditContentPath,
                         entryContext.contentElementTypeAlias,
                         entryContext.contentElementTypeKey,
+                        entryContext.areas,
+                        entryContext.layout,
+                        entryContext.layoutAreas,
                         managerContext.contents,
                         managerContext.settings,
-                        managerContext.layouts,
                         managerContext.exposes,
                         managerContext.propertyAlias
                     ]),
@@ -235,9 +280,11 @@ export class BlockGridPreviewCustomView
                         workspaceEditContentPath,
                         contentElementTypeAlias,
                         contentElementTypeKey,
+                        areas,
+                        layout,
+                        layoutAreas,
                         contents,
                         settings,
-                        layouts,
                         exposes,
                         propertyAlias
                     ]) => {
@@ -247,17 +294,20 @@ export class BlockGridPreviewCustomView
                         this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
+                        this._blockContext.areas = areas;
+                        this._blockContext.layout = layout!;
+                        this._blockContext.layoutAreas = layoutAreas;
 
                         // Update block context from manager context
                         this._blockContext.blockEditorAlias = propertyAlias ?? '';
 
-                        const filteredLayouts = this._filterLayouts(layouts);
+                        const filteredLayouts = this._filterLayouts();
 
                         // Update block grid value
                         this.blockGridValue = {
-                            contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
-                            settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
-                            expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
+                            contentData: contents ?? [],
+                            settingsData: settings ?? [],
+                            expose: exposes ?? [],
                             layout: { ['Umbraco.BlockGrid']: filteredLayouts }
                         };
 
@@ -266,6 +316,8 @@ export class BlockGridPreviewCustomView
 
                         this._blockContext.blockIndex = contents.indexOf(this.blockGridValue.contentData[0]);
                         if (this._isFirstLoad) {
+                            console.log(`[${this._instanceId}] First load complete - rendering block preview`);
+                            debugger;
                             this._isFirstLoad = false;
                             this.#renderBlockPreview();
                         }
@@ -275,22 +327,28 @@ export class BlockGridPreviewCustomView
         });
     }
 
-    _filterLayouts(layouts?: UmbBlockGridLayoutModel[]): UmbBlockGridLayoutModel[] {
-        if (!layouts || layouts.length === 0) {
-            return [];
-        }
+    _filterLayouts(): UmbBlockGridLayoutModel[] {
+        const areas = this._blockContext.areas.map(area => {
+            const model: UmbBlockGridLayoutAreaItemModel = {
+                key: area.key,
+                items: this._blockContext.layoutAreas?.find(layout => layout.key == area.key)?.items!
+            }
 
-        const directMatches = layouts.filter(layout => layout.contentKey === this._blockContext.contentUdi);
-        if (directMatches.length > 0) {
-            return directMatches;
-        }
+            return model;
+        });
 
-        const nestedMatches = layouts
-            .flatMap(layout => layout.areas || [])
-            .flatMap(area => area?.items || [])
-            .filter(item => item && item.contentKey === this._blockContext.contentUdi);
+        const layoutModel: UmbBlockGridLayoutModel[] =
+            [
+                {
+                    areas: areas,
+                    columnSpan: this._blockContext.layout?.columnSpan ?? 0,
+                    rowSpan: this._blockContext.layout?.rowSpan ?? 0,
+                    contentKey: this._blockContext.layout?.contentKey ?? '',
+                    settingsKey: this._blockContext.layout?.settingsKey
+                }
+            ];
 
-        return nestedMatches;
+        return layoutModel;
     }
 
     _getColumnSpan(layouts?: UmbBlockGridLayoutModel[] | undefined): number {
@@ -432,10 +490,10 @@ export class BlockGridPreviewCustomView
 
             if (this._error) {
                 return html`
-                <div class="preview-alert preview-alert-error" role="alert">
-                    ${this._error}
-                </div>
-            `;
+                    <div class="preview-alert preview-alert-error" role="alert">
+                        ${this._error}
+                    </div>
+                `;
             }
 
             if (this._htmlMarkup) {
@@ -485,49 +543,50 @@ export class BlockGridPreviewCustomView
               border-radius: 2px;
             }
 
-            a.block-preview-edit:hover {
+             a.block-preview-edit:hover {
                 border-color: var(--uui-color-interactive-emphasis, #3544b1);
-            }
+             }
 
-            .preview-alert {
-                background-color: var(--uui-color-danger, #f0ac00);
-                border: 1px solid transparent;
-                border-radius: 0;
-                margin-bottom: 20px;
-                padding: 8px 35px 8px 14px;
-                position: relative;
+             .preview-alert {
+                 background-color: var(--uui-color-danger, #f0ac00);
+                 border:1px solid transparent;
+                 border-radius:0;
+                 margin-bottom:20px;
+                 padding:8px 35px 8px 14px;
+                 position: relative;
 
-                &, a, h4 {
+                 &, a, h4 {
                     color: #fff;
-                }
+                 }
 
-                pre {
+                 pre {
                     white-space: normal;
-                }
+                 }
 
-                uui-loader {
-                    margin-right: 16px;
-                }
-            }
+                 uui-loader {
+                    margin-right:16px;
+                 }
+             }
 
-            .preview-alert-warning {
-                background-color: var(--uui-color-warning, #f0ac00);
-                border-color: transparent;
-                color: #000;
-            }
+             .preview-alert-warning {
+                 background-color: var(--uui-color-warning, #f0ac00);
+                 border-color: transparent;
+                 color: #000;
+             }
 
-            .preview-alert-info {
-                background-color: var(--uui-color-default, #3544b1);
-                border-color: transparent;
-                color: #fff;
-            }
+             .preview-alert-info {
+                 background-color: var(--uui-color-default, #3544b1);
+                 border-color: transparent;
+                 color: #fff;
+             }
 
-            .preview-alert-danger, .preview-alert-error {
-                background-color: var(--uui-color-danger, #f0ac00);
-                border-color: transparent;
-                color: #fff;
-            }
-        `
+             .preview-alert-danger,
+             .preview-alert-error {
+                 background-color: var(--uui-color-danger, #f0ac00);
+                 border-color: transparent;
+                 color: #fff;
+             }
+             `
     ]
 }
 
