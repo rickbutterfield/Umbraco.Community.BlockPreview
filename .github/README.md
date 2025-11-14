@@ -3,7 +3,7 @@
 [![NuGet](https://img.shields.io/nuget/v/Umbraco.Community.BlockPreview.svg)](https://www.nuget.org/packages/Umbraco.Community.BlockPreview/)
 [![GitHub](https://img.shields.io/github/license/rickbutterfield/Umbraco.Community.BlockPreview)](https://github.com/rickbutterfield/Umbraco.Community.BlockPreview/blob/develop/LICENSE)
 
-**BlockPreview** enables easy to use rich HTML backoffice previews for the Umbraco Block List and Block Grid editors, with full support for both Razor views and ViewComponents.
+**BlockPreview** enables easy to use rich HTML backoffice previews for the Umbraco Block Grid, Block List and Rich Text editors, with full support for both Razor views and ViewComponents.
 
 <img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
 
@@ -51,6 +51,7 @@ If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Li
 The package can then be configured in the `Program.cs` file, before the call to the `.Build()` method:
 ```diff
 +using Umbraco.Community.BlockPreview.Extensions;
+
 builder.CreateUmbracoBuilder()
     .AddBackOffice()
     .AddWebsite()
@@ -63,10 +64,13 @@ builder.CreateUmbracoBuilder()
 +           Enabled = true,
 +           ContentTypes = [RichTextBlock.ModelTypeAlias]
 +       };
++
 +       options.BlockList = new()
 +       {
-+           Enabled = false
++           Enabled = true
 +       };
++
++       options.RichText.Enabled = false;
 +   })
     .Build();
 ```
@@ -80,7 +84,10 @@ Alternatively, it can be configured in `appsettings.json`:
       "ContentTypes": ["richTextBlock"]
     },
     "BlockList": {
-      "Enabled": false
+      "Enabled": true
+    },
+    "RichText": {
+      "Enabled: false
     }
   }
 }
@@ -103,7 +110,16 @@ builder.AddBlockPreview(options =>
   {
       Enabled = true,
       ContentTypes = [],
-      ViewLocations = []
+      ViewLocations = [],
+      Stylesheet = ""
+  };
+
+  options.RichText = new()
+  {
+      Enabled = true,
+      ContentTypes = [],
+      ViewLocations = [],
+      Stylesheet = ""
   };
 })
 ```
@@ -120,7 +136,14 @@ builder.AddBlockPreview(options =>
     "BlockList": {
       "Enabled": false,
       "ContentTypes": [],
-      "ViewLocations": []
+      "ViewLocations": [],
+      "Stylesheet": ""
+    },
+    "RichText": {
+      "Enabled": false,
+      "ContentTypes": [],
+      "ViewLocations": [],
+      "Stylesheet": ""
     }
   }
 }
@@ -132,6 +155,7 @@ builder.AddBlockPreview(options =>
 |-----------|-------------------------------------------|------------------------------------------------|
 | BlockGrid | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Block Grid previews |
 | BlockList | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Block List previews |
+| RichText  | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Rich Text previews  |
 
 #### BlockTypeSettings
 | Property      | Type                     | Description                                                                                                     |
@@ -139,11 +163,11 @@ builder.AddBlockPreview(options =>
 | Enabled       | boolean                  | Toggle previews on or off for a given data type.                                                                |
 | ContentTypes  | string[] \| List<string> | A list of content type aliases to enable the previews for. If left blank, all blocks will be enabled.           |
 | ViewLocations | string[] \| List<string> | A list of custom locations to be searched for your partial views. The default paths are included automatically. |
-| Stylesheet    | string                   | **`BlockGrid` only** - path to a stylesheet that exists in /wwwroot, to be loaded for every block preview       |
+| Stylesheet    | string                   | Path to a stylesheet that exists in /wwwroot, to be loaded for every block preview                              |
 
 
 ## Usage
-This package installs a custom Web Component preview for both the Block List and Block Grid editors in the backoffice. Block Grid and Block List can be configured independently (v14.2+).
+This package installs a custom Web Component preview for the Block Grid, Block List and Rich Text editors in the backoffice.
 
 Before and after of how components look within the Block Grid:
 ![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/screenshot2.png "Before and after of how components look within the Block Grid")
