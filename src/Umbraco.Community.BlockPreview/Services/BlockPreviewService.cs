@@ -119,7 +119,7 @@ namespace Umbraco.Community.BlockPreview.Services
             string? settingsKey = default,
             int? blockIndex = 0)
         {
-            var blockValue = _blockGridEditorValues.DeserializeAndClean(blockData);
+            BlockEditorData<BlockGridValue, BlockGridLayoutItem>? blockValue = _blockGridEditorValues.DeserializeAndClean(blockData);
             if (blockValue == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
 
@@ -192,7 +192,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (matchingBlockConfig == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidMatchingBlockGridConfiguration);
 
-            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlockConfig, matchingLayout!);
+            ConfigureBlockInstanceAreas(blockValue, blockInstance, config, matchingBlockConfig, matchingLayout!, content);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig, blockIndex);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);
@@ -342,46 +342,49 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError, IPublishedElement owner)
         {
-            for (int i = 0; i < data.Values.Count(); i++)
+            if (data != null)
             {
-                var property = data.Values.ElementAt(i);
-                var value = property.Value;
-                string? propertyAsString = value?.ToString();
-
-                if (property.EditorAlias == PropertyEditors.Aliases.RichText)
+                for (int i = 0; i < data.Values.Count(); i++)
                 {
-                    if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
+                    var property = data.Values.ElementAt(i);
+                    var value = property.Value;
+                    string? propertyAsString = value?.ToString();
+
+                    if (property.EditorAlias == PropertyEditors.Aliases.RichText)
                     {
-                        var blockValue = _richTextBlockEditorValues.DeserializeAndClean(_jsonSerializer.Serialize(richTextEditorValue.Blocks));
+                        if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
+                        {
+                            var blockValue = _richTextBlockEditorValues.DeserializeAndClean(_jsonSerializer.Serialize(richTextEditorValue.Blocks));
+                            if (blockValue != null)
+                            {
+                                FormatBlockData(blockValue.BlockValue.ContentData);
+                                FormatBlockData(blockValue.BlockValue.SettingsData);
+
+                                richTextEditorValue.Blocks = blockValue.BlockValue;
+
+                                property.Value = JsonSerializer.Serialize(richTextEditorValue, _jsonSerializerOptions);
+                            }
+                        }
+                    }
+                    if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
+                    {
+                        var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
                         if (blockValue != null)
                         {
                             FormatBlockData(blockValue.BlockValue.ContentData);
                             FormatBlockData(blockValue.BlockValue.SettingsData);
-
-                            richTextEditorValue.Blocks = blockValue.BlockValue;
-
-                            property.Value = JsonSerializer.Serialize(richTextEditorValue, _jsonSerializerOptions);
+                            property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                         }
                     }
-                }
-                if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
-                {
-                    var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
-                    if (blockValue != null)
+                    if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
                     {
-                        FormatBlockData(blockValue.BlockValue.ContentData);
-                        FormatBlockData(blockValue.BlockValue.SettingsData);
-                        property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
-                    }
-                }
-                if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
-                {
-                    var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
-                    if (blockValue != null)
-                    {
-                        FormatBlockData(blockValue.BlockValue.ContentData);
-                        FormatBlockData(blockValue.BlockValue.SettingsData);
-                        property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+                        var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
+                        if (blockValue != null)
+                        {
+                            FormatBlockData(blockValue.BlockValue.ContentData);
+                            FormatBlockData(blockValue.BlockValue.SettingsData);
+                            property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+                        }
                     }
                 }
             }
@@ -635,10 +638,12 @@ namespace Umbraco.Community.BlockPreview.Services
         }
 
         private void ConfigureBlockInstanceAreas(
+            BlockEditorData<BlockGridValue, BlockGridLayoutItem> blockValue,
             BlockGridItem blockInstance,
             BlockGridConfiguration config,
             BlockGridConfiguration.BlockGridBlockConfiguration matchingBlock,
-            BlockGridLayoutItem layoutItem)
+            BlockGridLayoutItem layoutItem,
+            IPublishedContent content)
         {
             blockInstance.AreaGridColumns = matchingBlock.AreaGridColumns ?? 12;
             blockInstance.GridColumns = config.GridColumns ?? 12;
@@ -652,16 +657,16 @@ namespace Umbraco.Community.BlockPreview.Services
                 if (!blockConfigAreaMap.TryGetValue(area.Key, out var areaConfig))
                     return null;
 
-                //var items = area.Items.Select(item =>
-                //{
-                //    BlockItemData? areaContentData = blockValue.BlockValue?.ContentData.FirstOrDefault(x => x.Key == item.ContentKey);
-                //    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true, content);
+                var items = area.Items.Select(item =>
+                {
+                    BlockItemData? areaContentData = blockValue.BlockValue?.ContentData.FirstOrDefault(x => x.Key == item.ContentKey);
+                    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true, content);
 
-                //    BlockItemData? areaSettingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == item.ContentKey);
-                //    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true, content) : default;
+                    BlockItemData? areaSettingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == item.ContentKey);
+                    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true, content) : default;
 
-                //    return new BlockGridItem(item.ContentKey, areaContentElement!, item.SettingsKey, areaSettingsElement!);
-                //}).WhereNotNull().ToList();
+                    return new BlockGridItem(item.ContentKey, areaContentElement!, item.SettingsKey, areaSettingsElement!);
+                }).WhereNotNull().ToList();
 
                 return new BlockGridArea(new List<BlockGridItem>(area.Items.Count()), areaConfig.Alias!, areaConfig.RowSpan!.Value, areaConfig.ColumnSpan!.Value);
             }).WhereNotNull().ToArray();

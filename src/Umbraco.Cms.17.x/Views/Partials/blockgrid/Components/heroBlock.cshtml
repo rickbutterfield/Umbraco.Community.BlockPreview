@@ -4,18 +4,6 @@
     var backgroundColor = Model.Content?.BackgroundColor?.Color;
     var image = Model.Content?.Image;
     var hasBrightContrast = Model.Content?.Contrast?.Color == "#ffffff";
-
-    var singleUrl = Model.Content?.SingleUrl;
-    var multiUrl = Model.Content?.MultiUrl;
-}
-
-<pre>@JsonSerializer.Serialize(singleUrl)</pre>
-<pre>@JsonSerializer.Serialize(multiUrl)</pre>
-
-@if (singleUrl is not null) {
-    <a href="@singleUrl.Url">
-        @singleUrl.Name
-    </a>
 }
 
 <div 
