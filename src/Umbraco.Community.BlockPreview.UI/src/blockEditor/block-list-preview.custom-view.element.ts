@@ -11,6 +11,7 @@ import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
 import BlockPreviewContext from "../context/block-preview.context";
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from "@umbraco-cms/backoffice/block";
 import { UUIButtonElement } from "@umbraco-cms/backoffice/external/uui";
+import { BlockListContext } from "./types";
 
 const elementName = "block-list-preview";
 
@@ -59,7 +60,7 @@ export class BlockListPreviewCustomView
     @state()
     private _sortModeActive: boolean = false;
 
-    private _blockContext = {
+    private _blockContext: BlockListContext = {
         unique: '',
         documentTypeUnique: '',
         contentUdi: '',

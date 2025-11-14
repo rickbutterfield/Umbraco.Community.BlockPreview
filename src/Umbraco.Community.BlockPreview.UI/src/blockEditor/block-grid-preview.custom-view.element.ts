@@ -1,15 +1,16 @@
+import { BlockPreviewService } from "../api";
+import BlockPreviewContext from '../context/block-preview.context';
+import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
+import { BlockGridContext } from './types';
+import { css, customElement, html, ifDefined, property, PropertyValueMap, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
-import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel } from "@umbraco-cms/backoffice/block-grid";
+import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
-import { css, customElement, html, ifDefined, property, PropertyValueMap, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
 import { tryExecute, UmbApiError } from "@umbraco-cms/backoffice/resources";
-import { BlockPreviewService } from "../api";
-import BlockPreviewContext from '../context/block-preview.context';
-import { BLOCK_PREVIEW_CONTEXT } from "../context/block-preview.context-token";
 import { UUIButtonElement } from '@umbraco-cms/backoffice/external/uui';
 
 const elementName = "block-grid-preview";
@@ -59,7 +60,7 @@ export class BlockGridPreviewCustomView
     @state()
     private _sortModeActive: boolean = false;
 
-    private _blockContext = {
+    private _blockContext: BlockGridContext = {
         unique: "",
         documentTypeUnique: "",
         contentUdi: "",
@@ -69,6 +70,9 @@ export class BlockGridPreviewCustomView
         workspaceEditContentPath: "",
         contentElementTypeAlias: "",
         contentElementTypeKey: "",
+        areas: [],
+        layout: undefined,
+        layoutAreas: undefined,
         blockIndex: 0
     };
 
@@ -156,6 +160,7 @@ export class BlockGridPreviewCustomView
                     return;
 
                 this.#documentWorkspaceContext = context;
+
                 this.observe(
                     observeMultiple([context.unique, context.contentTypeUnique]),
                     async ([unique, documentTypeUnique]) => {
@@ -194,20 +199,30 @@ export class BlockGridPreviewCustomView
                         context.settingsKey,
                         context.workspaceEditContentPath,
                         context.contentElementTypeAlias,
-                        context.contentElementTypeKey
+                        context.contentElementTypeKey,
+                        context.areas,
+                        context.layout,
+                        context.layoutAreas
                     ]),
                     async ([
                         contentUdi,
                         settingsUdi,
                         workspaceEditContentPath,
                         contentElementTypeAlias,
-                        contentElementTypeKey
+                        contentElementTypeKey,
+                        areas,
+                        layout,
+                        layoutAreas
                     ]) => {
                         this._blockContext.contentUdi = contentUdi ?? '';
                         this._blockContext.settingsUdi = settingsUdi ?? '';
                         this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
+
+                        this._blockContext.areas = areas;
+                        this._blockContext.layout = layout!;
+                        this._blockContext.layoutAreas = layoutAreas;
 
                         await this.#observeBlockPropertyValue();
                     }
@@ -223,18 +238,17 @@ export class BlockGridPreviewCustomView
                     observeMultiple([
                         context.contents,
                         context.settings,
-                        context.layouts,
                         context.exposes,
                         context.propertyAlias
                     ]),
-                    async ([contents, settings, layouts, exposes, propertyAlias]) => {
+                    async ([contents, settings, exposes, propertyAlias]) => {
                         this._blockContext.blockEditorAlias = propertyAlias ?? '';
 
                         this.blockGridValue = {
-                            contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
-                            settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
-                            expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
-                            layout: { ['Umbraco.BlockGrid']: this._filterLayouts(layouts) }
+                            contentData: contents ?? [],
+                            settingsData: settings ?? [],
+                            expose: exposes ?? [],
+                            layout: { ['Umbraco.BlockGrid']: this._filterLayouts() }
                         };
 
                         this._blockContext.blockIndex = contents.indexOf(this.blockGridValue.contentData[0]);
@@ -244,22 +258,28 @@ export class BlockGridPreviewCustomView
         });
     }
 
-    _filterLayouts(layouts?: UmbBlockGridLayoutModel[]): UmbBlockGridLayoutModel[] {
-        if (!layouts || layouts.length === 0) {
-            return [];
-        }
+    _filterLayouts(): UmbBlockGridLayoutModel[] {
+        const areas = this._blockContext.areas.map(area => {
+            const model: UmbBlockGridLayoutAreaItemModel = {
+                key: area.key,
+                items: this._blockContext.layoutAreas?.find(layout => layout.key == area.key)?.items!
+            }
 
-        const directMatches = layouts.filter(layout => layout.contentKey === this._blockContext.contentUdi);
-        if (directMatches.length > 0) {
-            return directMatches;
-        }
+            return model;
+        });
 
-        const nestedMatches = layouts
-            .flatMap(layout => layout.areas || [])
-            .flatMap(area => area?.items || [])
-            .filter(item => item && item.contentKey === this._blockContext.contentUdi);
+        const layoutModel: UmbBlockGridLayoutModel[] =
+        [
+            {
+                areas: areas,
+                columnSpan: this._blockContext.layout?.columnSpan ?? 0,
+                rowSpan: this._blockContext.layout?.rowSpan ?? 0,
+                contentKey: this._blockContext.layout?.contentKey ?? '',
+                settingsKey: this._blockContext.layout?.settingsKey
+            }
+        ];
 
-        return nestedMatches;
+        return layoutModel;
     }
 
     async #renderBlockPreview() {
@@ -357,93 +377,94 @@ export class BlockGridPreviewCustomView
 
             if (this._error) {
                 return html`
- <div class="preview-alert preview-alert-error" role="alert">
- ${this._error}
- </div>
- `;
+                    <div class="preview-alert preview-alert-error" role="alert">
+                        ${this._error}
+                    </div>
+                `;
             }
 
             if (this._htmlMarkup) {
                 return html`
- ${this._styleElement}
- <a
- href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
- @click=${this._handleClick}
- aria-label="Edit block"
- class="block-preview-edit"
- role="button"
- >
- ${unsafeHTML(this._htmlMarkup)}
- </a>
- `;
+                    ${this._styleElement}
+                     <a
+                         href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
+                         @click=${this._handleClick}
+                         aria-label="Edit block"
+                         class="block-preview-edit"
+                         role="button"
+                     >
+                        ${unsafeHTML(this._htmlMarkup)}
+                     </a>
+                    `;
             }
         }
 
         else return html`<umb-block-grid-block
- class="umb-block-grid__block--view"
- .label=${this.label}
- .icon=${this.icon}
- .unpublished=${this.unpublished}
- .config=${this.config}
- .content=${this.content}
- .settings=${this.settings}>
- </umb-block-grid-block>
- `;
+            class="umb-block-grid__block--view"
+            .label=${this.label}
+            .icon=${this.icon}
+            .unpublished=${this.unpublished}
+            .config=${this.config}
+            .content=${this.content}
+            .settings=${this.settings}>
+            </umb-block-grid-block>
+        `;
     }
 
     static styles = [
         css`
- a.block-preview-edit {
- display: block;
- color: inherit;
- text-decoration: inherit;
- border:1px solid transparent;
- border-radius:2px;
- }
+             a.block-preview-edit {
+                 display: block;
+                 color: inherit;
+                 text-decoration: inherit;
+                 border:1px solid transparent;
+                 border-radius:2px;
+             }
 
- a.block-preview-edit:hover {
- border-color: var(--uui-color-interactive-emphasis, #3544b1);
- }
+             a.block-preview-edit:hover {
+                border-color: var(--uui-color-interactive-emphasis, #3544b1);
+             }
 
- .preview-alert {
- background-color: var(--uui-color-danger, #f0ac00);
- border:1px solid transparent;
- border-radius:0;
- margin-bottom:20px;
- padding:8px 35px 8px 14px;
- position: relative;
+             .preview-alert {
+                 background-color: var(--uui-color-danger, #f0ac00);
+                 border:1px solid transparent;
+                 border-radius:0;
+                 margin-bottom:20px;
+                 padding:8px 35px 8px 14px;
+                 position: relative;
 
- &, a, h4 {
- color: #fff;
- }
+                 &, a, h4 {
+                    color: #fff;
+                 }
 
- pre {
- white-space: normal;
- }
+                 pre {
+                    white-space: normal;
+                 }
 
- uui-loader {
- margin-right:16px;
- }
- }
+                 uui-loader {
+                    margin-right:16px;
+                 }
+             }
 
- .preview-alert-warning {
- background-color: var(--uui-color-warning, #f0ac00);
- border-color: transparent;
- color: #000;
- }
+             .preview-alert-warning {
+                 background-color: var(--uui-color-warning, #f0ac00);
+                 border-color: transparent;
+                 color: #000;
+             }
 
- .preview-alert-info {
- background-color: var(--uui-color-default, #3544b1);
- border-color: transparent;
- color: #fff;
- }
+             .preview-alert-info {
+                 background-color: var(--uui-color-default, #3544b1);
+                 border-color: transparent;
+                 color: #fff;
+             }
 
- .preview-alert-danger, .preview-alert-error {
- background-color: var(--uui-color-danger, #f0ac00);
- border-color: transparent;
- color: #fff;
- }
- `
+             .preview-alert-danger,
+             .preview-alert-error {
+                 background-color: var(--uui-color-danger, #f0ac00);
+                 border-color: transparent;
+                 color: #fff;
+             }
+             `
     ]
 }
 
