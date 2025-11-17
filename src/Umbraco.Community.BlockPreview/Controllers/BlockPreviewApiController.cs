@@ -304,15 +304,12 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             IPublishedContent? content = null;
 
-            var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
-            if (nodeKey != default)
+            if (nodeKey.HasValue)
             {
-                content = _runtimeCache.GetCacheItem(contentCacheKey, () =>
-                {
-                    return context.Content?.GetById(true, nodeKey.GetValueOrDefault());
-                }, CacheDuration);
+                content = context.Content?.GetById(preview: true, nodeKey.GetValueOrDefault());                
             }
 
+            var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
             if (content != null)
                 return content;
 
