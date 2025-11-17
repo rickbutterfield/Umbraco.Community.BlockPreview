@@ -325,6 +325,28 @@ namespace Umbraco.Community.BlockPreview.Services
             ViewDataDictionary viewData = CreateViewData(blockInstance, previewContext);
             return await GetMarkup(previewContext);
         }
+        /// <summary>
+        /// Retrieves the path to the stylesheet associated with the specified block type.
+        /// </summary>
+        /// <remarks>The method returns a stylesheet path based on the block type.</remarks>
+        /// <param name="blockType">The type of block for which the stylesheet path is requested.</param>
+        /// <param name="content">The content associated with the block.</param>
+        /// <param name="controllerContext">The context of the controller handling the request.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains the stylesheet path as a string,
+        /// or <see langword="null"/> if no stylesheet is associated with the specified block type.</returns>
+        public virtual Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
+        {
+            switch (blockType)
+            {
+                case BlockType.BlockGrid:
+                    return Task.FromResult(_options.BlockGrid?.Stylesheet);
+                case BlockType.BlockList:
+                    return Task.FromResult(_options.BlockList?.Stylesheet);
+                case BlockType.RichText:
+                default:
+                    return Task.FromResult<string?>(null);
+            }
+        }
         #endregion
 
         #region Private
