@@ -139,16 +139,16 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
-            IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
+            IPublishedElement contentElement = ConvertToElement(contentData, content);
 
             FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
 
-            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, content) : default;
+            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
+            Type? contentBlockType = FindBlockType(contentElement.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
@@ -228,16 +228,16 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
-            IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
+            IPublishedElement contentElement = ConvertToElement(contentData, content);
 
             FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
 
-            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, content) : default;
+            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
+            Type? contentBlockType = FindBlockType(contentElement.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
@@ -254,7 +254,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockList, null, blockIndex);
-            return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockList);
+            return await GetMarkup(controllerContext, contentElement.ContentType.Alias, viewData, BlockType.BlockList);
         }
 
         public async Task<string> RenderRichTextBlock(
@@ -279,13 +279,13 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
-            IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
+            IPublishedElement contentElement = ConvertToElement(contentData, content);
 
             FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = blockValue?.BlockValue.SettingsData.FirstOrDefault();
-            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true, content) : default;
+            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
+            Type? contentBlockType = FindBlockType(contentElement.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
@@ -302,7 +302,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.RichText);
-            return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.RichText);
+            return await GetMarkup(controllerContext, contentElement.ContentType.Alias, viewData, BlockType.RichText);
         }
         #endregion
 
@@ -340,58 +340,55 @@ namespace Umbraco.Community.BlockPreview.Services
             }, CacheDuration);
         }
 
-        private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError, IPublishedElement owner)
+        private IPublishedElement ConvertToElement(BlockItemData data, IPublishedElement owner)
         {
-            if (data != null)
+            for (int i = 0; i < data.Values.Count(); i++)
             {
-                for (int i = 0; i < data.Values.Count(); i++)
+                var property = data.Values.ElementAt(i);
+                var value = property.Value;
+                string? propertyAsString = value?.ToString();
+
+                if (property.EditorAlias == PropertyEditors.Aliases.RichText)
                 {
-                    var property = data.Values.ElementAt(i);
-                    var value = property.Value;
-                    string? propertyAsString = value?.ToString();
-
-                    if (property.EditorAlias == PropertyEditors.Aliases.RichText)
+                    if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
                     {
-                        if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
-                        {
-                            var blockValue = _richTextBlockEditorValues.DeserializeAndClean(_jsonSerializer.Serialize(richTextEditorValue.Blocks));
-                            if (blockValue != null)
-                            {
-                                FormatBlockData(blockValue.BlockValue.ContentData);
-                                FormatBlockData(blockValue.BlockValue.SettingsData);
-
-                                richTextEditorValue.Blocks = blockValue.BlockValue;
-
-                                property.Value = JsonSerializer.Serialize(richTextEditorValue, _jsonSerializerOptions);
-                            }
-                        }
-                    }
-                    else if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
-                    {
-                        var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
+                        var blockValue = _richTextBlockEditorValues.DeserializeAndClean(_jsonSerializer.Serialize(richTextEditorValue.Blocks));
                         if (blockValue != null)
                         {
                             FormatBlockData(blockValue.BlockValue.ContentData);
                             FormatBlockData(blockValue.BlockValue.SettingsData);
-                            property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+
+                            richTextEditorValue.Blocks = blockValue.BlockValue;
+
+                            property.Value = JsonSerializer.Serialize(richTextEditorValue, _jsonSerializerOptions);
                         }
                     }
-                    else if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
+                }
+                else if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
+                {
+                    var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
+                    if (blockValue != null)
                     {
-                        var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
-                        if (blockValue != null)
-                        {
-                            FormatBlockData(blockValue.BlockValue.ContentData);
-                            FormatBlockData(blockValue.BlockValue.SettingsData);
-                            property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
-                        }
+                        FormatBlockData(blockValue.BlockValue.ContentData);
+                        FormatBlockData(blockValue.BlockValue.SettingsData);
+                        property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+                    }
+                }
+                else if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
+                {
+                    var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
+                    if (blockValue != null)
+                    {
+                        FormatBlockData(blockValue.BlockValue.ContentData);
+                        FormatBlockData(blockValue.BlockValue.SettingsData);
+                        property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                     }
                 }
             }
 
-            var element = _blockEditorConverter.ConvertToElement(owner, data, PropertyCacheLevel.None, throwOnError);
-            if (element == null && throwOnError)
-                throw new InvalidOperationException($"Unable to find Element {data?.ContentTypeAlias}");
+            var element = _blockEditorConverter.ConvertToElement(owner, data, PropertyCacheLevel.None, preview: true);
+            if (element == null)
+                throw new InvalidOperationException($"Unable to find Element {data.ContentTypeAlias}");
 
             return element;
         }
@@ -660,12 +657,12 @@ namespace Umbraco.Community.BlockPreview.Services
                 var items = area.Items.Select(item =>
                 {
                     BlockItemData? areaContentData = blockValue.BlockValue?.ContentData.FirstOrDefault(x => x.Key == item.ContentKey);
-                    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true, content);
+                    IPublishedElement areaContentElement = ConvertToElement(areaContentData!, content);
 
                     BlockItemData? areaSettingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == item.ContentKey);
-                    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true, content) : default;
+                    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, content) : default;
 
-                    return new BlockGridItem(item.ContentKey, areaContentElement!, item.SettingsKey, areaSettingsElement!);
+                    return new BlockGridItem(item.ContentKey, areaContentElement, item.SettingsKey, areaSettingsElement!);
                 }).WhereNotNull().ToList();
 
                 return new BlockGridArea(new List<BlockGridItem>(area.Items.Count()), areaConfig.Alias!, areaConfig.RowSpan!.Value, areaConfig.ColumnSpan!.Value);
