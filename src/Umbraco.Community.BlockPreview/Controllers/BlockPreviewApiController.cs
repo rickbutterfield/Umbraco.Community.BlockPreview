@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.HybridCache;
 using Umbraco.Cms.Infrastructure.Scoping;
+using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Community.BlockPreview.Services;
 using Umbraco.Extensions;
@@ -258,6 +260,48 @@ namespace Umbraco.Community.BlockPreview.Controllers
         public BlockPreviewOptions GetSettings() =>
             _blockPreviewSettings.Value;
 
+
+        [HttpGet("preview/grid/stylesheet")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        public async Task<IActionResult> GetGridStylesheet(
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+            String? stylesheetPath = await _blockPreviewService.GetStylesheetPath(BlockType.BlockGrid, content!, ControllerContext);
+
+            if (string.IsNullOrWhiteSpace(stylesheetPath))
+            {
+                return NotFound("Stylesheet path is not configured.");
+            }
+            return Ok(stylesheetPath);
+        }
+
+        [HttpGet("preview/list/stylesheet")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        public async Task<IActionResult> GetListStylesheet(
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+            String? stylesheetPath = await _blockPreviewService.GetStylesheetPath(BlockType.BlockList, content!, ControllerContext);
+
+            if (string.IsNullOrWhiteSpace(stylesheetPath))
+            {
+                return NotFound("Stylesheet path is not configured.");
+            }
+            return Ok(stylesheetPath);
+        }
         #endregion
 
         #region Private
