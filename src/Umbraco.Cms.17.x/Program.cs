@@ -1,4 +1,6 @@
+using Umbraco.Cms._17.x.Services;
 using Umbraco.Community.BlockPreview.Extensions;
+using Umbraco.Community.BlockPreview.Interfaces;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -26,6 +28,9 @@ builder.CreateUmbracoBuilder()
         };
     })
     .Build();
+
+builder.Services.AddUnique<IBlockPreviewService, CustomBlockPreviewService>(ServiceLifetime.Scoped);
+builder.Services.AddUnique<IBlockPreviewRequestEnricher, BlockPreviewRequestEnricher>(ServiceLifetime.Scoped);
 
 WebApplication app = builder.Build();
 

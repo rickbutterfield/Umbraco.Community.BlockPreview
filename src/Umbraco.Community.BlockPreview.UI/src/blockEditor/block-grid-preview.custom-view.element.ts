@@ -120,7 +120,6 @@ export class BlockGridPreviewCustomView
 
     async #setupContextObservers() {
         this.#observeSortMode();
-        this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
         await this.#observeDocumentWorkspace();
     }
@@ -129,16 +128,6 @@ export class BlockGridPreviewCustomView
         this.observe(this.#blockPreviewContext?.sortModeActive, (isActive) => {
             if (isActive !== undefined) {
                 this._sortModeActive = isActive;
-            }
-        });
-    }
-
-    #observeBlockPreviewSettings() {
-        this.observe(this.#blockPreviewContext?.settings, (settings) => {
-            if (settings?.blockGrid?.stylesheet) {
-                this._styleElement = document.createElement('link');
-                this._styleElement.rel = 'stylesheet';
-                this._styleElement.href = settings.blockGrid.stylesheet as string;
             }
         });
     }
@@ -170,6 +159,18 @@ export class BlockGridPreviewCustomView
                         this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
+                        
+                        const { data } = await BlockPreviewService.getGridStylesheet({
+                            query: {
+                                documentTypeUnique: this._blockContext.documentTypeUnique,
+                                nodeKey: this._blockContext.unique
+                            }
+                        });
+                        if(data) {
+                            this._styleElement = document.createElement('link');
+                            this._styleElement.rel = 'stylesheet';
+                            this._styleElement.href = data;
+                        }
                     }
                 );
 
@@ -177,12 +178,24 @@ export class BlockGridPreviewCustomView
         }
         catch (ex) {
             if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
-                this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+                this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async(context) => {
                     if (context) {
-                        this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                        this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
                             this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
                             this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
                             this.#observeBlockValue();
+
+                            const { data } = await BlockPreviewService.getGridStylesheet({
+                                query: {
+                                    documentTypeUnique: this._blockContext.documentTypeUnique,
+                                    nodeKey: this._blockContext.unique
+                                }
+                            });
+                            if(data) {
+                                this._styleElement = document.createElement('link');
+                                this._styleElement.rel = 'stylesheet';
+                                this._styleElement.href = data;
+                            }
                         });
                     }
                 });

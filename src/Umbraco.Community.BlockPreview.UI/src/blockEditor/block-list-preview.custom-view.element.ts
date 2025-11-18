@@ -119,7 +119,6 @@ export class BlockListPreviewCustomView
 
     async #setupContextObservers() {
         this.#observeSortMode();
-        this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
         await this.#observeDocumentWorkspace();
     }
@@ -128,16 +127,6 @@ export class BlockListPreviewCustomView
         this.observe(this.#blockPreviewContext?.sortModeActive, (isActive) => {
             if (isActive !== undefined) {
                 this._sortModeActive = isActive;
-            }
-        });
-    }
-
-    #observeBlockPreviewSettings() {
-        this.observe(this.#blockPreviewContext?.settings, (settings) => {
-            if (settings?.blockList?.stylesheet) {
-                this._styleElement = document.createElement('link');
-                this._styleElement.rel = 'stylesheet';
-                this._styleElement.href = settings.blockList.stylesheet as string;
             }
         });
     }
@@ -168,6 +157,17 @@ export class BlockListPreviewCustomView
                         this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
+                        const { data } = await BlockPreviewService.getListStylesheet({
+                            query: {
+                                documentTypeUnique: this._blockContext.documentTypeUnique,
+                                nodeKey: this._blockContext.unique
+                            }
+                        });
+                        if(data) {
+                            this._styleElement = document.createElement('link');
+                            this._styleElement.rel = 'stylesheet';
+                            this._styleElement.href = data;
+                        }
                     }
                 );
             });
@@ -175,10 +175,21 @@ export class BlockListPreviewCustomView
             if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
                 this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
                     if (context) {
-                        this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                        this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
                             this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
                             this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
                             this.#observeBlockValue();
+                            const { data } = await BlockPreviewService.getListStylesheet({
+                                query: {
+                                    documentTypeUnique: this._blockContext.documentTypeUnique,
+                                    nodeKey: this._blockContext.unique
+                                }
+                            });
+                            if(data) {
+                                this._styleElement = document.createElement('link');
+                                this._styleElement.rel = 'stylesheet';
+                                this._styleElement.href = data;
+                            }
                         });
                     }
                 });

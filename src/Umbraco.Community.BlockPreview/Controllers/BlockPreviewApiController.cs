@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using HtmlAgilityPack;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,7 @@ using Umbraco.Cms.Core.Services;
 using Umbraco.Cms.Core.Web;
 using Umbraco.Cms.Infrastructure.HybridCache;
 using Umbraco.Cms.Infrastructure.Scoping;
+using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Community.BlockPreview.Services;
 using Umbraco.Extensions;
@@ -40,6 +42,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly IDocumentCacheService _documentCacheService;
         private readonly IPublishedContentTypeCache _contentTypeCache;
         private readonly IScopeProvider _scopeProvider;
+        private readonly IBlockPreviewRequestEnricher _requestEnricher;
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
@@ -59,7 +62,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IElementsCache elementsCache,
             IDocumentCacheService documentCacheService,
             IPublishedContentTypeCache contentTypeCache,
-            IScopeProvider scopeProvider)
+            IScopeProvider scopeProvider,
+            IBlockPreviewRequestEnricher requestEnricher)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -73,6 +77,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _documentCacheService = documentCacheService;
             _contentTypeCache = contentTypeCache;
             _scopeProvider = scopeProvider;
+            _requestEnricher = requestEnricher;
         }
 
         #region Public
@@ -114,6 +119,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     string? currentCulture = await GetCurrentCulture(culture, content);
 
                     await SetupPublishedRequest(currentCulture, content);
+
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
 
                     markup = await _blockPreviewService.RenderGridBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi, blockIndex);
                 }
@@ -170,6 +177,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     string? currentCulture = await GetCurrentCulture(culture, content);
 
                     await SetupPublishedRequest(currentCulture, content);
+                    
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
 
                     markup = await _blockPreviewService.RenderListBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi, blockIndex);
                 }
@@ -219,7 +228,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     string? currentCulture = await GetCurrentCulture(culture, content);
 
-                    await SetupPublishedRequest(currentCulture, content);
+                    await SetupPublishedRequest(currentCulture, content); 
+                    
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias);
 
                     markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique);
                 }
@@ -249,6 +260,48 @@ namespace Umbraco.Community.BlockPreview.Controllers
         public BlockPreviewOptions GetSettings() =>
             _blockPreviewSettings.Value;
 
+
+        [HttpGet("preview/grid/stylesheet")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        public async Task<IActionResult> GetGridStylesheet(
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+            String? stylesheetPath = await _blockPreviewService.GetStylesheetPath(BlockType.BlockGrid, content!, ControllerContext);
+
+            if (string.IsNullOrWhiteSpace(stylesheetPath))
+            {
+                return NotFound("Stylesheet path is not configured.");
+            }
+            return Ok(stylesheetPath);
+        }
+
+        [HttpGet("preview/list/stylesheet")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+
+        public async Task<IActionResult> GetListStylesheet(
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+            String? stylesheetPath = await _blockPreviewService.GetStylesheetPath(BlockType.BlockList, content!, ControllerContext);
+
+            if (string.IsNullOrWhiteSpace(stylesheetPath))
+            {
+                return NotFound("Stylesheet path is not configured.");
+            }
+            return Ok(stylesheetPath);
+        }
         #endregion
 
         #region Private
@@ -295,15 +348,12 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             IPublishedContent? content = null;
 
-            var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
-            if (nodeKey != default)
+            if (nodeKey.HasValue)
             {
-                content = _runtimeCache.GetCacheItem(contentCacheKey, () =>
-                {
-                    return context.Content?.GetById(true, nodeKey.GetValueOrDefault());
-                }, CacheDuration);
+                content = context.Content?.GetById(preview: true, nodeKey.GetValueOrDefault());                
             }
 
+            var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
             if (content != null)
                 return content;
 
