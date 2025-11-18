@@ -255,6 +255,12 @@ export class RichTextPreviewCustomView
             if (data) {
                 this._htmlMarkup = data ?? '';
                 this._isLoading = false;
+                document.body.dispatchEvent(new CustomEvent('umb-block-rte-preview-rendered', {
+                    detail: {
+                        host: this,
+                        html: this._htmlMarkup
+                    }
+                }));
             }
             else if (UmbApiError.isUmbApiError(error)) {
                 this._error = error.message;
