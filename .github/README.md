@@ -156,12 +156,12 @@ builder.AddBlockPreview(options =>
 | RichText  | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Rich Text previews  |
 
 #### BlockTypeSettings
-| Property      | Type                     | Description                                                                                                     |
-|---------------|--------------------------|-----------------------------------------------------------------------------------------------------------------|
-| Enabled       | boolean                  | Toggle previews on or off for a given data type.                                                                |
-| ContentTypes  | string[] \| List<string> | A list of content type aliases to enable the previews for. If left blank, all blocks will be enabled.           |
-| ViewLocations | string[] \| List<string> | A list of custom locations to be searched for your partial views. The default paths are included automatically. |
-| Stylesheet    | string                   | Path to a stylesheet that exists in /wwwroot, to be loaded for every block preview                              |
+| Property      | Type                     | Description                                                                                                                                                                                                   |
+|---------------|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Enabled       | boolean                  | Toggle previews on or off for a given data type.                                                                                                                                                              |
+| ContentTypes  | string[] \| List<string> | A list of content type aliases to enable the previews for. If left blank, all blocks will be enabled.                                                                                                         |
+| ViewLocations | string[] \| List<string> | A list of custom view paths to be searched for your partial views. Use `{0}` as a placeholder for the content type alias. Custom locations are searched before default paths. Default paths are automatically included. |
+| Stylesheet    | string                   | Path to a stylesheet (relative to `/wwwroot`) to be loaded for every block preview of this type. For example: `/css/myblockgridlayout.css`. Can be overridden by implementing a custom `IBlockPreviewService`. |
 
 
 ## Usage
@@ -233,16 +233,218 @@ For example:
 }
 ```
 
-### Custom View locations
-If your block partials are not in the usual `/Views/Partials/block[grid|list]/Components/` paths, you can add custom locations in your `appsettings.json`:
+### Custom View Locations
+If your block partials are not in the usual `/Views/Partials/block[grid|list]/Components/` paths, you can specify custom locations to search for your views. The `ViewLocations` property accepts an array of view paths with a `{0}` placeholder that will be replaced with the content type alias.
 
+You can configure this in `Program.cs`:
+```cs
+builder.AddBlockPreview(options =>
+{
+    options.BlockGrid = new()
+    {
+        Enabled = true,
+        ViewLocations = ["/Views/CustomBlocks/{0}.cshtml", "/Views/Themes/Default/BlockGrid/{0}.cshtml"]
+    };
+})
 ```
-"BlockPreview": {
-  "BlockGrid": {
-    "ViewLocations": ["/path/to/block/grid/views/{0}.cshtml"]
+
+Or in `appsettings.json`:
+```json
+{
+  "BlockPreview": {
+    "BlockGrid": {
+      "Enabled": true,
+      "ViewLocations": ["/Views/CustomBlocks/{0}.cshtml", "/Views/Themes/Default/BlockGrid/{0}.cshtml"]
+    }
   }
 }
 ```
+
+**How it works:**
+- Custom view locations are searched **before** the default paths
+- The default paths (`/Views/Partials/blockgrid/Components/`, `/Views/Partials/blocklist/Components/`, `/Views/Partials/richtext/Components/`) are automatically included and don't need to be specified
+- The `{0}` placeholder is replaced with the content element alias (e.g., `heroBlock`)
+- Multiple custom locations can be specified and will be searched in order
+
+### Stylesheet Loading
+You can specify a stylesheet to be loaded for block previews in the backoffice. This is useful for applying custom styles to your blocks without affecting the rest of the backoffice.
+
+Configure in `Program.cs`:
+```cs
+builder.AddBlockPreview(options =>
+{
+    options.BlockGrid = new()
+    {
+        Enabled = true,
+        Stylesheet = "/css/myblockgridlayout.css"
+    };
+    options.BlockList = new()
+    {
+        Enabled = true,
+        Stylesheet = "/css/myblocklistlayout.css"
+    };
+})
+```
+
+Or in `appsettings.json`:
+```json
+{
+  "BlockPreview": {
+    "BlockGrid": {
+      "Enabled": true,
+      "Stylesheet": "/css/myblockgridlayout.css"
+    },
+    "BlockList": {
+      "Enabled": true,
+      "Stylesheet": "/css/myblocklistlayout.css"
+    }
+  }
+}
+```
+
+**Important notes:**
+- The stylesheet path must be relative to the `/wwwroot` directory
+- The stylesheet will be loaded for **every** block preview of that type in the backoffice
+- You can specify different stylesheets for Block Grid, Block List, and Rich Text editors
+
+## Advanced Customization
+
+### Custom Block Preview Service
+For advanced scenarios, you can create a custom implementation of `IBlockPreviewService` to have full control over how blocks are rendered and styled. This is useful when you need:
+- Dynamic stylesheet selection based on content properties
+- Theme-based view resolution
+- Custom rendering logic
+
+**Example: Theme-based stylesheet and view location**
+
+```cs
+using Umbraco.Community.BlockPreview.Services;
+using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.Enums;
+
+public class CustomBlockPreviewService : BlockPreviewService
+{
+    private readonly IRazorViewEngine _razorViewEngine;
+
+    public CustomBlockPreviewService(/* inject required dependencies */) 
+        : base(/* pass dependencies to base */)
+    {
+        _razorViewEngine = razorViewEngine;
+    }
+
+    // Override to provide dynamic stylesheet paths
+    public override Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
+    {
+        // Check if a theme is set in the request context
+        if (controllerContext.HttpContext.Items.TryGetValue("theme", out var themeObj) && themeObj is string theme)
+        {
+            return Task.FromResult<string?>($"/css/{theme}.blockgridlayout.css");
+        }
+        
+        // Fall back to the default configured stylesheet
+        return base.GetStylesheetPath(blockType, content, controllerContext);
+    }
+
+    // Override to provide custom view resolution logic
+    protected override ViewEngineResult? GetViewResult(BlockPreviewContext context)
+    {
+        if (context.ControllerContext.HttpContext.Items.TryGetValue("theme", out var themeObj) && themeObj is string theme)
+        {
+            string blockType = context.BlockType switch
+            {
+                BlockType.BlockGrid => "Blockgrid",
+                BlockType.BlockList => "Blocklist",
+                BlockType.RichText => "Richtext",
+                _ => null
+            };
+
+            if (blockType != null)
+            {
+                string themedPath = $"~/Views/Themes/{theme}/{blockType}/Components/{context.ContentAlias}.cshtml";
+                return _razorViewEngine.GetView("", themedPath, false);
+            }
+        }
+        
+        return base.GetViewResult(context);
+    }
+}
+```
+
+Register your custom service in `Program.cs`:
+```cs
+builder.CreateUmbracoBuilder()
+    .AddBackOffice()
+    .AddWebsite()
+    .AddDeliveryApi()
+    .AddComposers()
+    .AddBlockPreview(options => { /* configure options */ })
+    .Build();
+
+// Register custom service (must be after AddBlockPreview)
+builder.Services.AddUnique<IBlockPreviewService, CustomBlockPreviewService>(ServiceLifetime.Scoped);
+```
+
+### Request Enricher
+The `IBlockPreviewRequestEnricher` interface allows you to enrich the HTTP request context before blocks are rendered. This is useful for:
+- Setting theme information from content properties
+- Adding custom data to `HttpContext.Items` for use in views or custom services
+- Implementing variant-specific rendering logic
+
+**Example: Setting theme from content property**
+
+```cs
+using Umbraco.Community.BlockPreview.Interfaces;
+
+public class BlockPreviewRequestEnricher : IBlockPreviewRequestEnricher
+{
+    public Task EnrichAsync(
+        HttpContext httpContext, 
+        IPublishedContent? content, 
+        string? blockEditorAlias = null,
+        string? contentElementAlias = null, 
+        string? contentUdi = null, 
+        string? settingsUdi = null, 
+        int? blockIndex = null)
+    {
+        if (content == null)
+            return Task.CompletedTask;
+
+        // Get theme from content or ancestors
+        var theme = content.Value<string>("theme", fallback: Fallback.ToAncestors);
+
+        if (!string.IsNullOrEmpty(theme))
+        {
+            // Store theme in HttpContext.Items for use by custom services
+            httpContext.Items["theme"] = theme;
+        }
+
+        return Task.CompletedTask;
+    }
+}
+```
+
+Register your enricher in `Program.cs`:
+```cs
+builder.CreateUmbracoBuilder()
+    .AddBackOffice()
+    .AddWebsite()
+    .AddDeliveryApi()
+    .AddComposers()
+    .AddBlockPreview(options => { /* configure options */ })
+    .Build();
+
+// Register custom enricher (must be after AddBlockPreview)
+builder.Services.AddUnique<IBlockPreviewRequestEnricher, BlockPreviewRequestEnricher>(ServiceLifetime.Scoped);
+```
+
+**Available parameters:**
+- `httpContext` - The current HTTP context
+- `content` - The published content being edited
+- `blockEditorAlias` - The alias of the block editor property
+- `contentElementAlias` - The content type alias of the block element
+- `contentUdi` - The UDI of the content element
+- `settingsUdi` - The UDI of the settings element (if applicable)
+- `blockIndex` - The index of the block in the list/grid (if applicable)
 
 ## Contribution guidelines
 To raise a new bug, create an issue on the GitHub repository. To fix a bug or add new features, fork the repository and send a pull request with your changes. Feel free to add ideas to the repository's issues list if you would to discuss anything related to the library.
