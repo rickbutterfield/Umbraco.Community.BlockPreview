@@ -413,8 +413,14 @@ export class BlockGridPreviewCustomView
 
     static styles = [
         css`
+            :host {
+                display: block;
+                height: 100%;
+            }
+
              a.block-preview-edit {
                  display: block;
+                 height: 100%;
                  color: inherit;
                  text-decoration: inherit;
                  border:1px solid transparent;
