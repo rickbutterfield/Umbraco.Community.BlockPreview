@@ -911,6 +911,7 @@ y.styles = [
   Te`
              a.block-preview-edit {
                  display: block;
+                 height: 100%;
                  color: inherit;
                  text-decoration: inherit;
                  border:1px solid transparent;
@@ -1243,37 +1244,58 @@ p.styles = [
             padding: 8px 35px 8px 14px;
             position: relative;
 
-            &, a, h4 {
+            a.block-preview-edit {
+              display: block;
+              height: 100%;
+              color: inherit;
+              text-decoration: inherit;
+              border: 1px solid transparent;
+              border-radius: 2px;
+            }
+
+            a.block-preview-edit:hover {
+                border-color: var(--uui-color-interactive-emphasis, #3544b1);
+            }
+
+            .preview-alert {
+                background-color: var(--uui-color-danger, #f0ac00);
+                border: 1px solid transparent;
+                border-radius: 0;
+                margin-bottom: 20px;
+                padding: 8px 35px 8px 14px;
+                position: relative;
+
+                &, a, h4 {
+                    color: #fff;
+                }
+
+                pre {
+                    white-space: normal;
+                }
+
+                uui-loader {
+                    margin-right: 16px;
+                }
+            }
+
+            .preview-alert-warning {
+                background-color: var(--uui-color-warning, #f0ac00);
+                border-color: transparent;
+                color: #000;
+            }
+
+            .preview-alert-info {
+                background-color: var(--uui-color-default, #3544b1);
+                border-color: transparent;
                 color: #fff;
             }
 
-            pre {
-                white-space: normal;
+            .preview-alert-danger, .preview-alert-error {
+                background-color: var(--uui-color-danger, #f0ac00);
+                border-color: transparent;
+                color: #fff;
             }
-
-            uui-loader {
-                margin-right: 16px;
-            }
-        }
-
-        .preview-alert-warning {
-            background-color: var(--uui-color-warning, #f0ac00);
-            border-color: transparent;
-            color: #000;
-        }
-
-        .preview-alert-info {
-            background-color: var(--uui-color-default, #3544b1);
-            border-color: transparent;
-            color: #fff;
-        }
-
-        .preview-alert-danger, .preview-alert-error {
-            background-color: var(--uui-color-danger, #f0ac00);
-            border-color: transparent;
-            color: #fff;
-        }
-    `
+        `
 ];
 _([
   d({ attribute: !1 })
