@@ -202,7 +202,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             ConfigureBlockInstanceAreas(blockValue, blockInstance, config, matchingBlockConfig, matchingLayout!, content);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, previewContext);
+            previewContext.ViewData = CreateViewData(blockInstance, previewContext);
             return await GetMarkup(previewContext);
         }
 
@@ -268,7 +268,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 BlockType.BlockList,
                 blockIndex);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, previewContext);
+            previewContext.ViewData = CreateViewData(blockInstance, previewContext);
             return await GetMarkup(previewContext);
         }
 
@@ -322,7 +322,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 contentElement.ContentType.Alias,
                 BlockType.RichText);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, previewContext);
+            previewContext.ViewData = CreateViewData(blockInstance, previewContext);
             return await GetMarkup(previewContext);
         }
         /// <summary>

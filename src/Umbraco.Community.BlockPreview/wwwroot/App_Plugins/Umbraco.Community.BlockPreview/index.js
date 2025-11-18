@@ -909,6 +909,11 @@ at = function(e) {
 };
 y.styles = [
   Te`
+            :host {
+                display: block;
+                height: 100%;
+            }
+
              a.block-preview-edit {
                  display: block;
                  height: 100%;
@@ -1224,25 +1229,10 @@ bt = function(e) {
 };
 p.styles = [
   Te`
-        a.block-preview-edit {
-          display: block;
-          color: inherit;
-          text-decoration: inherit;
-          border: 1px solid transparent;
-          border-radius: 2px;
-        }
-
-        a.block-preview-edit:hover {
-            border-color: var(--uui-color-interactive-emphasis, #3544b1);
-        }
-
-        .preview-alert {
-            background-color: var(--uui-color-danger, #f0ac00);
-            border: 1px solid transparent;
-            border-radius: 0;
-            margin-bottom: 20px;
-            padding: 8px 35px 8px 14px;
-            position: relative;
+            :host {
+                display: block;
+                height: 100%;
+            }
 
             a.block-preview-edit {
               display: block;
