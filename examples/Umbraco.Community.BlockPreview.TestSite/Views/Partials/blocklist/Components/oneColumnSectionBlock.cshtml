@@ -1,0 +1,4 @@
+﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockListItem<OneColumnSectionBlock>>
+@using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
+
+@await Html.GetBlockGridHtmlAsync(Model.Content.NestedBlockGrid)

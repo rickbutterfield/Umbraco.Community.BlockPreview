@@ -1,0 +1,43 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+	<PropertyGroup>
+    <IsPackable>false</IsPackable>
+    <EnablePackageValidation>false</EnablePackageValidation>
+		<RootNamespace>Umbraco.Community.BlockPreview.TestSite</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Umbraco.Cms" VersionOverride="16.3.4" />
+		<PackageReference Include="Umbraco.Cms.Core" VersionOverride="16.3.4" />
+		<PackageReference Include="Umbraco.Cms.StaticAssets" VersionOverride="16.3.4" />
+		<PackageReference Include="uSync" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj" />
+	</ItemGroup>
+   
+    <!-- This is needed because unlike PackageReference, ProjectReference does not run the buildTransitive props -->
+    <Import Project="..\..\src\Umbraco.Community.BlockPreview\buildTransitive\Umbraco.Community.BlockPreview.targets" />
+
+    <ItemGroup>
+		<!-- Opt-in to app-local ICU to ensure consistent globalization APIs across different platforms -->
+		<PackageReference Include="Microsoft.ICU.ICU4C.Runtime" VersionOverride="72.1.0.3" />
+		<RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="72.1.0.3" Condition="$(RuntimeIdentifier.StartsWith('linux')) or $(RuntimeIdentifier.StartsWith('win')) or ('$(RuntimeIdentifier)' == '' and !$([MSBuild]::IsOSPlatform('osx')))" />
+	</ItemGroup>
+	
+	<ItemGroup>
+	  <Folder Include="umbraco\" />
+	</ItemGroup>
+
+	<PropertyGroup>
+		<!-- Razor files are needed for the backoffice to work correctly -->
+		<CopyRazorGenerateFilesToPublishDirectory>true</CopyRazorGenerateFilesToPublishDirectory>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<!-- Remove RazorCompileOnBuild and RazorCompileOnPublish when not using ModelsMode InMemoryAuto -->
+		<RazorCompileOnBuild>false</RazorCompileOnBuild>
+		<RazorCompileOnPublish>false</RazorCompileOnPublish>
+	</PropertyGroup>
+
+</Project>

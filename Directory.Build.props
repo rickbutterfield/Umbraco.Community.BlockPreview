@@ -1,0 +1,38 @@
+<Project>
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)'=='.csproj'">
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
+    <Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
+    <PackageProjectUrl>https://github.com/rickbutterfield/BlockPreview</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/rickbutterfield/BlockPreview</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarnOnPackingNonPackableProject>false</WarnOnPackingNonPackableProject>
+  </PropertyGroup>
+  
+  <!-- Package Validation -->
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)'=='.csproj'">
+    <GenerateCompatibilitySuppressionFile>false</GenerateCompatibilitySuppressionFile>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <PackageValidationBaselineVersion>4.0.6</PackageValidationBaselineVersion>
+    <EnableStrictModeForCompatibleFrameworksInPackage>false</EnableStrictModeForCompatibleFrameworksInPackage>
+    <EnableStrictModeForCompatibleTfms>false</EnableStrictModeForCompatibleTfms>
+  </PropertyGroup>
+
+  <!-- Calculate version only once for the whole repository -->
+  <PropertyGroup Condition="'$(MSBuildProjectExtension)'=='.csproj'">
+    <GitVersionBaseDirectory>$(MSBuildThisFileDirectory)</GitVersionBaseDirectory>
+  </PropertyGroup>
+
+  <!-- Use version range on project references (to limit on major version in generated packages) -->
+  <Target Name="_GetProjectReferenceVersionRanges" AfterTargets="_GetProjectReferenceVersions" Condition="'$(MSBuildProjectExtension)'=='.csproj'">
+    <ItemGroup>
+      <_ProjectReferencesWithVersions Condition="'%(ProjectVersion)' != ''">
+        <ProjectVersion>[%(ProjectVersion), $([MSBuild]::Add($([System.Text.RegularExpressions.Regex]::Match('%(ProjectVersion)', '^\d+').Value), 1)))</ProjectVersion>
+      </_ProjectReferencesWithVersions>
+    </ItemGroup>
+  </Target>
+</Project>
