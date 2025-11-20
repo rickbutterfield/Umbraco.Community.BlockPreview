@@ -8,7 +8,7 @@
     <GlobalPackageReference Include="Umbraco.GitVersioning.Extensions" Version="0.2.0" />
     <GlobalPackageReference Include="Umbraco.JsonSchema.Extensions" Version="0.3.0" />
   </ItemGroup>
-  <!-- Umbraco pacakges -->
+  <!-- Umbraco packages -->
   <PropertyGroup>
     <UmbracoCmsPackageVersion>[16.0.0, 17)</UmbracoCmsPackageVersion>
   </PropertyGroup>

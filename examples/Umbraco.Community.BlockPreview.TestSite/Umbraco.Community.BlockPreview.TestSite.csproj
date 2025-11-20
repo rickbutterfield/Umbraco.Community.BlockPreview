@@ -16,7 +16,7 @@
 		<ProjectReference Include="..\..\src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj" />
 	</ItemGroup>
    
-    <!-- This is needed because unlike PackageReference, ProjectReference does not run the buildTransitive props -->
+    <!-- This is needed because unlike PackageReference, ProjectReference does not run the buildTransitive targets -->
     <Import Project="..\..\src\Umbraco.Community.BlockPreview\buildTransitive\Umbraco.Community.BlockPreview.targets" />
 
     <ItemGroup>
