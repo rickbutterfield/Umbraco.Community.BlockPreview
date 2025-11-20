@@ -48,6 +48,14 @@ namespace Umbraco.Community.BlockPreview.Interfaces
         /// <returns>The rendered HTML.</returns>
         Task<string> RenderRichTextBlock(string blockData, IPublishedContent content, ControllerContext controllerContext, string blockEditorAlias = "", Guid documentTypeUnique = default);
 
+
+        /// <summary>
+        /// Gets the stylesheet path for a specific block type.
+        /// </summary>
+        /// <param name="blockType">The type of block editor.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <returns>The stylesheet path, or null if not found.</returns>
         Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext);
     }
 }

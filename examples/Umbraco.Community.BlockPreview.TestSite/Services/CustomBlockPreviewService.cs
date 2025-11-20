@@ -22,45 +22,35 @@ namespace Umbraco.Community.BlockPreview.TestSite.Services
     {
         private readonly IRazorViewEngine _razorViewEngine;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        public CustomBlockPreviewService(ITempDataProvider tempDataProvider,
-                                         IViewComponentHelperWrapper viewComponentHelperWrapper,
-                                         IRazorViewEngine razorViewEngine,
-                                         ITypeFinder typeFinder,
-                                         BlockEditorConverter blockEditorConverter,
-                                         IViewComponentSelector viewComponentSelector,
-                                         IPublishedValueFallback publishedValueFallback,
-                                         IOptions<BlockPreviewOptions> options,
-                                         IJsonSerializer jsonSerializer,
-                                         IContentTypeService contentTypeService,
-                                         IDataTypeService dataTypeService,
-                                         AppCaches appCaches,
-                                         IWebHostEnvironment webHostEnvironment,
-                                         IBlockEditorElementTypeCache elementTypeCache,
-                                         ILogger<BlockPreviewService> logger) : base(tempDataProvider,
-                                                                                     viewComponentHelperWrapper,
-                                                                                     razorViewEngine,
-                                                                                     typeFinder,
-                                                                                     blockEditorConverter,
-                                                                                     viewComponentSelector,
-                                                                                     publishedValueFallback,
-                                                                                     options,
-                                                                                     jsonSerializer,
-                                                                                     contentTypeService,
-                                                                                     dataTypeService,
-                                                                                     appCaches,
-                                                                                     webHostEnvironment,
-                                                                                     elementTypeCache,
-                                                                                     logger)
+        public CustomBlockPreviewService(
+            ITempDataProvider tempDataProvider,
+            IViewComponentHelperWrapper viewComponentHelperWrapper,
+            IRazorViewEngine razorViewEngine,
+            ITypeFinder typeFinder,
+            BlockEditorConverter blockEditorConverter,
+            IViewComponentSelector viewComponentSelector,
+            IPublishedValueFallback publishedValueFallback,
+            IOptions<BlockPreviewOptions> options,
+            IJsonSerializer jsonSerializer,
+            IContentTypeService contentTypeService,
+            IDataTypeService dataTypeService,
+            AppCaches appCaches,
+            IWebHostEnvironment webHostEnvironment,
+            IBlockEditorElementTypeCache elementTypeCache,
+            ILogger<BlockPreviewService> logger)
+        : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine, typeFinder, blockEditorConverter, viewComponentSelector, publishedValueFallback, options, jsonSerializer,contentTypeService, dataTypeService, appCaches, webHostEnvironment, elementTypeCache, logger)
         {
             _razorViewEngine = razorViewEngine;
             _webHostEnvironment = webHostEnvironment;
         }
         
-        protected override ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockPreviewContext context)
+        /// <inheritdoc/>
+        protected override ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockPreviewContext context, bool? hasNestedBlockGrid = false)
         {
-            return base.CreateViewData(typedBlockInstance, context);
+            return base.CreateViewData(typedBlockInstance, context, hasNestedBlockGrid);
         }
 
+        /// <inheritdoc/>
         public override Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
         {
             if (controllerContext.HttpContext.Items.TryGetValue("theme", out var themeObj) && themeObj is string theme)
@@ -70,6 +60,7 @@ namespace Umbraco.Community.BlockPreview.TestSite.Services
             return base.GetStylesheetPath(blockType, content, controllerContext);
         }
 
+        /// <inheritdoc/>
         protected override ViewEngineResult? GetViewResult(BlockPreviewContext context)
         {
             if (context.ControllerContext.HttpContext.Items.TryGetValue("theme", out var themeObj) && themeObj is string theme)
@@ -97,3 +88,4 @@ namespace Umbraco.Community.BlockPreview.TestSite.Services
         }
     }
 }
+ 
