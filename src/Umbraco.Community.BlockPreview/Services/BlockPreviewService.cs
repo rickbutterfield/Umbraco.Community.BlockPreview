@@ -535,10 +535,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
                     else if (propertyData.Value is string str)
                     {
-                        if (!string.IsNullOrEmpty(str) && str.DetectIsJson())
-                        {
-                            propertyData.Value = JsonSerializer.Serialize(str, _jsonSerializerOptions);
-                        }
+                        propertyData.Value = str;
                     }
                 }
             }
