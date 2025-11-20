@@ -172,6 +172,8 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
+            bool hasNestedBlockGrid = contentData.Values.Any(x => x.EditorAlias == PropertyEditors.Aliases.BlockGrid);
+
             IPublishedElement? contentElement = ConvertToElement(contentData, true, content);
 
             FormatBlockData(blockValue?.BlockValue.SettingsData);
@@ -227,7 +229,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             ConfigureBlockInstanceAreas(blockValue!, blockInstance, config, matchingBlockConfig, matchingLayout!, content);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig, blockIndex);
+            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig, blockIndex, hasNestedBlockGrid);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);
         }
 
@@ -572,23 +574,30 @@ namespace Umbraco.Community.BlockPreview.Services
             return null;
         }
 
-        private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default, BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlockConfig = null, int? blockIndex = 0)
+        private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default, BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlockConfig = null, int? blockIndex = 0, bool? hasNestedBlockGrid = false)
         {
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
                 Model = typedBlockInstance
             };
 
-            if (blockType == BlockType.BlockGrid && matchingBlockConfig != null && matchingBlockConfig.Areas.Any())
-            {
-                viewData["matchingBlockConfig"] = matchingBlockConfig;
-            }
-
             viewData["blockPreview"] = true;
             viewData["blockIndex"] = blockIndex;
 
             if (blockType == BlockType.BlockGrid)
+            {
                 viewData["blockGridPreview"] = true;
+
+                if (matchingBlockConfig != null && matchingBlockConfig.Areas.Any())
+                {
+                    viewData["matchingBlockConfig"] = matchingBlockConfig;
+                }
+
+                if (hasNestedBlockGrid == true)
+                {
+                    viewData["blockGridNested"] = hasNestedBlockGrid;
+                }
+            }
 
             return viewData;
         }

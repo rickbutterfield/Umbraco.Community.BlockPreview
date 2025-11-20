@@ -44,7 +44,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
         /// <returns>The HTML content.</returns>
         public static async Task<IHtmlContent> GetPreviewBlockGridItemAreasHtmlAsync(this IHtmlHelper<dynamic> html, BlockGridItem item, string template = BlockGridTemplateExtensions.DefaultItemAreasTemplate)
         {
-            if (html.ViewData.IsBlockGridPreview())
+            if (html.ViewData.IsBlockGridPreview() && !html.ViewData.HasNestedBlockGrid())
             {
                 return await Task.FromResult<IHtmlContent>(
                         new HtmlContentBuilder()
@@ -197,11 +197,21 @@ namespace Umbraco.Community.BlockPreview.Extensions
 
             return false;
         }
+
         private static bool IsBlockGridPreview(this ViewDataDictionary viewData)
         {
             if (viewData.ContainsKey("blockGridPreview"))
                 if (bool.TryParse(viewData["blockGridPreview"]?.ToString(), out bool isBlockPreview))
                     return isBlockPreview;
+
+            return false;
+        }
+
+        private static bool HasNestedBlockGrid(this ViewDataDictionary viewData)
+        {
+            if (viewData.ContainsKey("blockGridNested"))
+                if (bool.TryParse(viewData["blockGridNested"]?.ToString(), out bool hasBlockGridNested))
+                    return hasBlockGridNested;
 
             return false;
         }
