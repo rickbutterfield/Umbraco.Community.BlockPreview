@@ -467,7 +467,7 @@ namespace Umbraco.Community.BlockPreview.Services
                         }
                     }
 
-                    if (propertyData.EditorAlias == PropertyEditors.Aliases.RichText)
+                    else if (propertyData.EditorAlias == PropertyEditors.Aliases.RichText)
                     {
                         if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(propertyData.Value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
                         {
@@ -483,6 +483,30 @@ namespace Umbraco.Community.BlockPreview.Services
 
                                 propertyData.Value = propertyData.Value.ToString()?.Replace("\"Layout\"", "\"layout\"");
                             }
+                        }
+                    }
+
+                    else if (propertyData.EditorAlias == PropertyEditors.Aliases.BlockGrid)
+                    {
+                        string? propertyAsString = propertyData.Value?.ToString();
+                        var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
+                        if (blockValue != null)
+                        {
+                            FormatBlockData(blockValue.BlockValue.ContentData);
+                            FormatBlockData(blockValue.BlockValue.SettingsData);
+                            propertyData.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+                        }
+                    }
+
+                    else if (propertyData.EditorAlias == PropertyEditors.Aliases.BlockList)
+                    {
+                        string? propertyAsString = propertyData.Value?.ToString();
+                        var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
+                        if (blockValue != null)
+                        {
+                            FormatBlockData(blockValue.BlockValue.ContentData);
+                            FormatBlockData(blockValue.BlockValue.SettingsData);
+                            propertyData.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                         }
                     }
 
