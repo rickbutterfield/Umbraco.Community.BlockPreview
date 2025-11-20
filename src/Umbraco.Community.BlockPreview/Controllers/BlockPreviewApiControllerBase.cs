@@ -6,6 +6,9 @@ using Umbraco.Community.BlockPreview.Attributes;
 
 namespace Umbraco.Community.BlockPreview.Controllers
 {
+    /// <summary>
+    /// Base controller for Block Preview API endpoints.
+    /// </summary>
     [Authorize(Policy = AuthorizationPolicies.BackOfficeAccess)]
     [BlockPreviewVersionedRoute("")]
     [MapToApi(Constants.Configuration.ApiName)]

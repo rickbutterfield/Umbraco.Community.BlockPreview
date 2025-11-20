@@ -1,7 +1,0 @@
-﻿@using Umbraco.Cms.Web.Common.PublishedModels;
-@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<ThemedBlockList>
-@{
-	Layout = "Layout.cshtml";
-}
-
-@await Html.GetBlockListHtmlAsync(Model.Content)

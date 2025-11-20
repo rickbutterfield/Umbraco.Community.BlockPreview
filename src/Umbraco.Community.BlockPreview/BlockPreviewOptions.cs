@@ -2,12 +2,31 @@
 
 namespace Umbraco.Community.BlockPreview
 {
+    /// <summary>
+    /// Configuration options for Block Preview.
+    /// </summary>
     public class BlockPreviewOptions
     {
+        /// <summary>
+        /// Gets or sets the settings for Block Grid editors.
+        /// </summary>
         public BlockTypeSettings BlockGrid { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the settings for Block List editors.
+        /// </summary>
         public BlockTypeSettings BlockList { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the settings for Rich Text editors.
+        /// </summary>
         public BlockTypeSettings RichText { get; set; }
 
+        /// <summary>
+        /// Gets the view locations for a specific block type.
+        /// </summary>
+        /// <param name="blockType">The type of block.</param>
+        /// <returns>A list of view locations.</returns>
         public List<string>? GetViewLocations(BlockType blockType)
         {
             var locations = new List<string>();
@@ -41,6 +60,10 @@ namespace Umbraco.Community.BlockPreview
             return locations;
         }
 
+        /// <summary>
+        /// Gets all view locations for all block types.
+        /// </summary>
+        /// <returns>A list of all view locations.</returns>
         public List<string>? GetAllViewLocations()
         {
             var locations = new List<string>();
@@ -60,6 +83,9 @@ namespace Umbraco.Community.BlockPreview
             return locations;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockPreviewOptions"/> class.
+        /// </summary>
         public BlockPreviewOptions()
         {
             BlockGrid = new();
@@ -68,12 +94,34 @@ namespace Umbraco.Community.BlockPreview
         }
     }
 
+    /// <summary>
+    /// Settings for a specific block type.
+    /// </summary>
     public class BlockTypeSettings
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether this block type is enabled.
+        /// </summary>
         public bool Enabled { get; set; } = false;
+        
+        /// <summary>
+        /// Gets or sets the view locations for this block type.
+        /// </summary>
         public List<string>? ViewLocations { get; set; } = [];
+        
+        /// <summary>
+        /// Gets or sets the content types for this block type.
+        /// </summary>
         public List<string>? ContentTypes { get; set; } = [];
+        
+        /// <summary>
+        /// Gets or sets the content types to ignore for this block type.
+        /// </summary>
         public List<string> IgnoredContentTypes { get; set; } = [];
+        
+        /// <summary>
+        /// Gets or sets the stylesheet for this block type.
+        /// </summary>
         public string? Stylesheet { get; set; }
     }
 }
