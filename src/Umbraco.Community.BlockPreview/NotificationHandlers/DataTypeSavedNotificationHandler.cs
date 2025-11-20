@@ -6,13 +6,24 @@ using Umbraco.Extensions;
 
 namespace Umbraco.Community.BlockPreview.NotificationHandlers
 {
+    /// <summary>
+    /// Handles data type saved notifications to clear related caches.
+    /// </summary>
     public class DataTypeSavedNotificationHandler : INotificationHandler<DataTypeSavedNotification>
     {
         private readonly IAppPolicyCache _runtimeCache;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="DataTypeSavedNotificationHandler"/> class.
+        /// </summary>
+        /// <param name="appCaches">The application caches.</param>
         public DataTypeSavedNotificationHandler(AppCaches appCaches)
             => _runtimeCache = appCaches.RuntimeCache;
 
+        /// <summary>
+        /// Handles the data type saved notification.
+        /// </summary>
+        /// <param name="notification">The notification.</param>
         public void Handle(DataTypeSavedNotification notification)
         {
             if (notification.SavedEntities == null || notification.SavedEntities.Count() == 0)
