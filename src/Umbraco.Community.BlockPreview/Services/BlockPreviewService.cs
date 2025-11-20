@@ -35,6 +35,9 @@ using static Umbraco.Cms.Core.Constants;
 
 namespace Umbraco.Community.BlockPreview.Services
 {
+    /// <summary>
+    /// Service for rendering block previews.
+    /// </summary>
     public class BlockPreviewService : IBlockPreviewService
     {
         private readonly ITempDataProvider _tempDataProvider;
@@ -58,6 +61,24 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockPreviewService"/> class.
+        /// </summary>
+        /// <param name="tempDataProvider">The temp data provider.</param>
+        /// <param name="viewComponentHelperWrapper">The view component helper wrapper.</param>
+        /// <param name="razorViewEngine">The Razor view engine.</param>
+        /// <param name="typeFinder">The type finder.</param>
+        /// <param name="blockEditorConverter">The block editor converter.</param>
+        /// <param name="viewComponentSelector">The view component selector.</param>
+        /// <param name="publishedValueFallback">The published value fallback.</param>
+        /// <param name="options">The block preview options.</param>
+        /// <param name="jsonSerializer">The JSON serializer.</param>
+        /// <param name="contentTypeService">The content type service.</param>
+        /// <param name="dataTypeService">The data type service.</param>
+        /// <param name="appCaches">The application caches.</param>
+        /// <param name="webHostEnvironment">The web host environment.</param>
+        /// <param name="elementTypeCache">The block editor element type cache.</param>
+        /// <param name="logger">The logger.</param>
         public BlockPreviewService(
             ITempDataProvider tempDataProvider,
             IViewComponentHelperWrapper viewComponentHelperWrapper,
@@ -109,6 +130,18 @@ namespace Umbraco.Community.BlockPreview.Services
         }
 
         #region Public
+        /// <summary>
+        /// Renders a block grid block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <param name="contentKey">The content key.</param>
+        /// <param name="settingsKey">The settings key.</param>
+        /// <param name="blockIndex">The block index.</param>
+        /// <returns>The rendered HTML.</returns>
         public async Task<string> RenderGridBlock(
             string blockData,
             IPublishedContent content,
@@ -192,12 +225,24 @@ namespace Umbraco.Community.BlockPreview.Services
             if (matchingBlockConfig == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidMatchingBlockGridConfiguration);
 
-            ConfigureBlockInstanceAreas(blockValue, blockInstance, config, matchingBlockConfig, matchingLayout!, content);
+            ConfigureBlockInstanceAreas(blockValue!, blockInstance, config, matchingBlockConfig, matchingLayout!, content);
 
             ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig, blockIndex);
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);
         }
 
+        /// <summary>
+        /// Renders a block list block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <param name="contentKey">The content key.</param>
+        /// <param name="settingsKey">The settings key.</param>
+        /// <param name="blockIndex">The block index.</param>
+        /// <returns>The rendered HTML.</returns>
         public async Task<string> RenderListBlock(
             string blockData,
             IPublishedContent content,
@@ -257,6 +302,15 @@ namespace Umbraco.Community.BlockPreview.Services
             return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockList);
         }
 
+        /// <summary>
+        /// Renders a rich text block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <returns>The rendered HTML.</returns>
         public async Task<string> RenderRichTextBlock(
             string blockData,
             IPublishedContent content,
@@ -389,7 +443,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 }
             }
 
-            var element = _blockEditorConverter.ConvertToElement(owner, data, PropertyCacheLevel.None, throwOnError);
+            var element = _blockEditorConverter.ConvertToElement(owner, data!, PropertyCacheLevel.None, throwOnError);
             if (element == null && throwOnError)
                 throw new InvalidOperationException($"Unable to find Element {data?.ContentTypeAlias}");
 
@@ -413,7 +467,7 @@ namespace Umbraco.Community.BlockPreview.Services
                         }
                     }
 
-                    if (propertyData.EditorAlias == PropertyEditors.Aliases.RichText)
+                    else if (propertyData.EditorAlias == PropertyEditors.Aliases.RichText)
                     {
                         if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(propertyData.Value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
                         {
@@ -429,6 +483,30 @@ namespace Umbraco.Community.BlockPreview.Services
 
                                 propertyData.Value = propertyData.Value.ToString()?.Replace("\"Layout\"", "\"layout\"");
                             }
+                        }
+                    }
+
+                    else if (propertyData.EditorAlias == PropertyEditors.Aliases.BlockGrid)
+                    {
+                        string? propertyAsString = propertyData.Value?.ToString();
+                        var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
+                        if (blockValue != null)
+                        {
+                            FormatBlockData(blockValue.BlockValue.ContentData);
+                            FormatBlockData(blockValue.BlockValue.SettingsData);
+                            propertyData.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+                        }
+                    }
+
+                    else if (propertyData.EditorAlias == PropertyEditors.Aliases.BlockList)
+                    {
+                        string? propertyAsString = propertyData.Value?.ToString();
+                        var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
+                        if (blockValue != null)
+                        {
+                            FormatBlockData(blockValue.BlockValue.ContentData);
+                            FormatBlockData(blockValue.BlockValue.SettingsData);
+                            propertyData.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                         }
                     }
 

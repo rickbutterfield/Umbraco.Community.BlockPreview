@@ -1,0 +1,31 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<OutputType>Exe</OutputType>
+		<Nullable>disable</Nullable>
+    <IsPackable>false</IsPackable>
+    <EnablePackageValidation>false</EnablePackageValidation>
+	</PropertyGroup>
+
+	<ItemGroup>
+    <PackageReference Include="NJsonSchema" />
+		<PackageReference Include="NJsonSchema.NewtonsoftJson" />
+		<PackageReference Include="CommandLineParser" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj" />
+	</ItemGroup>
+
+	<PropertyGroup Condition="'$(Configuration)' == 'Release'">
+		<DocumentationFile>bin\Release\$(TargetFramework)\Umbraco.Community.BlockPreview.SchemaGenerator.xml</DocumentationFile>
+	</PropertyGroup>
+
+	<Target Name="CopyPackagesXml" BeforeTargets="Build">
+		<ItemGroup>
+			<PackageReferenceFiles Include="$(NugetPackageRoot)%(PackageReference.Identity)\%(PackageReference.Version)%(PackageReference.CopyToOutputDirectory)\lib\**\*.xml" />
+		</ItemGroup>
+		<Copy SourceFiles="@(PackageReferenceFiles)" DestinationFolder="$(OutDir)" />
+	</Target>
+
+</Project>

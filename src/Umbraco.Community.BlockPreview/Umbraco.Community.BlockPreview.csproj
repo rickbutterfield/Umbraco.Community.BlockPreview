@@ -1,60 +1,60 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
-	<PropertyGroup>
-		<TargetFramework>net9.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<StaticWebAssetBasePath>/</StaticWebAssetBasePath>
-		<ContentTargetFolders>.</ContentTargetFolders>
+    <PropertyGroup>
+        <StaticWebAssetBasePath>/</StaticWebAssetBasePath>
+        <ContentTargetFolders>.</ContentTargetFolders>
 
-		<RootNamespace>Umbraco.Community.BlockPreview</RootNamespace>
-		<Product>Umbraco.Community.BlockPreview</Product>
-		<PackageId>Umbraco.Community.BlockPreview</PackageId>
-		<Title>BlockPreview</Title>
-		<Description>Easy to use rich HTML backoffice previews for the Umbraco Block Grid, Block List and Rich Text editors</Description>
-		<PackageTags>umbraco plugin package block list grid umbraco-marketplace</PackageTags>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RootNamespace>Umbraco.Community.BlockPreview</RootNamespace>
+        <Product>Umbraco.Community.BlockPreview</Product>
+        <PackageId>Umbraco.Community.BlockPreview</PackageId>
+        <Title>BlockPreview</Title>
+        <Description>Easy to use rich HTML backoffice previews for the Umbraco Block Grid, Block List and Rich Text editors</Description>
+        <PackageTags>umbraco plugin package block list grid umbraco-marketplace</PackageTags>
 
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 
-		<VersionPrefix>4.0.5</VersionPrefix>
-		<VersionSuffix></VersionSuffix>
-		<Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
-		<Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
 
-		<PackageProjectUrl>https://github.com/rickbutterfield/BlockPreview</PackageProjectUrl>
-		<RepositoryUrl>https://github.com/rickbutterfield/BlockPreview</RepositoryUrl>
-		<PackageIcon>icon.png</PackageIcon>
+    <ItemGroup>
+        <PackageReference Include="Umbraco.Cms.Core" />
+        <PackageReference Include="Umbraco.Cms.Web.Common" />
+        <PackageReference Include="Umbraco.Cms.Web.Website" />
+        <PackageReference Include="Umbraco.Cms.Api.Common" />
+        <PackageReference Include="Umbraco.Cms.Api.Management" />
+    </ItemGroup>
 
-		<RepositoryType>git</RepositoryType>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-	</PropertyGroup>
+    <ItemGroup>
+        <Content Include="buildTransitive\**" PackagePath="buildTransitive" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Umbraco.Cms.Core" Version="[16.0.0, 17.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Common" Version="[16.0.0, 17.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Web.Website" Version="[16.0.0, 17.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Api.Common" Version="[16.0.0, 17.0.0)" />
-		<PackageReference Include="Umbraco.Cms.Api.Management" Version="[16.0.0, 17.0.0)" />
-	</ItemGroup>
+    <ItemGroup>
+        <None Include="..\..\.github\assets\icon.png">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="..\..\.github\README.md">
+            <Pack>True</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
 
-	<ItemGroup>
-		<Content Include="buildTransitive\**" PackagePath="buildTransitive" />
-	</ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Umbraco.Community.BlockPreview.UI\Umbraco.Community.BlockPreview.UI.esproj">
+            <ReferenceOutputAssembly>False</ReferenceOutputAssembly>
+        </ProjectReference>
+    </ItemGroup>
 
-	<ItemGroup>
-		<None Include="..\..\.github\assets\icon.png">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-		<None Include="..\..\.github\README.md">
-			<Pack>True</Pack>
-			<PackagePath>\</PackagePath>
-		</None>
-	</ItemGroup>
+    <!-- Add JSON schema file to package output -->
+    <PropertyGroup>
+        <_BlockPreviewJsonSchemaReference>appsettings-schema.BlockPreview.json</_BlockPreviewJsonSchemaReference>
+    </PropertyGroup>
+    <ItemGroup>
+      <Content Remove="appsettings-schema.BlockPreview.json" />
+    </ItemGroup>
+    <ItemGroup>
+        <Content Include="$(_BlockPreviewJsonSchemaReference)" PackagePath="" Visible="false" />
+    </ItemGroup>
 
-	<ItemGroup>
-		<ProjectReference Include="..\Umbraco.Community.BlockPreview.UI\Umbraco.Community.BlockPreview.UI.esproj">
-			<ReferenceOutputAssembly>False</ReferenceOutputAssembly>
-		</ProjectReference>
-	</ItemGroup>
+    
 </Project>

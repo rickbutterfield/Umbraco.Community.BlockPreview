@@ -4,8 +4,16 @@ using Umbraco.Extensions;
 
 namespace Umbraco.Community.BlockPreview.Extensions
 {
+    /// <summary>
+    /// Extension methods for HTTP requests.
+    /// </summary>
     public static class HttpRequestExtensions
     {
+        /// <summary>
+        /// Determines whether the HTTP request is a Block Preview request.
+        /// </summary>
+        /// <param name="request">The HTTP request.</param>
+        /// <returns>True if the request is a Block Preview request; otherwise, false.</returns>
         public static bool IsBlockPreviewRequest(this HttpRequest request)
         {
             var httpContext = request.HttpContext;

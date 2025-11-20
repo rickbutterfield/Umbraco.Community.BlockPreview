@@ -4,18 +4,25 @@ using Microsoft.Extensions.Options;
 namespace Umbraco.Community.BlockPreview.ViewEngines
 {
     /// <summary>
-    ///     Expands the default view locations
+    /// Expands the default view locations for Block Preview.
     /// </summary>
     public class BlockViewEngineOptionsSetup : IConfigureOptions<RazorViewEngineOptions>
     {
         private readonly BlockPreviewOptions _options;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockViewEngineOptionsSetup"/> class.
+        /// </summary>
+        /// <param name="options">The block preview options.</param>
         public BlockViewEngineOptionsSetup(IOptions<BlockPreviewOptions> options)
         {
             _options = options.Value;
         }
 
-
+        /// <summary>
+        /// Configures the Razor view engine options.
+        /// </summary>
+        /// <param name="options">The options to configure.</param>
         public void Configure(RazorViewEngineOptions options)
         {
             if (options == null)

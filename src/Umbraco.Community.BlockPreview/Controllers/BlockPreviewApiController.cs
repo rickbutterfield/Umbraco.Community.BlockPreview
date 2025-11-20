@@ -134,9 +134,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
         }
 
         /// <summary>
-        /// Renders a preview for a list block using the associated Razor view or ViewComponent.
+        /// Renders a preview for a block list block using the associated Razor view or ViewComponent.
         /// </summary>
         /// <param name="blockData">The JSON content data of the block.</param>
+        /// <param name="nodeKey">The key of the node.</param>
         /// <param name="blockEditorAlias">The alias of the block editor</param>
         /// <param name="contentElementAlias">The alias of the content being rendered</param>
         /// <param name="culture">The current culture</param>
@@ -193,6 +194,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// Renders a preview for a rich text block using the associated Razor view or ViewComponent.
         /// </summary>
         /// <param name="blockData">The JSON content data of the block.</param>
+        /// <param name="nodeKey">The key of the node.</param>
         /// <param name="blockEditorAlias">The alias of the block editor</param>
         /// <param name="contentElementAlias">The alias of the content being rendered</param>
         /// <param name="culture">The current culture</param>
