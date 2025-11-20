@@ -1,6 +1,6 @@
-using Umbraco.Cms._17.x.Services;
 using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.TestSite.Services;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 

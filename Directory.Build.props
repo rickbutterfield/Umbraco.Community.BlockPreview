@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup Condition="'$(MSBuildProjectExtension)'=='.csproj'">
-    <TargetFramework>net9.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
@@ -17,7 +17,7 @@
   <PropertyGroup Condition="'$(MSBuildProjectExtension)'=='.csproj'">
     <GenerateCompatibilitySuppressionFile>false</GenerateCompatibilitySuppressionFile>
     <EnablePackageValidation>false</EnablePackageValidation>
-    <PackageValidationBaselineVersion>4.0.6</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>5.0.0</PackageValidationBaselineVersion>
     <EnableStrictModeForCompatibleFrameworksInPackage>false</EnableStrictModeForCompatibleFrameworksInPackage>
     <EnableStrictModeForCompatibleTfms>false</EnableStrictModeForCompatibleTfms>
   </PropertyGroup>
