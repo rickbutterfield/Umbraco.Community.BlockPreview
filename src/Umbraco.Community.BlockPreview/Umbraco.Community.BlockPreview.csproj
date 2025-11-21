@@ -47,14 +47,17 @@
 
     <!-- Add JSON schema file to package output -->
     <PropertyGroup>
-        <_BlockPreviewJsonSchemaReference>appsettings-schema.BlockPreview.json</_BlockPreviewJsonSchemaReference>
+      <_BlockPreviewJsonSchemaReference>appsettings-schema.BlockPreview.json</_BlockPreviewJsonSchemaReference>
     </PropertyGroup>
-    <ItemGroup>
-      <Content Remove="appsettings-schema.BlockPreview.json" />
-    </ItemGroup>
-    <ItemGroup>
-        <Content Include="$(_BlockPreviewJsonSchemaReference)" PackagePath="" Visible="false" />
-    </ItemGroup>
 
-    
+    <!-- Generate JSON schema on build (and before copying to project) -->
+    <Target Name="GenerateAppsettingsSchema" BeforeTargets="Build;CopyUmbracoJsonSchemaFiles" Condition="!Exists('$(_BlockPreviewJsonSchemaReference)')">
+      <Message Text="Generating $(_BlockPreviewJsonSchemaReference) because it doesn't exist" Importance="high" />
+      <Exec WorkingDirectory="$(MSBuildThisFileDirectory)..\..\tools\Umbraco.Community.BlockPreview.SchemaGenerator" Command="dotnet run --configuration $(Configuration) -- --outputFile &quot;$(MSBuildThisFileDirectory)$(_BlockPreviewJsonSchemaReference)&quot;" />
+    </Target>
+
+    <!-- Remove generated JSON schema on clean -->
+    <Target Name="RemoveAppsettingsSchema" AfterTargets="Clean" Condition="Exists('$(_BlockPreviewJsonSchemaReference)')">
+      <Delete Files="$(_BlockPreviewJsonSchemaReference)" />
+    </Target>
 </Project>
