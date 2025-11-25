@@ -10,7 +10,7 @@
   </ItemGroup>
   <!-- Umbraco packages -->
   <PropertyGroup>
-    <UmbracoCmsPackageVersion>[17.0.0-rc3, 18)</UmbracoCmsPackageVersion>
+    <UmbracoCmsPackageVersion>[17.0.0, 18)</UmbracoCmsPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Umbraco.Cms" Version="$(UmbracoCmsPackageVersion)" />
@@ -26,6 +26,6 @@
     <PackageVersion Include="CommandLineParser" Version="2.9.1" />
     <PackageVersion Include="NJsonSchema" Version="11.4.0" />
     <PackageVersion Include="NJsonSchema.NewtonsoftJson" Version="11.4.0" />
-    <PackageVersion Include="uSync" Version="17.0.0-rc3" />
+    <PackageVersion Include="uSync" Version="17.0.0-rc4" />
   </ItemGroup>
 </Project>

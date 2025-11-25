@@ -1721,8 +1721,9 @@ const Rr = async (e, t) => {
     if (!r) return;
     const i = r.getOpenApiConfiguration();
     G.setConfig({
-      baseUrl: i.base,
-      credentials: i.credentials
+      baseUrl: (i == null ? void 0 : i.base) ?? "",
+      auth: (i == null ? void 0 : i.token) ?? void 0,
+      credentials: (i == null ? void 0 : i.credentials) ?? "same-origin"
     }), G.interceptors.request.use(async (a, f) => {
       const H = await i.token();
       return a.headers.set("Authorization", `Bearer ${H}`), a;
