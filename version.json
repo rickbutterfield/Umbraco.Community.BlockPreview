@@ -9,6 +9,7 @@
     "semVer": 2.0
   },
   "publicReleaseRefSpec": [
+    "^refs/heads/release/",
     "^refs/heads/main$",
     "^refs/tags/v"
   ],
