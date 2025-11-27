@@ -10,7 +10,8 @@
   },
   "publicReleaseRefSpec": [
     "^refs/heads/main$",
-    "^refs/tags/v"
+    "^refs/heads/release/",
+    "^refs/tags/release-"
   ],
   "cloudBuild": {
     "buildNumber": {
@@ -18,7 +19,7 @@
     }
   },
   "release": {
-    "tagName": "v{version}",
+    "tagName": "release-{version}",
     "branchName": "release/{version}"
   }
 }
