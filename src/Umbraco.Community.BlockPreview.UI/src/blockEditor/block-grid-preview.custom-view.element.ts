@@ -362,11 +362,9 @@ export class BlockGridPreviewCustomView
             'UMB-BLOCK-SCALE-HANDLER'
         ];
 
-
         const containsElement = path.filter(x => x instanceof Element && elements.includes(x.tagName));
         if (containsElement.length > 0) {
             const containsEditButton = path.find(x => x instanceof Element && x.tagName === 'UUI-BUTTON');
-
             if (containsEditButton != null) {
                 if (containsEditButton instanceof UUIButtonElement) {
                     if (containsEditButton.href?.includes('block/edit')) {
