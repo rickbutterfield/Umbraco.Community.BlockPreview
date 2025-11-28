@@ -159,14 +159,14 @@ export class BlockGridPreviewCustomView
                         this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
-                        
+
                         const { data } = await BlockPreviewService.getGridStylesheet({
                             query: {
                                 documentTypeUnique: this._blockContext.documentTypeUnique,
                                 nodeKey: this._blockContext.unique
                             }
                         });
-                        if(data) {
+                        if (data) {
                             this._styleElement = document.createElement('link');
                             this._styleElement.rel = 'stylesheet';
                             this._styleElement.href = data;
@@ -178,7 +178,7 @@ export class BlockGridPreviewCustomView
         }
         catch (ex) {
             if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
-                this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async(context) => {
+                this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async (context) => {
                     if (context) {
                         this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
                             this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
@@ -191,7 +191,7 @@ export class BlockGridPreviewCustomView
                                     nodeKey: this._blockContext.unique
                                 }
                             });
-                            if(data) {
+                            if (data) {
                                 this._styleElement = document.createElement('link');
                                 this._styleElement.rel = 'stylesheet';
                                 this._styleElement.href = data;
@@ -282,15 +282,15 @@ export class BlockGridPreviewCustomView
         });
 
         const layoutModel: UmbBlockGridLayoutModel[] =
-        [
-            {
-                areas: areas,
-                columnSpan: this._blockContext.layout?.columnSpan ?? 0,
-                rowSpan: this._blockContext.layout?.rowSpan ?? 0,
-                contentKey: this._blockContext.layout?.contentKey ?? '',
-                settingsKey: this._blockContext.layout?.settingsKey
-            }
-        ];
+            [
+                {
+                    areas: areas,
+                    columnSpan: this._blockContext.layout?.columnSpan ?? 0,
+                    rowSpan: this._blockContext.layout?.rowSpan ?? 0,
+                    contentKey: this._blockContext.layout?.contentKey ?? '',
+                    settingsKey: this._blockContext.layout?.settingsKey
+                }
+            ];
 
         return layoutModel;
     }
@@ -362,8 +362,8 @@ export class BlockGridPreviewCustomView
             'UMB-BLOCK-SCALE-HANDLER'
         ];
 
-        const containsElement = path.filter(x => x instanceof Element && elements.includes(x.tagName));
 
+        const containsElement = path.filter(x => x instanceof Element && elements.includes(x.tagName));
         if (containsElement.length > 0) {
             const containsEditButton = path.find(x => x instanceof Element && x.tagName === 'UUI-BUTTON');
 
@@ -374,11 +374,29 @@ export class BlockGridPreviewCustomView
                     }
                 }
             }
+        }
 
-            if (blockEvent) {
-                event.preventDefault();
-                event.stopPropagation();
+        const containsBlockPreviewEdit = path.filter(x => x instanceof Element && x.tagName === 'A' && x.classList.contains('block-preview-edit')) as Element[];
+        if (containsBlockPreviewEdit.length > 0) {
+            blockEvent = false;
+        }
+
+        const containsLink = path.filter(x => x instanceof Element && x.tagName === 'A' && x.hasAttribute('data-block-preview-link')) as Element[];
+        if (containsLink.length > 0) {
+            if (containsBlockPreviewEdit.length > 0) {
+                window.history.pushState({}, '', containsBlockPreviewEdit[0].getAttribute('href'));
             }
+            else {
+                window.history.pushState({}, '', this._blockContext.workspaceEditContentPath);
+            }
+            return;
+        }
+
+
+        if (blockEvent) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
         }
     }
 
