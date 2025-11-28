@@ -263,6 +263,8 @@ This package is entirely based on the amazing work done by [Dave Woestenborghs](
 
 [Matthew Wise](https://github.com/Matthew-Wise) also wrote a great article for [24days in Umbraco 2022](https://24days.in/umbraco-cms/2022/more-blocklist-editor/) which added the ability to surface `ViewComponents` and has allowed his code to be contributed.
 
+[Ben White](https://github.com/BenWhite27) contributed the `RequestEnricher` allowing users to [customise View Location and runtime stylesheet loading](https://github.com/rickbutterfield/BlockPreview/pull/116). 
+
 ## License
 Copyright &copy; 2022-2025 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
 
