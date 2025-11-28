@@ -17,7 +17,7 @@
   <PropertyGroup Condition="'$(MSBuildProjectExtension)'=='.csproj'">
     <GenerateCompatibilitySuppressionFile>false</GenerateCompatibilitySuppressionFile>
     <EnablePackageValidation>false</EnablePackageValidation>
-    <PackageValidationBaselineVersion>4.0.6</PackageValidationBaselineVersion>
+    <PackageValidationBaselineVersion>4.0.0</PackageValidationBaselineVersion>
     <EnableStrictModeForCompatibleFrameworksInPackage>false</EnableStrictModeForCompatibleFrameworksInPackage>
     <EnableStrictModeForCompatibleTfms>false</EnableStrictModeForCompatibleTfms>
   </PropertyGroup>
