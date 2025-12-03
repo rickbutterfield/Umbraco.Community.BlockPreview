@@ -314,6 +314,15 @@ For advanced scenarios, you can create a custom implementation of `IBlockPreview
 - Dynamic stylesheet selection based on content properties
 - Theme-based view resolution
 - Custom rendering logic
+- Custom ViewData passed to your views
+
+#### Overridable Methods
+
+The `BlockPreviewService` provides several protected virtual methods you can override:
+
+- **`GetStylesheetPath()`** - Dynamically determine the stylesheet path for a block preview
+- **`GetViewResult()`** - Customize view resolution logic (e.g., theme-based views)
+- **`CreateViewData()`** - Add custom data to the ViewData dictionary passed to your views
 
 **Example: Theme-based stylesheet and view location**
 
@@ -367,7 +376,48 @@ public class CustomBlockPreviewService : BlockPreviewService
         
         return base.GetViewResult(context);
     }
+
+    // Override to add custom data to ViewData
+    protected override ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockPreviewContext context)
+    {
+        // Get the base ViewData (includes model, blockPreview, blockIndex, etc.)
+        var viewData = base.CreateViewData(typedBlockInstance, context);
+
+        // Add custom data accessible in your views via ViewData
+        if (context.ControllerContext.HttpContext.Items.TryGetValue("theme", out var theme))
+        {
+            viewData["theme"] = theme;
+        }
+
+        // Add any other custom data your views need
+        viewData["customData"] = "Your custom value";
+
+        return viewData;
+    }
 }
+```
+
+**Default ViewData properties:**
+
+The base `CreateViewData()` method automatically includes the following in ViewData:
+- `Model` - The strongly-typed block instance (BlockGridItem, BlockListItem, etc.)
+- `blockPreview` - Boolean flag set to `true` (useful for conditional rendering)
+- `blockIndex` - The index of the block in the list/grid
+- `blockGridPreview` - Boolean flag set to `true` for Block Grid blocks
+- `matchingBlockConfig` - Block Grid configuration (only for blocks with areas)
+
+You can access custom ViewData in your Razor views:
+```razor
+@inherits UmbracoViewPage<BlockGridItem<MyBlock>>
+
+@{
+    var theme = ViewData["theme"] as string;
+    var customData = ViewData["customData"] as string;
+}
+
+<div class="block block--@theme">
+    <!-- Your block markup -->
+</div>
 ```
 
 Register your custom service in `Program.cs`:
