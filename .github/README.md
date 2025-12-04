@@ -96,11 +96,11 @@ Alternatively, it can be configured in `appsettings.json`:
 
 ## Documentation
 
-📖 **[Configuration Guide](docs/configuration.md)** - Detailed configuration options, custom view locations, and stylesheet loading
+📖 **[Configuration Guide](/docs/configuration.md)** - Detailed configuration options, custom view locations, and stylesheet loading
 
-📖 **[Usage Guide](docs/usage.md)** - How to use BlockPreview in your views and editors
+📖 **[Usage Guide](/docs/usage.md)** - How to use BlockPreview in your views and editors
 
-📖 **[Advanced Customization](docs/advanced-customization.md)** - Custom services, request enrichers, and extensibility
+📖 **[Advanced Customization](/docs/advanced-customization.md)** - Custom services, request enrichers, and extensibility
 
 ## Contribution Guidelines
 
