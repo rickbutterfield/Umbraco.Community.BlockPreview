@@ -1,13 +1,11 @@
 ﻿<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.3498087">
-  <PropertyGroup>
-    <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
-    <ShouldRunBuildScript>false</ShouldRunBuildScript>
-    <StaticWebAssetSourceId>Umbraco.Community.BlockPreview</StaticWebAssetSourceId>
-    <DebugAssetsDirectory>$(MSBuildProjectDirectory)\dist</DebugAssetsDirectory>
-  </PropertyGroup>
-  <ProjectExtensions>
-    <VisualStudio>
-      <UserProperties package_1json__JsonSchema="https://www.schemastore.org/pantsbuild-2.26.0.json" />
-    </VisualStudio>
-  </ProjectExtensions>
+    <PropertyGroup>
+        <ResolveNuGetPackages>false</ResolveNuGetPackages>
+        <IsPackable>false</IsPackable>
+        <EnablePackageValidation>false</EnablePackageValidation>
+        <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
+        <ShouldRunBuildScript>false</ShouldRunBuildScript>
+        <StaticWebAssetSourceId>Umbraco.Community.BlockPreview</StaticWebAssetSourceId>
+        <DebugAssetsDirectory>$(MSBuildProjectDirectory)\dist</DebugAssetsDirectory>
+    </PropertyGroup>
 </Project>

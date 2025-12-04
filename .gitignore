@@ -393,3 +393,6 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 .idea
+
+# Claude
+.claude/settings.local.json

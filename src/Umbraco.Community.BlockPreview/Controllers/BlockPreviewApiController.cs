@@ -141,9 +141,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
         }
 
         /// <summary>
-        /// Renders a preview for a list block using the associated Razor view or ViewComponent.
+        /// Renders a preview for a block list block using the associated Razor view or ViewComponent.
         /// </summary>
         /// <param name="blockData">The JSON content data of the block.</param>
+        /// <param name="nodeKey">The key of the node.</param>
         /// <param name="blockEditorAlias">The alias of the block editor</param>
         /// <param name="contentElementAlias">The alias of the content being rendered</param>
         /// <param name="culture">The current culture</param>
@@ -202,6 +203,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// Renders a preview for a rich text block using the associated Razor view or ViewComponent.
         /// </summary>
         /// <param name="blockData">The JSON content data of the block.</param>
+        /// <param name="nodeKey">The key of the node.</param>
         /// <param name="blockEditorAlias">The alias of the block editor</param>
         /// <param name="contentElementAlias">The alias of the content being rendered</param>
         /// <param name="culture">The current culture</param>
@@ -261,10 +263,15 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _blockPreviewSettings.Value;
 
 
+        /// <summary>
+        /// Retrieves the stylesheet path for a grid block preview.
+        /// </summary>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
+        /// <returns>The stylesheet path if configured; otherwise, a 404 response.</returns>
         [HttpGet("preview/grid/stylesheet")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> GetGridStylesheet(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
@@ -282,10 +289,15 @@ namespace Umbraco.Community.BlockPreview.Controllers
             return Ok(stylesheetPath);
         }
 
+        /// <summary>
+        /// Retrieves the stylesheet path for a list block preview.
+        /// </summary>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
+        /// <returns>The stylesheet path if configured; otherwise, a 404 response.</returns>
         [HttpGet("preview/list/stylesheet")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-
         public async Task<IActionResult> GetListStylesheet(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)

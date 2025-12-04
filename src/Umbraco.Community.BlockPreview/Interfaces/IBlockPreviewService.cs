@@ -4,14 +4,58 @@ using Umbraco.Community.BlockPreview.Enums;
 
 namespace Umbraco.Community.BlockPreview.Interfaces
 {
+    /// <summary>
+    /// Service for rendering block previews.
+    /// </summary>
     public interface IBlockPreviewService
     {
+        /// <summary>
+        /// Renders a block grid block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <param name="contentKey">The content key.</param>
+        /// <param name="settingsKey">The settings key.</param>
+        /// <param name="blockIndex">The block index.</param>
+        /// <returns>The rendered HTML.</returns>
         Task<string> RenderGridBlock(string blockData, IPublishedContent content, ControllerContext controllerContext, string blockEditorAlias = "", Guid documentTypeUnique = default, string contentKey = "", string? settingsKey = default, int? blockIndex = 0);
 
+        /// <summary>
+        /// Renders a block list block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <param name="contentKey">The content key.</param>
+        /// <param name="settingsKey">The settings key.</param>
+        /// <param name="blockIndex">The block index.</param>
+        /// <returns>The rendered HTML.</returns>
         Task<string> RenderListBlock(string blockData, IPublishedContent content, ControllerContext controllerContext, string blockEditorAlias = "", Guid documentTypeUnique = default, string contentKey = "", string? settingsKey = default, int? blockIndex = 0);
 
+        /// <summary>
+        /// Renders a rich text block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <returns>The rendered HTML.</returns>
         Task<string> RenderRichTextBlock(string blockData, IPublishedContent content, ControllerContext controllerContext, string blockEditorAlias = "", Guid documentTypeUnique = default);
 
+
+        /// <summary>
+        /// Gets the stylesheet path for a specific block type.
+        /// </summary>
+        /// <param name="blockType">The type of block editor.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <returns>The stylesheet path, or null if not found.</returns>
         Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext);
     }
 }

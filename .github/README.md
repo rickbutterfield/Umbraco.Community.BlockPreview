@@ -23,14 +23,14 @@ The Umbraco v17 version of this package is [available via NuGet](https://www.nug
 
 To install the package, you can use either .NET CLI:
 
-```bash
-dotnet add package Umbraco.Community.BlockPreview --version 5.0.0-rc2.2
+```
+dotnet add package Umbraco.Community.BlockPreview --version 5.0.0
 ```
 
 or the NuGet Package Manager:
 
-```bash
-Install-Package Umbraco.Community.BlockPreview -Version 5.0.0-rc2.2
+```
+Install-Package Umbraco.Community.BlockPreview -Version 5.0.0
 ```
 
 ## Quick Start
@@ -124,6 +124,8 @@ This project is maintained by [Rick Butterfield](https://rickbutterfield.dev) an
 This package is entirely based on the amazing work done by [Dave Woestenborghs](https://github.com/dawoe) for [24days in Umbraco 2021](https://archive.24days.in/umbraco-cms/2021/advanced-blocklist-editor/). His code has been extended to support the new Block Grid editor in v10.4+ and turned into this package.
 
 [Matthew Wise](https://github.com/Matthew-Wise) also wrote a great article for [24days in Umbraco 2022](https://24days.in/umbraco-cms/2022/more-blocklist-editor/) which added the ability to surface `ViewComponents` and has allowed his code to be contributed.
+
+[Ben White](https://github.com/BenWhite27) contributed the `RequestEnricher` allowing users to [customise View Location and runtime stylesheet loading](https://github.com/rickbutterfield/BlockPreview/pull/116). 
 
 ## License
 
