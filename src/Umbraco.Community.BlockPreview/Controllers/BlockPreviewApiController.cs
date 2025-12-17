@@ -234,7 +234,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     
                     await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias);
 
-                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique);
+                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext);
                 }
                 catch (Exception ex)
                 {

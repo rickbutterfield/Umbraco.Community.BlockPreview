@@ -7,8 +7,6 @@ import { BlockGridPreviewCustomView, BlockListPreviewCustomView, RichTextPreview
 import { BLOCK_PREVIEW_CONTEXT } from './context/block-preview.context-token.ts';
 import BlockPreviewContext from './context/block-preview.context.ts';
 import { manifests as contextManifests } from './context/manifests.ts';
-import { manifests as propertyManifests } from './property/manifests.ts';
-import { manifests as propertyActionManifests } from './propertyActions/manifests.ts';
 import { SettingsRepository } from './repository';
 
 export * from './blockEditor';
@@ -90,9 +88,7 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
 
         extensionRegistry.registerMany([
             ...customViewManifests,
-            ...contextManifests,
-            ...propertyManifests,
-            ...propertyActionManifests
+            ...contextManifests
         ]);
 
         host.provideContext(BLOCK_PREVIEW_CONTEXT, new BlockPreviewContext(host));
