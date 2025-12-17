@@ -1,0 +1,30 @@
+<Project>
+    <PropertyGroup>
+        <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+    </PropertyGroup>
+    <!-- Tool packages -->
+    <ItemGroup Condition="'$(MSBuildProjectExtension)'=='.csproj'">
+        <GlobalPackageReference Include="Nerdbank.GitVersioning" Version="3.9.50" />
+        <GlobalPackageReference Include="Umbraco.GitVersioning.Extensions" Version="0.2.0" />
+        <GlobalPackageReference Include="Umbraco.JsonSchema.Extensions" Version="0.3.0" />
+    </ItemGroup>
+    <!-- Umbraco packages -->
+    <PropertyGroup>
+        <UmbracoCmsPackageVersion>[13.0.0, 14)</UmbracoCmsPackageVersion>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageVersion Include="Umbraco.Cms" Version="$(UmbracoCmsPackageVersion)" />
+        <PackageVersion Include="Umbraco.Cms.Web.BackOffice" Version="$(UmbracoCmsPackageVersion)" />
+        <PackageVersion Include="Umbraco.Cms.Web.Common" Version="$(UmbracoCmsPackageVersion)" />
+        <PackageVersion Include="Umbraco.Cms.Web.Website" Version="$(UmbracoCmsPackageVersion)" />
+    </ItemGroup>
+    <!-- Third-party packages -->
+    <ItemGroup>
+        <PackageVersion Include="CommandLineParser" Version="2.9.1" />
+        <PackageVersion Include="NJsonSchema" Version="11.0.2" />
+        <PackageVersion Include="NJsonSchema.NewtonsoftJson" Version="11.0.2" />
+        <PackageVersion Include="Diplo.GodMode" Version="13.1.0" />
+        <PackageVersion Include="Umbraco.BlockGrid.Example.Website" Version="1.0.2" />
+        <PackageVersion Include="uSync" Version="13.3.2" />
+    </ItemGroup>
+</Project>

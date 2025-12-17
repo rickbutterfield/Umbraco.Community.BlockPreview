@@ -29,6 +29,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly ITypeFinder _typeFinder;
+        private readonly IBlockPreviewRequestEnricher _requestEnricher;
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
@@ -44,7 +45,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IBlockPreviewService blockPreviewService,
             ILocalizationService localizationService,
             ITypeFinder typeFinder,
-            AppCaches appCaches)
+            AppCaches appCaches,
+            IBlockPreviewRequestEnricher requestEnricher)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -54,6 +56,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _localizationService = localizationService;
             _typeFinder = typeFinder;
             _runtimeCache = appCaches.RuntimeCache;
+            _requestEnricher = requestEnricher;
         }
 
         /// <summary>
@@ -64,7 +67,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="blockEditorAlias">The alias of the block editor</param>
         /// <param name="contentElementAlias">The alias of the content being rendered</param>
         /// <param name="culture">The current culture</param>
-        /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node content type</param>
+        /// <param name="documentTypeKey">The <see cref="Guid"/> that represents the Umbraco node content type</param>
         /// <param name="contentUdi">The <see cref="Cms.Core.Udi"/> that represents the content element</param>
         /// <param name="settingsUdi">The <see cref="Cms.Core.Udi"/> that represents the settings element</param>
         /// <param name="blockIndex">The <see cref="int"/> that represents the index of the block</param>
@@ -94,7 +97,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderGridBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi, blockIndex);
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
+
+                    markup = await _blockPreviewService.RenderGridBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi, blockIndex);
                 }
                 catch (Exception ex)
                 {
@@ -119,7 +124,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="blockEditorAlias">The alias of the block editor</param>
         /// <param name="contentElementAlias">The alias of the content being rendered</param>
         /// <param name="culture">The current culture</param>
-        /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node content type</param>
+        /// <param name="contentUdi">The <see cref="Cms.Core.Udi"/> that represents the content element</param>
+        /// <param name="settingsUdi">The <see cref="Cms.Core.Udi"/> that represents the settings element</param>
+        /// <param name="documentTypeKey">The <see cref="Guid"/> that represents the Umbraco node content type</param>
+        /// <param name="blockIndex">The <see cref="int"/> that represents the block index</param>
         /// <returns>The markup to render in the preview.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(string), 200)]
@@ -146,7 +154,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderListBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi, blockIndex);
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
+
+                    markup = await _blockPreviewService.RenderListBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi, blockIndex);
                 }
                 catch (Exception ex)
                 {
@@ -164,7 +174,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             return Ok(cleanMarkup);
         }
 
-#if NET8_0
         /// <summary>
         /// Renders a preview for a rich text block using the associated Razor view or ViewComponent.
         /// </summary>
@@ -173,7 +182,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="blockEditorAlias">The alias of the block editor</param>
         /// <param name="contentElementAlias">The alias of the content being rendered</param>
         /// <param name="culture">The current culture</param>
-        /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node content type</param>
+        /// <param name="documentTypeKey">The <see cref="Guid"/> that represents the Umbraco node content type</param>
         /// <returns>The markup to render in the preview.</returns>
         [HttpPost]
         [ProducesResponseType(typeof(string), 200)]
@@ -197,7 +206,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
-                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, ControllerContext);
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias);
+
+                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext);
                 }
                 catch (Exception ex)
                 {
@@ -214,7 +225,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             string? cleanMarkup = CleanUpMarkup(markup);
             return Ok(cleanMarkup);
         }
-#endif
         #endregion
 
         #region Private
@@ -262,6 +272,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             IPublishedContent? content = null;
 
+            if (nodeKey.HasValue)
+            {
+                content = context.Content?.GetById(preview: true, nodeKey.GetValueOrDefault());
+            }
+
             var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
             if (nodeKey != default)
             {
@@ -300,6 +315,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 foreach (var link in links)
                 {
                     link.SetAttributeValue("href", "javascript:;");
+                    link.SetAttributeValue("data-block-preview-link", "true");
                 }
             }
 

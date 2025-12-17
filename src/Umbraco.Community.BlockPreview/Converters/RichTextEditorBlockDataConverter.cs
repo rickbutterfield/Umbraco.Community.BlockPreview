@@ -1,5 +1,4 @@
-﻿#if NET8_0
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using Umbraco.Cms.Core.Models.Blocks;
 
 namespace Umbraco.Community.BlockPreview.Converters
@@ -18,4 +17,3 @@ namespace Umbraco.Community.BlockPreview.Converters
         }
     }
 }
-#endif
