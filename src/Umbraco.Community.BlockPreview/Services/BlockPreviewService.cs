@@ -325,15 +325,11 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="blockData">The block data.</param>
         /// <param name="content">The published content.</param>
         /// <param name="controllerContext">The controller context.</param>
-        /// <param name="blockEditorAlias">The block editor alias.</param>
-        /// <param name="documentTypeUnique">The document type unique identifier.</param>
         /// <returns>The rendered HTML.</returns>
         public async Task<string> RenderRichTextBlock(
             string blockData,
             IPublishedContent content,
-            ControllerContext controllerContext,
-            string blockEditorAlias = "",
-            Guid documentTypeUnique = default)
+            ControllerContext controllerContext)
         {
             var blockValue = _richTextBlockEditorValues.DeserializeAndClean(blockData);
             if (blockValue == null)
@@ -381,6 +377,16 @@ namespace Umbraco.Community.BlockPreview.Services
             previewContext.ViewData = CreateViewData(blockInstance, previewContext);
             return await GetMarkup(previewContext);
         }
+
+        /// <inheritdoc/>
+        [Obsolete("Use the overload without blockEditorAlias and documentTypeUnique parameters.")]
+        public Task<string> RenderRichTextBlock(
+            string blockData,
+            IPublishedContent content,
+            ControllerContext controllerContext,
+            string blockEditorAlias,
+            Guid documentTypeUnique)
+            => RenderRichTextBlock(blockData, content, controllerContext);
 
         /// <summary>
         /// Retrieves the path to the stylesheet associated with the specified block type.
