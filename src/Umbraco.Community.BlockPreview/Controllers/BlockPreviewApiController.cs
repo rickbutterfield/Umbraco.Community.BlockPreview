@@ -29,6 +29,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly ILocalizationService _localizationService;
         private readonly IAppPolicyCache _runtimeCache;
         private readonly ITypeFinder _typeFinder;
+        private readonly IBlockPreviewRequestEnricher _requestEnricher;
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
@@ -44,7 +45,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IBlockPreviewService blockPreviewService,
             ILocalizationService localizationService,
             ITypeFinder typeFinder,
-            AppCaches appCaches)
+            AppCaches appCaches,
+            IBlockPreviewRequestEnricher requestEnricher)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -54,6 +56,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _localizationService = localizationService;
             _typeFinder = typeFinder;
             _runtimeCache = appCaches.RuntimeCache;
+            _requestEnricher = requestEnricher;
         }
 
         /// <summary>
@@ -93,6 +96,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     string? currentCulture = GetCurrentCulture(culture, content);
 
                     await SetupPublishedRequest(currentCulture, content);
+
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
 
                     markup = await _blockPreviewService.RenderGridBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi, blockIndex);
                 }
@@ -146,6 +151,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
                     await SetupPublishedRequest(currentCulture, content);
 
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
+
                     markup = await _blockPreviewService.RenderListBlock(blockData, ControllerContext, blockEditorAlias, documentTypeKey, contentUdi, settingsUdi, blockIndex);
                 }
                 catch (Exception ex)
@@ -196,6 +203,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
                     string? currentCulture = GetCurrentCulture(culture, content);
 
                     await SetupPublishedRequest(currentCulture, content);
+
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias);
 
                     markup = await _blockPreviewService.RenderRichTextBlock(blockData, ControllerContext);
                 }

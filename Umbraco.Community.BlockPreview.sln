@@ -1,0 +1,57 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Umbraco.Community.BlockPreview", "src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj", "{ECC30653-56E0-4FC2-AC35-8F21347B8CEE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Umbraco.Community.BlockPreview.TestSite", "examples\Umbraco.Community.BlockPreview.TestSite\Umbraco.Community.BlockPreview.TestSite.csproj", "{77D28651-3BFC-4639-9937-1B5BA95F0455}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Umbraco.Community.BlockPreview.SchemaGenerator", "tools\Umbraco.Community.BlockPreview.SchemaGenerator\Umbraco.Community.BlockPreview.SchemaGenerator.csproj", "{924CBE49-2AC7-4B8B-8977-967BB3221F36}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{66823D86-8016-47F0-832F-A9CF9FA0989E}"
+	ProjectSection(SolutionItems) = preProject
+		.gitignore = .gitignore
+		.github\workflows\build.yml = .github\workflows\build.yml
+		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
+		global.json = global.json
+		NuGet.config = NuGet.config
+		.github\README.md = .github\README.md
+		.github\workflows\release.yml = .github\workflows\release.yml
+		version.json = version.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Examples", "Examples", "{E5573C68-5A30-49D8-B235-1A5477F4083F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{1A595552-C0FD-4EBF-A6DE-DC86DBCAD409}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{ECC30653-56E0-4FC2-AC35-8F21347B8CEE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECC30653-56E0-4FC2-AC35-8F21347B8CEE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECC30653-56E0-4FC2-AC35-8F21347B8CEE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECC30653-56E0-4FC2-AC35-8F21347B8CEE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{77D28651-3BFC-4639-9937-1B5BA95F0455}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{77D28651-3BFC-4639-9937-1B5BA95F0455}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{77D28651-3BFC-4639-9937-1B5BA95F0455}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{77D28651-3BFC-4639-9937-1B5BA95F0455}.Release|Any CPU.Build.0 = Release|Any CPU
+		{924CBE49-2AC7-4B8B-8977-967BB3221F36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{924CBE49-2AC7-4B8B-8977-967BB3221F36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{924CBE49-2AC7-4B8B-8977-967BB3221F36}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{924CBE49-2AC7-4B8B-8977-967BB3221F36}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{77D28651-3BFC-4639-9937-1B5BA95F0455} = {E5573C68-5A30-49D8-B235-1A5477F4083F}
+		{924CBE49-2AC7-4B8B-8977-967BB3221F36} = {1A595552-C0FD-4EBF-A6DE-DC86DBCAD409}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7FED6BA7-2D2C-452A-A791-36F6519BC64C}
+	EndGlobalSection
+EndGlobal
