@@ -385,24 +385,56 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <summary>
         /// Retrieves the path to the stylesheet associated with the specified block type.
         /// </summary>
-        /// <remarks>The method returns a stylesheet path based on the block type.</remarks>
+        /// <remarks>The method returns a stylesheet path based on the block type. This method is obsolete; use <see cref="GetStylesheetPaths"/> instead.</remarks>
         /// <param name="blockType">The type of block for which the stylesheet path is requested.</param>
         /// <param name="content">The content associated with the block.</param>
         /// <param name="controllerContext">The context of the controller handling the request.</param>
         /// <returns>A task that represents the asynchronous operation. The task result contains the stylesheet path as a string,
         /// or <see langword="null"/> if no stylesheet is associated with the specified block type.</returns>
-        public virtual Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
+        [Obsolete("Use GetStylesheetPaths instead to support multiple stylesheets.")]
+        public virtual async Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
         {
-            switch (blockType)
+            var paths = await GetStylesheetPaths(blockType, content, controllerContext);
+            return paths?.FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Retrieves the paths to the stylesheets associated with the specified block type.
+        /// </summary>
+        /// <remarks>The method returns stylesheet paths based on the block type, combining both the legacy Stylesheet property and the new Stylesheets collection.</remarks>
+        /// <param name="blockType">The type of block for which the stylesheet paths are requested.</param>
+        /// <param name="content">The content associated with the block.</param>
+        /// <param name="controllerContext">The context of the controller handling the request.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of stylesheet paths,
+        /// or <see langword="null"/> if no stylesheets are associated with the specified block type.</returns>
+        public virtual Task<IEnumerable<string>?> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
+        {
+            BlockTypeSettings? settings = blockType switch
             {
-                case BlockType.BlockGrid:
-                    return Task.FromResult(_options.BlockGrid?.Stylesheet);
-                case BlockType.BlockList:
-                    return Task.FromResult(_options.BlockList?.Stylesheet);
-                case BlockType.RichText:
-                default:
-                    return Task.FromResult<string?>(null);
-            }
+                BlockType.BlockGrid => _options.BlockGrid,
+                BlockType.BlockList => _options.BlockList,
+                BlockType.RichText => _options.RichText,
+                _ => null
+            };
+
+            if (settings == null)
+                return Task.FromResult<IEnumerable<string>?>(null);
+
+            var stylesheets = new List<string>();
+
+            // Add legacy single stylesheet if specified
+#pragma warning disable CS0618 // Type or member is obsolete
+            if (!string.IsNullOrWhiteSpace(settings.Stylesheet))
+                stylesheets.Add(settings.Stylesheet);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            // Add multiple stylesheets if specified
+            if (settings.Stylesheets?.Any() == true)
+                stylesheets.AddRange(settings.Stylesheets.Where(s => !string.IsNullOrWhiteSpace(s)));
+
+            // Return distinct stylesheets to avoid duplicates
+            var result = stylesheets.Distinct().ToList();
+            return Task.FromResult<IEnumerable<string>?>(result.Any() ? result : null);
         }
         #endregion
 
