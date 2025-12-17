@@ -336,10 +336,8 @@ export class BlockListPreviewCustomView
         ];
 
         const containsElement = path.filter(x => x instanceof Element && elements.includes(x.tagName));
-
         if (containsElement.length > 0) {
             const containsEditButton = path.find(x => x instanceof Element && x.tagName === 'UUI-BUTTON');
-
             if (containsEditButton != null) {
                 if (containsEditButton instanceof UUIButtonElement) {
                     if (containsEditButton.href?.includes('block/edit')) {
@@ -347,11 +345,29 @@ export class BlockListPreviewCustomView
                     }
                 }
             }
+        }
 
-            if (blockEvent) {
-                event.preventDefault();
-                event.stopPropagation();
+        const containsBlockPreviewEdit = path.filter(x => x instanceof Element && x.tagName === 'A' && x.classList.contains('block-preview-edit')) as Element[];
+        if (containsBlockPreviewEdit.length > 0) {
+            blockEvent = false;
+        }
+
+        const containsLink = path.filter(x => x instanceof Element && x.tagName === 'A' && x.hasAttribute('data-block-preview-link')) as Element[];
+        if (containsLink.length > 0) {
+            if (containsBlockPreviewEdit.length > 0) {
+                window.history.pushState({}, '', containsBlockPreviewEdit[0].getAttribute('href'));
             }
+            else {
+                window.history.pushState({}, '', this._blockContext.workspaceEditContentPath);
+            }
+            return;
+        }
+
+
+        if (blockEvent) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
         }
     }
 
