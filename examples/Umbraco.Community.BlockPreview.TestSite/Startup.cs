@@ -1,4 +1,6 @@
 using Umbraco.Community.BlockPreview;
+using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.TestSite.Services;
 
 namespace Umbraco.Cms._13.x
 {
@@ -37,6 +39,9 @@ namespace Umbraco.Cms._13.x
                 .AddDeliveryApi()
                 .AddComposers()
                 .Build();
+
+            services.AddUnique<IBlockPreviewService, CustomBlockPreviewService>(ServiceLifetime.Scoped);
+            services.AddUnique<IBlockPreviewRequestEnricher, BlockPreviewRequestEnricher>(ServiceLifetime.Scoped);
         }
 
         /// <summary>

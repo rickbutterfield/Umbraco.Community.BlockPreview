@@ -18,11 +18,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
             bool requestControllerMatches = requestControllerName.Equals(nameof(BlockPreviewApiController));
             bool isBlockGridPreview = httpContext.Request.RouteValues["action"]!.Equals(nameof(BlockPreviewApiController.PreviewGridBlock));
             bool isBlockListPreview = httpContext.Request.RouteValues["action"]!.Equals(nameof(BlockPreviewApiController.PreviewListBlock));
-#if (NET8_0)
             bool isRichTextPreview = httpContext.Request.RouteValues["action"]!.Equals(nameof(BlockPreviewApiController.PreviewRichTextMarkup));
-#else
-            bool isRichTextPreview = true;
-#endif
 
             bool isBlockPreviewController = requestControllerMatches && (isBlockGridPreview || isBlockListPreview || isRichTextPreview);
 

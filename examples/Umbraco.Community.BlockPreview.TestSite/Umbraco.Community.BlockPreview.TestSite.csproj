@@ -1,47 +1,43 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
-  <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>Umbraco.Community.BlockPreview.TestSite</RootNamespace>
-  </PropertyGroup>
-  <ItemGroup>
-    <Content Remove="appsettings-schema.blockpreview.json" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="appsettings-schema.blockpreview.json">
-      <PackagePath>\</PackagePath>
-      <Pack>true</Pack>
-    </None>
-  </ItemGroup>
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <IsPackable>false</IsPackable>
+        <EnablePackageValidation>false</EnablePackageValidation>
+        <RootNamespace>Umbraco.Community.BlockPreview.TestSite</RootNamespace>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Diplo.GodMode" Version="13.1.0" />
-    <PackageReference Include="Umbraco.BlockGrid.Example.Website" Version="1.0.2" />
-    <PackageReference Include="Umbraco.Cms" Version="13.11.0" />
-    <PackageReference Include="uSync" Version="13.3.1" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Diplo.GodMode" />
+        <PackageReference Include="Umbraco.BlockGrid.Example.Website" />
+        <PackageReference Include="Umbraco.Cms" VersionOverride="13.13.0-rc3" />
+        <PackageReference Include="uSync" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <!-- Opt-in to app-local ICU to ensure consistent globalization APIs across different platforms -->
-    <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" Version="72.1.0.3" />
-    <ProjectReference Include="..\..\src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj" />
-    <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="72.1.0.3" Condition="$(RuntimeIdentifier.StartsWith('linux')) or $(RuntimeIdentifier.StartsWith('win')) or ('$(RuntimeIdentifier)' == '' and !$([MSBuild]::IsOSPlatform('osx')))" />
-  </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\..\src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="umbraco\" />
-  </ItemGroup>
+    <!-- This is needed because unlike PackageReference, ProjectReference does not run the buildTransitive targets -->
+    <Import Project="..\..\src\Umbraco.Community.BlockPreview\buildTransitive\Umbraco.Community.BlockPreview.targets" />
 
-  <PropertyGroup>
-    <!-- Razor files are needed for the backoffice to work correctly -->
-    <CopyRazorGenerateFilesToPublishDirectory>true</CopyRazorGenerateFilesToPublishDirectory>
-  </PropertyGroup>
+    <ItemGroup>
+        <!-- Opt-in to app-local ICU to ensure consistent globalization APIs across different platforms -->
+        <PackageReference Include="Microsoft.ICU.ICU4C.Runtime" VersionOverride="72.1.0.3" />
+        <RuntimeHostConfigurationOption Include="System.Globalization.AppLocalIcu" Value="72.1.0.3" Condition="$(RuntimeIdentifier.StartsWith('linux')) or $(RuntimeIdentifier.StartsWith('win')) or ('$(RuntimeIdentifier)' == '' and !$([MSBuild]::IsOSPlatform('osx')))" />
+    </ItemGroup>
 
-  <PropertyGroup>
-    <!-- Remove RazorCompileOnBuild and RazorCompileOnPublish when not using ModelsMode InMemoryAuto -->
-    <RazorCompileOnBuild>false</RazorCompileOnBuild>
-    <RazorCompileOnPublish>false</RazorCompileOnPublish>
-  </PropertyGroup>
-  
+    <ItemGroup>
+        <Folder Include="umbraco\" />
+    </ItemGroup>
+
+    <PropertyGroup>
+        <!-- Razor files are needed for the backoffice to work correctly -->
+        <CopyRazorGenerateFilesToPublishDirectory>true</CopyRazorGenerateFilesToPublishDirectory>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <!-- Remove RazorCompileOnBuild and RazorCompileOnPublish when not using ModelsMode InMemoryAuto -->
+        <RazorCompileOnBuild>false</RazorCompileOnBuild>
+        <RazorCompileOnPublish>false</RazorCompileOnPublish>
+    </PropertyGroup>
+
 </Project>

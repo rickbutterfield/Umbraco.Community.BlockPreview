@@ -5,7 +5,9 @@ name: Release Package
 on:
   push:
     tags:
-      - "*"
+      - "release-*"
+    branches:
+      - "release/*"
   workflow_dispatch:
 
 jobs:
@@ -16,7 +18,7 @@ jobs:
     steps:
 
     - name: Checkout repository
-      uses: actions/checkout@v3
+      uses: actions/checkout@v6
 
     - name: Cache .NET packages
       uses: actions/cache@v4
@@ -27,9 +29,7 @@ jobs:
           ${{ runner.os }}-dotnet-
 
     - name: Setup .NET
-      uses: actions/setup-dotnet@v2
-      with:
-        dotnet-version: 8.0.x
+      uses: actions/setup-dotnet@v5
   
     - name: Build project
       run: dotnet build src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj --configuration Release
