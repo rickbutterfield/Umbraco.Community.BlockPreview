@@ -11,11 +11,12 @@ For advanced scenarios, you can create a custom implementation of `IBlockPreview
 
 The `BlockPreviewService` provides several protected virtual methods you can override:
 
-- **`GetStylesheetPath()`** - Dynamically determine the stylesheet path for a block preview
+- **`GetStylesheetPaths()`** - Dynamically determine the stylesheet paths for a block preview (returns multiple stylesheets)
+- **`GetStylesheetPath()`** - **Deprecated.** Use `GetStylesheetPaths()` instead.
 - **`GetViewResult()`** - Customize view resolution logic (e.g., theme-based views)
 - **`CreateViewData()`** - Add custom data to the ViewData dictionary passed to your views
 
-**Example: Theme-based stylesheet and view location**
+**Example: Theme-based stylesheets and view location**
 
 ```cs
 using Umbraco.Community.BlockPreview.Services;
@@ -26,23 +27,29 @@ public class CustomBlockPreviewService : BlockPreviewService
 {
     private readonly IRazorViewEngine _razorViewEngine;
 
-    public CustomBlockPreviewService(/* inject required dependencies */) 
+    public CustomBlockPreviewService(/* inject required dependencies */)
         : base(/* pass dependencies to base */)
     {
         _razorViewEngine = razorViewEngine;
     }
 
     // Override to provide dynamic stylesheet paths
-    public override Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
+    public override Task<IEnumerable<string>?> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
     {
         // Check if a theme is set in the request context
         if (controllerContext.HttpContext.Items.TryGetValue("theme", out var themeObj) && themeObj is string theme)
         {
-            return Task.FromResult<string?>($"/css/{theme}.blockgridlayout.css");
+            // Return multiple stylesheets: base styles + theme-specific styles
+            var stylesheets = new List<string>
+            {
+                "/css/block-base.css",
+                $"/css/themes/{theme}.css"
+            };
+            return Task.FromResult<IEnumerable<string>?>(stylesheets);
         }
-        
-        // Fall back to the default configured stylesheet
-        return base.GetStylesheetPath(blockType, content, controllerContext);
+
+        // Fall back to the default configured stylesheets
+        return base.GetStylesheetPaths(blockType, content, controllerContext);
     }
 
     // Override to provide custom view resolution logic

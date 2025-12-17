@@ -10,8 +10,8 @@ builder.AddBlockPreview(options =>
   {
       Enabled = true,
       ContentTypes = [],
-      ViewLocations = []
-      Stylesheet = ""
+      ViewLocations = [],
+      Stylesheets = []
   };
 
   options.BlockList = new()
@@ -19,7 +19,7 @@ builder.AddBlockPreview(options =>
       Enabled = true,
       ContentTypes = [],
       ViewLocations = [],
-      Stylesheet = ""
+      Stylesheets = []
   };
 
   options.RichText = new()
@@ -27,7 +27,7 @@ builder.AddBlockPreview(options =>
       Enabled = true,
       ContentTypes = [],
       ViewLocations = [],
-      Stylesheet = ""
+      Stylesheets = []
   };
 })
 ```
@@ -39,19 +39,19 @@ builder.AddBlockPreview(options =>
       "Enabled": true,
       "ContentTypes": [],
       "ViewLocations": [],
-      "Stylesheet": ""
+      "Stylesheets": []
     },
     "BlockList": {
       "Enabled": false,
       "ContentTypes": [],
       "ViewLocations": [],
-      "Stylesheet": ""
+      "Stylesheets": []
     },
     "RichText": {
       "Enabled": false,
       "ContentTypes": [],
       "ViewLocations": [],
-      "Stylesheet": ""
+      "Stylesheets": []
     }
   }
 }
@@ -72,7 +72,8 @@ builder.AddBlockPreview(options =>
 | Enabled       | boolean                  | Toggle previews on or off for a given data type.                                                                                                                                                              |
 | ContentTypes  | string[] \| List<string> | A list of content type aliases to enable the previews for. If left blank, all blocks will be enabled.                                                                                                         |
 | ViewLocations | string[] \| List<string> | A list of custom view paths to be searched for your partial views. Use `{0}` as a placeholder for the content type alias. Custom locations are searched before default paths. Default paths are automatically included. |
-| Stylesheet    | string                   | Path to a stylesheet (relative to `/wwwroot`) to be loaded for every block preview of this type. For example: `/css/myblockgridlayout.css`. Can be overridden by implementing a custom `IBlockPreviewService`. |
+| Stylesheets   | string[] \| List<string> | Paths to stylesheets (relative to `/wwwroot`) to be loaded for every block preview of this type. For example: `["/css/grid-layout.css", "/css/custom-blocks.css"]`. Can be overridden by implementing a custom `IBlockPreviewService`. |
+| Stylesheet    | string                   | **Deprecated.** Use `Stylesheets` instead. Path to a single stylesheet (relative to `/wwwroot`). Still supported for backwards compatibility but will generate a compiler warning. |
 
 ## Custom View Locations
 If your block partials are not in the usual `/Views/Partials/block[grid|list]/Components/` paths, you can specify custom locations to search for your views. The `ViewLocations` property accepts an array of view paths with a `{0}` placeholder that will be replaced with the content type alias.
@@ -108,7 +109,7 @@ Or in `appsettings.json`:
 - Multiple custom locations can be specified and will be searched in order
 
 ## Stylesheet Loading
-You can specify a stylesheet to be loaded for block previews in the backoffice. This is useful for applying custom styles to your blocks without affecting the rest of the backoffice.
+You can specify one or more stylesheets to be loaded for block previews in the backoffice. This is useful for applying custom styles to your blocks without affecting the rest of the backoffice.
 
 Configure in `Program.cs`:
 ```cs
@@ -117,12 +118,12 @@ builder.AddBlockPreview(options =>
     options.BlockGrid = new()
     {
         Enabled = true,
-        Stylesheet = "/css/myblockgridlayout.css"
+        Stylesheets = ["/css/grid-layout.css", "/css/custom-blocks.css"]
     };
     options.BlockList = new()
     {
         Enabled = true,
-        Stylesheet = "/css/myblocklistlayout.css"
+        Stylesheets = ["/css/list-layout.css"]
     };
 })
 ```
@@ -133,17 +134,40 @@ Or in `appsettings.json`:
   "BlockPreview": {
     "BlockGrid": {
       "Enabled": true,
-      "Stylesheet": "/css/myblockgridlayout.css"
+      "Stylesheets": ["/css/grid-layout.css", "/css/custom-blocks.css"]
     },
     "BlockList": {
       "Enabled": true,
-      "Stylesheet": "/css/myblocklistlayout.css"
+      "Stylesheets": ["/css/list-layout.css"]
     }
   }
 }
 ```
 
 **Important notes:**
-- The stylesheet path must be relative to the `/wwwroot` directory
-- The stylesheet will be loaded for **every** block preview of that type in the backoffice
+- Stylesheet paths must be relative to the `/wwwroot` directory
+- All specified stylesheets will be loaded for **every** block preview of that type in the backoffice
 - You can specify different stylesheets for Block Grid, Block List, and Rich Text editors
+- Duplicate stylesheet paths are automatically filtered out
+
+### Migrating from Stylesheet (deprecated)
+
+The single `Stylesheet` property is deprecated. Migrate to `Stylesheets`:
+
+```cs
+// Before (deprecated - generates compiler warning)
+options.BlockGrid = new()
+{
+    Enabled = true,
+    Stylesheet = "/css/myblockgridlayout.css"
+};
+
+// After (recommended)
+options.BlockGrid = new()
+{
+    Enabled = true,
+    Stylesheets = ["/css/myblockgridlayout.css"]
+};
+```
+
+> **Note:** The deprecated `Stylesheet` property still works for backwards compatibility. If both `Stylesheet` and `Stylesheets` are configured, all stylesheets are combined (with duplicates removed).
