@@ -53,7 +53,7 @@ export class BlockGridPreviewCustomView
     @state()
     private _error: string | null = null;
 
-    private _styleElement?: HTMLLinkElement;
+    private _styleElements: HTMLLinkElement[] = [];
 
     private _previewTimeout: number | undefined;
 
@@ -159,17 +159,20 @@ export class BlockGridPreviewCustomView
                         this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
-
-                        const { data } = await BlockPreviewService.getGridStylesheet({
+                        
+                        const { data } = await BlockPreviewService.getGridStylesheets({
                             query: {
                                 documentTypeUnique: this._blockContext.documentTypeUnique,
                                 nodeKey: this._blockContext.unique
                             }
                         });
-                        if (data) {
-                            this._styleElement = document.createElement('link');
-                            this._styleElement.rel = 'stylesheet';
-                            this._styleElement.href = data;
+                        if(data && data.length > 0) {
+                            this._styleElements = data.map(href => {
+                                const link = document.createElement('link');
+                                link.rel = 'stylesheet';
+                                link.href = href;
+                                return link;
+                            });
                         }
                     }
                 );
@@ -185,16 +188,19 @@ export class BlockGridPreviewCustomView
                             this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
                             this.#observeBlockValue();
 
-                            const { data } = await BlockPreviewService.getGridStylesheet({
+                            const { data } = await BlockPreviewService.getGridStylesheets({
                                 query: {
                                     documentTypeUnique: this._blockContext.documentTypeUnique,
                                     nodeKey: this._blockContext.unique
                                 }
                             });
-                            if (data) {
-                                this._styleElement = document.createElement('link');
-                                this._styleElement.rel = 'stylesheet';
-                                this._styleElement.href = data;
+                            if(data && data.length > 0) {
+                                this._styleElements = data.map(href => {
+                                    const link = document.createElement('link');
+                                    link.rel = 'stylesheet';
+                                    link.href = href;
+                                    return link;
+                                });
                             }
                         });
                     }
@@ -414,9 +420,9 @@ export class BlockGridPreviewCustomView
 
             if (this._htmlMarkup) {
                 return html`
-                    ${this._styleElement}
+                    ${this._styleElements}
                      <a
-                         href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
+                         href=${ifDefined(this._blockContext.workspaceEditContentPath)}
                          @click=${this._handleClick}
                          aria-label="Edit block"
                          class="block-preview-edit"
