@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetGridStylesheetData, GetGridStylesheetErrors, GetGridStylesheetResponses, GetListStylesheetData, GetListStylesheetErrors, GetListStylesheetResponses, GetSettingsData, GetSettingsResponses, PreviewGridBlockData, PreviewGridBlockResponses, PreviewListBlockData, PreviewListBlockResponses, PreviewRichTextMarkupData, PreviewRichTextMarkupResponses } from './types.gen';
+import type { GetGridStylesheetData, GetGridStylesheetErrors, GetGridStylesheetResponses, GetGridStylesheetsData, GetGridStylesheetsErrors, GetGridStylesheetsResponses, GetListStylesheetData, GetListStylesheetErrors, GetListStylesheetResponses, GetListStylesheetsData, GetListStylesheetsErrors, GetListStylesheetsResponses, GetSettingsData, GetSettingsResponses, PreviewGridBlockData, PreviewGridBlockResponses, PreviewListBlockData, PreviewListBlockResponses, PreviewRichTextMarkupData, PreviewRichTextMarkupResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -30,9 +30,19 @@ export class BlockPreviewService {
         });
     }
     
+    /**
+     * @deprecated Use getGridStylesheets instead to support multiple stylesheets
+     */
     public static getGridStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetGridStylesheetData, ThrowOnError>) {
         return (options?.client ?? client).get<GetGridStylesheetResponses, GetGridStylesheetErrors, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/grid/stylesheet',
+            ...options
+        });
+    }
+
+    public static getGridStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetGridStylesheetsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetGridStylesheetsResponses, GetGridStylesheetsErrors, ThrowOnError>({
+            url: '/umbraco/block-preview/api/v1/preview/grid/stylesheets',
             ...options
         });
     }
@@ -48,9 +58,19 @@ export class BlockPreviewService {
         });
     }
     
+    /**
+     * @deprecated Use getListStylesheets instead to support multiple stylesheets
+     */
     public static getListStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetListStylesheetData, ThrowOnError>) {
         return (options?.client ?? client).get<GetListStylesheetResponses, GetListStylesheetErrors, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/list/stylesheet',
+            ...options
+        });
+    }
+
+    public static getListStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetListStylesheetsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetListStylesheetsResponses, GetListStylesheetsErrors, ThrowOnError>({
+            url: '/umbraco/block-preview/api/v1/preview/list/stylesheets',
             ...options
         });
     }

@@ -69,6 +69,16 @@ namespace Umbraco.Community.BlockPreview.Interfaces
         /// <param name="content">The published content.</param>
         /// <param name="controllerContext">The controller context.</param>
         /// <returns>The stylesheet path, or null if not found.</returns>
+        [Obsolete("Use GetStylesheetPaths instead to support multiple stylesheets.")]
         Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext);
+
+        /// <summary>
+        /// Gets the stylesheet paths for a specific block type.
+        /// </summary>
+        /// <param name="blockType">The type of block editor.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <returns>A list of stylesheet paths, or null if none configured.</returns>
+        Task<IEnumerable<string>?> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext);
     }
 }

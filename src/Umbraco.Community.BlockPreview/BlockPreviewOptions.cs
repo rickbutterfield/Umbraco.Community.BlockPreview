@@ -103,25 +103,34 @@ namespace Umbraco.Community.BlockPreview
         /// Gets or sets a value indicating whether this block type is enabled.
         /// </summary>
         public bool Enabled { get; set; } = false;
-        
+
         /// <summary>
         /// Gets or sets the view locations for this block type.
         /// </summary>
         public List<string>? ViewLocations { get; set; } = [];
-        
+
         /// <summary>
         /// Gets or sets the content types for this block type.
         /// </summary>
         public List<string>? ContentTypes { get; set; } = [];
-        
+
         /// <summary>
         /// Gets or sets the content types to ignore for this block type.
         /// </summary>
         public List<string> IgnoredContentTypes { get; set; } = [];
-        
+
         /// <summary>
-        /// Gets or sets the stylesheet for this block type.
+        /// Gets or sets a single stylesheet for this block type.
         /// </summary>
+        /// <remarks>
+        /// This property is obsolete. Use <see cref="Stylesheets"/> instead to specify one or more stylesheets.
+        /// </remarks>
+        [Obsolete("Use Stylesheets instead to specify one or more stylesheets.")]
         public string? Stylesheet { get; set; }
+
+        /// <summary>
+        /// Gets or sets the stylesheets for this block type.
+        /// </summary>
+        public List<string>? Stylesheets { get; set; } = [];
     }
 }

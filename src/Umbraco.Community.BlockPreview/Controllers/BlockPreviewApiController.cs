@@ -269,6 +269,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <param name="nodeKey">The key of the node.</param>
         /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
         /// <returns>The stylesheet path if configured; otherwise, a 404 response.</returns>
+        [Obsolete("Use GetGridStylesheets instead to support multiple stylesheets.")]
         [HttpGet("preview/grid/stylesheet")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -280,7 +281,9 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             String? stylesheetPath = await _blockPreviewService.GetStylesheetPath(BlockType.BlockGrid, content!, ControllerContext);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (string.IsNullOrWhiteSpace(stylesheetPath))
             {
@@ -290,11 +293,38 @@ namespace Umbraco.Community.BlockPreview.Controllers
         }
 
         /// <summary>
+        /// Retrieves the stylesheet paths for a grid block preview.
+        /// </summary>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
+        /// <returns>A list of stylesheet paths if configured; otherwise, a 404 response.</returns>
+        [HttpGet("preview/grid/stylesheets")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetGridStylesheets(
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+            IEnumerable<string>? stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockGrid, content!, ControllerContext);
+
+            if (stylesheetPaths == null || !stylesheetPaths.Any())
+            {
+                return NotFound("Stylesheet paths are not configured.");
+            }
+            return Ok(stylesheetPaths);
+        }
+
+        /// <summary>
         /// Retrieves the stylesheet path for a list block preview.
         /// </summary>
         /// <param name="nodeKey">The key of the node.</param>
         /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
         /// <returns>The stylesheet path if configured; otherwise, a 404 response.</returns>
+        [Obsolete("Use GetListStylesheets instead to support multiple stylesheets.")]
         [HttpGet("preview/list/stylesheet")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
@@ -306,13 +336,41 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
+#pragma warning disable CS0618 // Type or member is obsolete
             String? stylesheetPath = await _blockPreviewService.GetStylesheetPath(BlockType.BlockList, content!, ControllerContext);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             if (string.IsNullOrWhiteSpace(stylesheetPath))
             {
                 return NotFound("Stylesheet path is not configured.");
             }
             return Ok(stylesheetPath);
+        }
+
+        /// <summary>
+        /// Retrieves the stylesheet paths for a list block preview.
+        /// </summary>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
+        /// <returns>A list of stylesheet paths if configured; otherwise, a 404 response.</returns>
+        [HttpGet("preview/list/stylesheets")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetListStylesheets(
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+            IEnumerable<string>? stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockList, content!, ControllerContext);
+
+            if (stylesheetPaths == null || !stylesheetPaths.Any())
+            {
+                return NotFound("Stylesheet paths are not configured.");
+            }
+            return Ok(stylesheetPaths);
         }
         #endregion
 
