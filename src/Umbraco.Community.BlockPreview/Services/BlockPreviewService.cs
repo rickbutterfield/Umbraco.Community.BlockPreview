@@ -237,7 +237,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             ConfigureBlockInstanceAreas(blockValue!, blockInstance, config, matchingBlockConfig, matchingLayout!, content);
 
-            previewContext.ViewData = CreateViewData(blockInstance, previewContext);
+            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext);
             return await GetMarkup(previewContext);
         }
 
@@ -315,7 +315,7 @@ namespace Umbraco.Community.BlockPreview.Services
                BlockType.BlockList,
                blockIndex);
 
-            previewContext.ViewData = CreateViewData(blockInstance, previewContext);
+            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext);
             return await GetMarkup(previewContext);
         }
 
@@ -374,7 +374,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 contentElement.ContentType.Alias,
                 BlockType.RichText);
 
-            previewContext.ViewData = CreateViewData(blockInstance, previewContext);
+            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext);
             return await GetMarkup(previewContext);
         }
 
@@ -662,8 +662,28 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="typedBlockInstance">The typed block instance to be set as the model in the view data. Can be <see langword="null"/>.</param>
         /// <param name="context">The context containing information about the block being previewed.</param>
         /// <param name="hasNestedBlockGrid">Indicates whether the block contains a nested block grid.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="ViewDataDictionary"/>
+        /// containing the model and additional metadata for rendering the block preview.</returns>
+        /// <remarks>
+        /// Override this method to customize the view data for block previews asynchronously.
+        /// The default implementation calls the synchronous <see cref="CreateViewData"/> method for backward compatibility.
+        /// </remarks>
+        protected virtual Task<ViewDataDictionary> CreateViewDataAsync(object? typedBlockInstance, BlockPreviewContext context, bool? hasNestedBlockGrid = false)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            return Task.FromResult(CreateViewData(typedBlockInstance, context, hasNestedBlockGrid));
+#pragma warning restore CS0618
+        }
+
+        /// <summary>
+        /// Creates and initializes a <see cref="ViewDataDictionary"/> for use in rendering a block preview.
+        /// </summary>
+        /// <param name="typedBlockInstance">The typed block instance to be set as the model in the view data. Can be <see langword="null"/>.</param>
+        /// <param name="context">The context containing information about the block being previewed.</param>
+        /// <param name="hasNestedBlockGrid">Indicates whether the block contains a nested block grid.</param>
         /// <returns>A <see cref="ViewDataDictionary"/> containing the model and additional metadata for rendering the block
         /// preview.</returns>
+        [Obsolete("Use CreateViewDataAsync instead. This method will be removed in a future version.")]
         protected virtual ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockPreviewContext context, bool? hasNestedBlockGrid = false)
         {
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
