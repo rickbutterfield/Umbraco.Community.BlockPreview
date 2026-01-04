@@ -54,7 +54,6 @@ export class BlockGridPreviewCustomView
     private _error: string | null = null;
 
     private _styleElement?: HTMLLinkElement;
-
     private _previewTimeout: number | undefined;
 
     @state()
@@ -98,7 +97,6 @@ export class BlockGridPreviewCustomView
 
     constructor() {
         super();
-
         this.consumeContext(BLOCK_PREVIEW_CONTEXT, async (context) => {
             this.#blockPreviewContext = context;
             await this.#setupContextObservers();
@@ -107,7 +105,6 @@ export class BlockGridPreviewCustomView
 
     protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
         super.updated(_changedProperties);
-
         if (_changedProperties.has('content') || _changedProperties.has('settings')) {
             if (this._previewTimeout) {
                 clearTimeout(this._previewTimeout);
@@ -143,23 +140,20 @@ export class BlockGridPreviewCustomView
     async #observeDocumentWorkspace() {
         try {
             await this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT);
-
             this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
                 if (!context)
                     return;
 
                 this.#documentWorkspaceContext = context;
-
                 this.observe(
                     observeMultiple([context.unique, context.contentTypeUnique]),
                     async ([unique, documentTypeUnique]) => {
                         this._blockContext.unique = unique?.toString() ?? '';
                         this.#blockPreviewContext?.setUnique(this._blockContext.unique);
-
                         this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
-                        
+
                         const { data } = await BlockPreviewService.getGridStylesheet({
                             query: {
                                 documentTypeUnique: this._blockContext.documentTypeUnique,
@@ -173,15 +167,18 @@ export class BlockGridPreviewCustomView
                         }
                     }
                 );
-
             });
-        }
-        catch (ex) {
+        }catch (ex) {
             if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
-                this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async(context) => {
+                this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async (context) => {
                     if (context) {
                         this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
+                            // Try to get unique from context, then fallback to extraction
                             this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
+                            if (!this._blockContext.unique && this._blockContext.workspaceEditContentPath) {
+                                this._blockContext.unique = this.#extractUniqueFromWorkspacePath(this._blockContext.workspaceEditContentPath);
+                            }
+
                             this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
                             this.#observeBlockValue();
 
@@ -232,7 +229,6 @@ export class BlockGridPreviewCustomView
                         this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
-
                         this._blockContext.areas = areas;
                         this._blockContext.layout = layout!;
                         this._blockContext.layoutAreas = layoutAreas;
@@ -256,14 +252,12 @@ export class BlockGridPreviewCustomView
                     ]),
                     async ([contents, settings, exposes, propertyAlias]) => {
                         this._blockContext.blockEditorAlias = propertyAlias ?? '';
-
                         this.blockGridValue = {
                             contentData: contents ?? [],
                             settingsData: settings ?? [],
                             expose: exposes ?? [],
                             layout: { ['Umbraco.BlockGrid']: this._filterLayouts() }
                         };
-
                         this._blockContext.blockIndex = contents.indexOf(this.blockGridValue.contentData[0]);
                     }
                 );
@@ -277,35 +271,39 @@ export class BlockGridPreviewCustomView
                 key: area.key,
                 items: this._blockContext.layoutAreas?.find(layout => layout.key == area.key)?.items!
             }
-
             return model;
         });
 
         const layoutModel: UmbBlockGridLayoutModel[] =
-        [
-            {
-                areas: areas,
-                columnSpan: this._blockContext.layout?.columnSpan ?? 0,
-                rowSpan: this._blockContext.layout?.rowSpan ?? 0,
-                contentKey: this._blockContext.layout?.contentKey ?? '',
-                settingsKey: this._blockContext.layout?.settingsKey
-            }
-        ];
+            [
+                {
+                    areas: areas,
+                    columnSpan: this._blockContext.layout?.columnSpan ?? 0,
+                    rowSpan: this._blockContext.layout?.rowSpan ?? 0,
+                    contentKey: this._blockContext.layout?.contentKey ?? '',
+                    settingsKey: this._blockContext.layout?.settingsKey
+                }
+            ];
 
         return layoutModel;
     }
 
     async #renderBlockPreview() {
         const context = this._blockContext;
+
+        // Try to get unique from context, then fallback to extraction
         if (this.#blockPreviewContext != null && context.unique == '') {
             context.unique = this.#blockPreviewContext.getUnique();
+            if (!context.unique && context.workspaceEditContentPath) {
+                context.unique = this.#extractUniqueFromWorkspacePath(context.workspaceEditContentPath);
+            }
         }
+
         if (this.#blockPreviewContext != null && context.documentTypeUnique == '') {
             context.documentTypeUnique = this.#blockPreviewContext.getDocumentTypeUnique();
         }
 
         const isDataValid = this.#validatePreviewData(context);
-
         if (!isDataValid) {
             this._error = 'Insufficient data for block preview';
             this._isLoading = false;
@@ -337,7 +335,6 @@ export class BlockGridPreviewCustomView
                 this._error = error.message;
                 this._isLoading = false;
             }
-
         } catch (error) {
             this._error = 'Failed to render block preview';
             this._isLoading = false;
@@ -352,6 +349,13 @@ export class BlockGridPreviewCustomView
             context.contentUdi != '' &&
             context.contentElementTypeAlias != ''
         );
+    }
+
+    #extractUniqueFromWorkspacePath(path: string): string {
+        // Extract the document unique from the workspace edit path
+        // Pattern: /workspace/document/edit/{unique}/
+        const match = path.match(/\/workspace\/document\/edit\/([a-f0-9-]{36})/i);
+        return match ? match[1] : '';
     }
 
     _handleClick(event: PointerEvent) {
@@ -399,16 +403,16 @@ export class BlockGridPreviewCustomView
             if (this._htmlMarkup) {
                 return html`
                     ${this._styleElement}
-                     <a
-                         href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
-                         @click=${this._handleClick}
-                         aria-label="Edit block"
-                         class="block-preview-edit"
-                         role="button"
-                     >
+                    <a 
+                        href=${ifDefined(this._blockContext.workspaceEditContentPath)} 
+                        @click=${this._handleClick}
+                        aria-label="Edit block"
+                        class="block-preview-edit"
+                        role="button"
+                    >
                         ${unsafeHTML(this._htmlMarkup)}
-                     </a>
-                    `;
+                    </a>
+                `;
             }
         }
 
@@ -426,64 +430,64 @@ export class BlockGridPreviewCustomView
 
     static styles = [
         css`
-            :host {
-                display: block;
-                height: 100%;
-            }
+      :host {
+        display: block;
+        height: 100%;
+      }
 
-             a.block-preview-edit {
-                 display: block;
-                 height: 100%;
-                 color: inherit;
-                 text-decoration: inherit;
-                 border:1px solid transparent;
-                 border-radius:2px;
-             }
+      a.block-preview-edit {
+        display: block;
+        height: 100%;
+        color: inherit;
+        text-decoration: inherit;
+        border:1px solid transparent;
+        border-radius:2px;
+      }
 
-             a.block-preview-edit:hover {
-                border-color: var(--uui-color-interactive-emphasis, #3544b1);
-             }
+      a.block-preview-edit:hover {
+        border-color: var(--uui-color-interactive-emphasis, #3544b1);
+      }
 
-             .preview-alert {
-                 background-color: var(--uui-color-danger, #f0ac00);
-                 border:1px solid transparent;
-                 border-radius:0;
-                 margin-bottom:20px;
-                 padding:8px 35px 8px 14px;
-                 position: relative;
+      .preview-alert {
+        background-color: var(--uui-color-danger, #f0ac00);
+        border:1px solid transparent;
+        border-radius:0;
+        margin-bottom:20px;
+        padding:8px 35px 8px 14px;
+        position: relative;
 
-                 &, a, h4 {
-                    color: #fff;
-                 }
+        &, a, h4 {
+          color: #fff;
+        }
 
-                 pre {
-                    white-space: normal;
-                 }
+        pre {
+          white-space: normal;
+        }
 
-                 uui-loader {
-                    margin-right:16px;
-                 }
-             }
+        uui-loader {
+          margin-right:16px;
+        }
+      }
 
-             .preview-alert-warning {
-                 background-color: var(--uui-color-warning, #f0ac00);
-                 border-color: transparent;
-                 color: #000;
-             }
+      .preview-alert-warning {
+        background-color: var(--uui-color-warning, #f0ac00);
+        border-color: transparent;
+        color: #000;
+      }
 
-             .preview-alert-info {
-                 background-color: var(--uui-color-default, #3544b1);
-                 border-color: transparent;
-                 color: #fff;
-             }
+      .preview-alert-info {
+        background-color: var(--uui-color-default, #3544b1);
+        border-color: transparent;
+        color: #fff;
+      }
 
-             .preview-alert-danger,
-             .preview-alert-error {
-                 background-color: var(--uui-color-danger, #f0ac00);
-                 border-color: transparent;
-                 color: #fff;
-             }
-             `
+      .preview-alert-danger,
+      .preview-alert-error {
+        background-color: var(--uui-color-danger, #f0ac00);
+        border-color: transparent;
+        color: #fff;
+      }
+    `
     ]
 }
 
