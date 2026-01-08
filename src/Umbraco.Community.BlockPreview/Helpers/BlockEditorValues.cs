@@ -44,12 +44,7 @@ namespace Umbraco.Community.BlockPreview.Helpers
 
         public BlockEditorData? ConvertAndClean(BlockValue blockValue)
         {
-#if NET8_0
             BlockEditorData blockEditorData = _dataConverter.Convert(blockValue);
-#else
-            var blockDataAsJToken = JToken.FromObject(blockValue);
-            BlockEditorData blockEditorData = _dataConverter.ConvertFrom(blockDataAsJToken);
-#endif
             return Clean(blockEditorData);
         }
 

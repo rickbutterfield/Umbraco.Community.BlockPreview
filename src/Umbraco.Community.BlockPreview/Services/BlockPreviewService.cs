@@ -23,18 +23,19 @@ using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Cms.Core.Serialization;
 using Umbraco.Cms.Core.Services;
+using Umbraco.Community.BlockPreview.Converters;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Helpers;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Extensions;
-#if NET8_0
-using Umbraco.Community.BlockPreview.Converters;
-#endif
 using static Umbraco.Cms.Core.Constants.PropertyEditors;
 
 namespace Umbraco.Community.BlockPreview.Services
 {
+    /// <summary>
+    /// Service for rendering block previews.
+    /// </summary>
     public class BlockPreviewService : IBlockPreviewService
     {
         private readonly ITempDataProvider _tempDataProvider;
@@ -53,12 +54,28 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private readonly BlockEditorValues _blockGridEditorValues;
         private readonly BlockEditorValues _blockListEditorValues;
-#if NET8_0
         private readonly BlockEditorValues _richTextBlockEditorValues;
-#endif
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockPreviewService"/> class.
+        /// </summary>
+        /// <param name="tempDataProvider">The temp data provider.</param>
+        /// <param name="viewComponentHelperWrapper">The view component helper wrapper.</param>
+        /// <param name="razorViewEngine">The Razor view engine.</param>
+        /// <param name="typeFinder">The type finder.</param>
+        /// <param name="blockEditorConverter">The block editor converter.</param>
+        /// <param name="viewComponentSelector">The view component selector.</param>
+        /// <param name="publishedValueFallback">The published value fallback.</param>
+        /// <param name="options">The block preview options.</param>
+        /// <param name="jsonSerializer">The JSON serializer.</param>
+        /// <param name="contentTypeService">The content type service.</param>
+        /// <param name="dataTypeService">The data type service.</param>
+        /// <param name="appCaches">The application caches.</param>
+        /// <param name="webHostEnvironment">The web host environment.</param>
+        /// <param name="elementTypeCache">The block editor element type cache.</param>
+        /// <param name="logger">The logger.</param>
         public BlockPreviewService(
             ILogger<BlockPreviewService> logger,
             ITempDataProvider tempDataProvider,
@@ -92,14 +109,25 @@ namespace Umbraco.Community.BlockPreview.Services
 
             _blockGridEditorValues = new BlockEditorValues(new BlockGridEditorDataConverter(jsonSerializer), elementTypeCache, logger);
             _blockListEditorValues = new BlockEditorValues(new BlockListEditorDataConverter(), elementTypeCache, logger);
-#if NET8_0
             _richTextBlockEditorValues = new BlockEditorValues(new RichTextEditorBlockDataConverter(), elementTypeCache, logger);
-#endif
         }
 
         #region Public
+        /// <summary>
+        /// Renders a block grid block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <param name="contentUdi">The content key.</param>
+        /// <param name="settingsUdi">The settings key.</param>
+        /// <param name="blockIndex">The block index.</param>
+        /// <returns>The rendered HTML.</returns>
         public async Task<string> RenderGridBlock(
             BlockValue blockData,
+            IPublishedContent content,
             ControllerContext controllerContext,
             string blockEditorAlias = "",
             Guid documentTypeUnique = default,
@@ -127,14 +155,14 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
-            IPublishedElement? contentElement = ConvertToElement(contentData, true);
+            IPublishedElement? contentElement = ConvertToElement(contentData);
 
             FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsUdiParsed != null
                 ? blockValue?.BlockValue.SettingsData.FirstOrDefault(x => x.Udi == settingsUdiParsed)
                 : null;
 
-            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true) : default;
+            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData) : default;
 
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
@@ -180,14 +208,35 @@ namespace Umbraco.Community.BlockPreview.Services
             if (matchingBlockConfig == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidMatchingBlockGridConfiguration);
 
-            ConfigureBlockInstanceAreas(blockInstance, config, matchingBlockConfig, matchingLayout!);
+            BlockPreviewContext previewContext = new BlockPreviewContext(
+               controllerContext,
+               content,
+               contentElement.ContentType.Alias,
+               BlockType.BlockGrid,
+               blockIndex,
+               matchingBlockConfig);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockGrid, matchingBlockConfig, blockIndex);
-            return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockGrid);
+            ConfigureBlockInstanceAreas(blockValue, blockInstance, config, matchingBlockConfig, matchingLayout!, content);
+
+            previewContext.ViewData = CreateViewData(blockInstance, previewContext);
+            return await GetMarkup(previewContext);
         }
 
+        /// <summary>
+        /// Renders a block list block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <param name="contentUdi">The content key.</param>
+        /// <param name="settingsUdi">The settings key.</param>
+        /// <param name="blockIndex">The block index.</param>
+        /// <returns>The rendered HTML.</returns>
         public async Task<string> RenderListBlock(
             BlockValue blockData,
+            IPublishedContent content,
             ControllerContext controllerContext,
             string blockEditorAlias = "",
             Guid documentTypeUnique = default,
@@ -215,14 +264,14 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
-            IPublishedElement? contentElement = ConvertToElement(contentData, true);
+            IPublishedElement? contentElement = ConvertToElement(contentData);
 
             FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsUdiParsed != null
                 ? blockValue?.BlockValue.SettingsData.FirstOrDefault(x => x.Udi == settingsUdiParsed)
                 : null;
 
-            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true) : default;
+            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData) : default;
 
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
@@ -240,13 +289,27 @@ namespace Umbraco.Community.BlockPreview.Services
             if (blockInstance == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.BlockList, null, blockIndex);
-            return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.BlockList);
+            BlockPreviewContext previewContext = new BlockPreviewContext(
+               controllerContext,
+               content,
+               contentElement.ContentType.Alias,
+               BlockType.BlockList,
+               blockIndex);
+
+            previewContext.ViewData = CreateViewData(blockInstance, previewContext);
+            return await GetMarkup(previewContext);
         }
 
-#if NET8_0
+        /// <summary>
+        /// Renders a rich text block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <returns>The rendered HTML.</returns>
         public async Task<string> RenderRichTextBlock(
             BlockValue blockData,
+            IPublishedContent content,
             ControllerContext controllerContext)
         {
             if (blockData == null)
@@ -256,10 +319,10 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
-            IPublishedElement? contentElement = ConvertToElement(contentData, true);
+            IPublishedElement? contentElement = ConvertToElement(contentData);
 
             BlockItemData? settingsData = blockData.SettingsData.FirstOrDefault();
-            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, true) : default;
+            IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData) : default;
 
             Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
@@ -277,10 +340,15 @@ namespace Umbraco.Community.BlockPreview.Services
             if (blockInstance == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
 
-            ViewDataDictionary viewData = CreateViewData(blockInstance, BlockType.RichText);
-            return await GetMarkup(controllerContext, contentElement?.ContentType.Alias, viewData, BlockType.RichText);
+            BlockPreviewContext previewContext = new BlockPreviewContext(
+                controllerContext,
+                content,
+                contentElement.ContentType.Alias,
+                BlockType.RichText);
+
+            previewContext.ViewData = CreateViewData(blockInstance, previewContext);
+            return await GetMarkup(previewContext);
         }
-#endif
         #endregion
 
         #region Private
@@ -316,7 +384,7 @@ namespace Umbraco.Community.BlockPreview.Services
             }, CacheDuration);
         }
 
-        private IPublishedElement? ConvertToElement(BlockItemData data, bool throwOnError)
+        private IPublishedElement? ConvertToElement(BlockItemData data)
         {
             var newPropertyValues = new Dictionary<string, object?>();
 
@@ -368,8 +436,8 @@ namespace Umbraco.Community.BlockPreview.Services
 
             data.RawPropertyValues = newPropertyValues;
 
-            var element = _blockEditorConverter.ConvertToElement(data, PropertyCacheLevel.None, throwOnError);
-            if (element == null && throwOnError)
+            var element = _blockEditorConverter.ConvertToElement(data, PropertyCacheLevel.None, preview: true);
+            if (element == null)
                 throw new InvalidOperationException($"Unable to find Element {data?.ContentTypeAlias}");
 
             return element;
@@ -465,23 +533,33 @@ namespace Umbraco.Community.BlockPreview.Services
             return null;
         }
 
-        private ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockType? blockType = default, BlockGridConfiguration.BlockGridBlockConfiguration? matchingBlockConfig = null, int? blockIndex = 0)
+        /// <summary>
+        /// Creates and initializes a <see cref="ViewDataDictionary"/> for use in rendering a block preview.
+        /// </summary>
+        /// <param name="typedBlockInstance">The typed block instance to be set as the model in the view data. Can be <see langword="null"/>.</param>
+        /// <param name="context">The context containing information about the block being previewed.</param>
+        /// <param name="hasNestedBlockGrid">Indicates whether the block contains a nested block grid.</param>
+        /// <returns>A <see cref="ViewDataDictionary"/> containing the model and additional metadata for rendering the block
+        /// preview.</returns>
+        protected virtual ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockPreviewContext context)
         {
             var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary())
             {
                 Model = typedBlockInstance
             };
 
-            if (blockType == BlockType.BlockGrid && matchingBlockConfig != null && matchingBlockConfig.Areas.Any())
-            {
-                viewData["matchingBlockConfig"] = matchingBlockConfig;
-            }
-
             viewData["blockPreview"] = true;
-            viewData["blockIndex"] = blockIndex;
+            viewData["blockIndex"] = context.BlockIndex;
 
-            if (blockType == BlockType.BlockGrid)
+            if (context.BlockType == BlockType.BlockGrid)
+            {
                 viewData["blockGridPreview"] = true;
+
+                if (context.BlockGridBlockConfig != null && context.BlockGridBlockConfig.Areas.Any())
+                {
+                    viewData["matchingBlockConfig"] = context.BlockGridBlockConfig;
+                }
+            }
 
             return viewData;
         }
@@ -500,7 +578,6 @@ namespace Umbraco.Community.BlockPreview.Services
                         typeof(BlockGridItem<,>).MakeGenericType(contentBlockType, settingsBlockType) :
                         typeof(BlockGridItem<>).MakeGenericType(contentBlockType);
                 }
-#if NET8_0
                 else if (blockType == BlockType.RichText)
                 {
                     blockItemType = settingsBlockType != null ?
@@ -508,7 +585,6 @@ namespace Umbraco.Community.BlockPreview.Services
                         typeof(RichTextBlockItem<>).MakeGenericType(contentBlockType);
 
                 }
-#endif
                 else
                 {
                     blockItemType = settingsBlockType != null ?
@@ -522,34 +598,30 @@ namespace Umbraco.Community.BlockPreview.Services
             return null;
         }
 
-        private async Task<string> GetMarkupFromPartial(
-            ControllerContext controllerContext,
-            ViewDataDictionary? viewData,
-            string? contentAlias,
-            BlockType blockType)
+        private async Task<string> GetMarkupFromPartial(BlockPreviewContext context)
         {
-            var viewResult = GetViewResult(contentAlias, blockType);
+            var viewResult = GetViewResult(context);
 
             if (viewResult == null)
             {
                 viewResult =
-                    _razorViewEngine.FindView(controllerContext, contentAlias!, false) ??
-                    _razorViewEngine.FindView(controllerContext, contentAlias?.ToPascalCase()!, false);
+                    _razorViewEngine.FindView(context.ControllerContext, context.ContentAlias!, false) ??
+                    _razorViewEngine.FindView(context.ControllerContext, context.ContentAlias?.ToPascalCase()!, false);
 
                 if (!viewResult.Success)
                     return string.Format(Constants.ErrorMessages.WarningTemplate, string.Format(Constants.ErrorMessages.ViewNotFound, viewResult.ViewName, string.Join("<br/>", viewResult.SearchedLocations)));
             }
 
-            var actionContext = new ActionContext(controllerContext.HttpContext, new RouteData(), new ActionDescriptor());
+            var actionContext = new ActionContext(context.ControllerContext.HttpContext, new RouteData(), new ActionDescriptor());
 
             if (viewResult.View == null)
                 return string.Format(Constants.ErrorMessages.WarningTemplate, string.Format(Constants.ErrorMessages.ViewNotFound, viewResult.ViewName, string.Join("<br/>", viewResult.SearchedLocations)));
 
             await using var sw = new StringWriter();
 
-            if (viewData != null)
+            if (context.ViewData != null)
             {
-                var viewContext = new ViewContext(actionContext, viewResult.View, viewData,
+                var viewContext = new ViewContext(actionContext, viewResult.View, context.ViewData,
                     new TempDataDictionary(actionContext.HttpContext, _tempDataProvider), sw, new HtmlHelperOptions());
 
                 await viewResult.View.RenderAsync(viewContext);
@@ -558,32 +630,31 @@ namespace Umbraco.Community.BlockPreview.Services
             return sw.ToString();
         }
 
-        private async Task<string> GetMarkupFromViewComponent(
-            ControllerContext controllerContext,
-            ViewDataDictionary viewData,
-            ViewComponentDescriptor viewComponent)
+        private async Task<string> GetMarkupFromViewComponent(ViewComponentDescriptor viewComponent, BlockPreviewContext context)
         {
             await using var sw = new StringWriter();
             var viewContext = new ViewContext(
-                controllerContext,
+                context.ControllerContext,
                 new FakeView(),
-                viewData,
-                new TempDataDictionary(controllerContext.HttpContext, _tempDataProvider),
+                context.ViewData,
+                new TempDataDictionary(context.ControllerContext.HttpContext, _tempDataProvider),
                 sw,
                 new HtmlHelperOptions());
 
             _viewComponentHelperWrapper.Contextualize(viewContext);
 
-            var result = await _viewComponentHelperWrapper.InvokeAsync(viewComponent.TypeInfo.AsType(), viewData.Model);
+            var result = await _viewComponentHelperWrapper.InvokeAsync(viewComponent.TypeInfo.AsType(), context.ViewData.Model);
             result.WriteTo(sw, HtmlEncoder.Default);
             return sw.ToString();
         }
 
         private void ConfigureBlockInstanceAreas(
+            BlockEditorData blockValue,
             BlockGridItem blockInstance,
             BlockGridConfiguration config,
             BlockGridConfiguration.BlockGridBlockConfiguration matchingBlock,
-            BlockGridLayoutItem layoutItem)
+            BlockGridLayoutItem layoutItem,
+            IPublishedContent content)
         {
             blockInstance.AreaGridColumns = matchingBlock.AreaGridColumns ?? 12;
             blockInstance.GridColumns = config.GridColumns ?? 12;
@@ -597,39 +668,44 @@ namespace Umbraco.Community.BlockPreview.Services
                 if (!blockConfigAreaMap.TryGetValue(area.Key, out var areaConfig))
                     return null;
 
-                //var items = area.Items.Select(item =>
-                //{
-                //    BlockItemData? areaContentData = blockValue.ContentData.FirstOrDefault(x => x.Udi == item.ContentUdi);
-                //    IPublishedElement? areaContentElement = ConvertToElement(areaContentData!, true);
+                var items = area.Items.Select(item =>
+                {
+                    BlockItemData? areaContentData = blockValue.BlockValue?.ContentData.FirstOrDefault(x => x.Udi == item.ContentUdi);
+                    IPublishedElement? areaContentElement = ConvertToElement(areaContentData);
 
-                //    BlockItemData? areaSettingsData = blockValue.SettingsData.FirstOrDefault(x => x.Udi == item.SettingsUdi);
-                //    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData, true) : default;
+                    BlockItemData? areaSettingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Udi == item.SettingsUdi);
+                    IPublishedElement? areaSettingsElement = areaSettingsData != null ? ConvertToElement(areaSettingsData) : default;
 
-                //    return new BlockGridItem(item.ContentUdi!, areaContentElement!, item.SettingsUdi!, areaSettingsElement!);
-                //}).WhereNotNull().ToList();
+                    return new BlockGridItem(item.ContentUdi!, areaContentElement!, item.SettingsUdi!, areaSettingsElement!);
+                }).WhereNotNull().ToList();
 
                 return new BlockGridArea(new List<BlockGridItem>(area.Items.Count()), areaConfig.Alias!, areaConfig.RowSpan!.Value, areaConfig.ColumnSpan!.Value);
             }).WhereNotNull().ToList();
         }
 
-        private async Task<string> GetMarkup(ControllerContext controllerContext, string? contentAlias, ViewDataDictionary viewData, BlockType blockType)
+        private async Task<string> GetMarkup(BlockPreviewContext context)
         {
-            var viewComponent = _viewComponentSelector.SelectComponent(contentAlias?.ToPascalCase());
-
-            if (viewComponent == null)
-                viewComponent = _viewComponentSelector.SelectComponent(contentAlias);
+            var viewComponent = _viewComponentSelector.SelectComponent(context.ContentAlias?.ToPascalCase());
 
             return viewComponent != null
-                ? await GetMarkupFromViewComponent(controllerContext, viewData, viewComponent)
-                : await GetMarkupFromPartial(controllerContext, viewData, contentAlias, blockType);
+                ? await GetMarkupFromViewComponent(viewComponent, context)
+                : await GetMarkupFromPartial(context);
         }
 
-        private ViewEngineResult? GetViewResult(string? contentAlias, BlockType blockType)
+        /// <summary>
+        /// Attempts to locate a view based on the provided block preview context.
+        /// </summary>
+        /// <remarks>This method searches for views using the view locations specified in the options for
+        /// the given block type.</remarks>
+        /// <param name="context">The context containing information about the block preview, including the content alias and block type.</param>
+        /// <returns>A <see cref="ViewEngineResult"/> representing the located view if a matching view is found; otherwise, <see
+        /// langword="null"/>.</returns>
+        protected virtual ViewEngineResult? GetViewResult(BlockPreviewContext context)
         {
-            if (string.IsNullOrEmpty(contentAlias))
+            if (string.IsNullOrEmpty(context.ContentAlias))
                 return null;
 
-            var viewPaths = _options.GetViewLocations(blockType);
+            var viewPaths = _options.GetViewLocations(context.BlockType);
 
             if (viewPaths == null || !viewPaths.Any())
                 return null;
@@ -641,7 +717,7 @@ namespace Umbraco.Community.BlockPreview.Services
             {
                 string baseViewPath = viewPath.TrimStart($"~{Path.DirectorySeparatorChar}").TrimStart("/");
 
-                var pathNonPascal = string.Format(baseViewPath, contentAlias ?? "");
+                var pathNonPascal = string.Format(baseViewPath, context.ContentAlias ?? "");
                 var viewPathNonPascal = Path.Combine(appRoot, pathNonPascal);
 
                 if (System.IO.File.Exists(viewPathNonPascal))
@@ -654,7 +730,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
                 else
                 {
-                    var pathPascal = string.Format(baseViewPath, contentAlias?.ToPascalCase() ?? "");
+                    var pathPascal = string.Format(baseViewPath, context.ContentAlias?.ToPascalCase() ?? "");
                     var viewPathPascal = Path.Combine(appRoot, pathPascal);
 
                     if (System.IO.File.Exists(viewPathPascal))

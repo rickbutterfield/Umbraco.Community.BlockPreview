@@ -36,6 +36,7 @@ namespace Umbraco.Community.BlockPreview
 
             builder.Services.AddSingleton<IBlockEditorElementTypeCache, BlockEditorElementTypeCache>();
             builder.Services.AddScoped<IBlockPreviewService, BlockPreviewService>();
+            builder.Services.AddScoped<IBlockPreviewRequestEnricher, NoopBlockPreviewRequestEnricher>();
             builder.Services.AddScoped<ContextCultureService>();
 
             builder.Services.ConfigureOptions<BlockViewEngineOptionsSetup>();
