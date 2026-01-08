@@ -15,7 +15,11 @@ export type BlockTypeSettings = {
     viewLocations?: Array<string> | null;
     contentTypes?: Array<string> | null;
     ignoredContentTypes: Array<string>;
+    /**
+     * @deprecated Use stylesheets instead
+     */
     stylesheet?: string | null;
+    stylesheets?: Array<string> | null;
 };
 
 export enum EventMessageTypeModel {
@@ -83,6 +87,32 @@ export type GetGridStylesheetResponses = {
 
 export type GetGridStylesheetResponse = GetGridStylesheetResponses[keyof GetGridStylesheetResponses];
 
+export type GetGridStylesheetsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        nodeKey?: string;
+        documentTypeUnique?: string;
+    };
+    url: '/umbraco/block-preview/api/v1/preview/grid/stylesheets';
+};
+
+export type GetGridStylesheetsErrors = {
+    /**
+     * Not Found
+     */
+    404: unknown;
+};
+
+export type GetGridStylesheetsResponses = {
+    /**
+     * OK
+     */
+    200: Array<string>;
+};
+
+export type GetGridStylesheetsResponse = GetGridStylesheetsResponses[keyof GetGridStylesheetsResponses];
+
 export type PreviewListBlockData = {
     body?: string;
     path?: never;
@@ -133,6 +163,32 @@ export type GetListStylesheetResponses = {
 };
 
 export type GetListStylesheetResponse = GetListStylesheetResponses[keyof GetListStylesheetResponses];
+
+export type GetListStylesheetsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        nodeKey?: string;
+        documentTypeUnique?: string;
+    };
+    url: '/umbraco/block-preview/api/v1/preview/list/stylesheets';
+};
+
+export type GetListStylesheetsErrors = {
+    /**
+     * Not Found
+     */
+    404: unknown;
+};
+
+export type GetListStylesheetsResponses = {
+    /**
+     * OK
+     */
+    200: Array<string>;
+};
+
+export type GetListStylesheetsResponse = GetListStylesheetsResponses[keyof GetListStylesheetsResponses];
 
 export type PreviewRichTextMarkupData = {
     body?: string;

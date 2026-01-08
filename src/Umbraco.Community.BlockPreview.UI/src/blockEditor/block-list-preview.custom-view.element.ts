@@ -53,7 +53,7 @@ export class BlockListPreviewCustomView
     @state()
     private _error: string | null = null;
 
-    private _styleElement?: HTMLLinkElement;
+    private _styleElements: HTMLLinkElement[] = [];
 
     private _previewTimeout: number | undefined;
 
@@ -157,16 +157,19 @@ export class BlockListPreviewCustomView
                         this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
-                        const { data } = await BlockPreviewService.getListStylesheet({
+                        const { data } = await BlockPreviewService.getListStylesheets({
                             query: {
                                 documentTypeUnique: this._blockContext.documentTypeUnique,
                                 nodeKey: this._blockContext.unique
                             }
                         });
-                        if(data) {
-                            this._styleElement = document.createElement('link');
-                            this._styleElement.rel = 'stylesheet';
-                            this._styleElement.href = data;
+                        if(data && data.length > 0) {
+                            this._styleElements = data.map(href => {
+                                const link = document.createElement('link');
+                                link.rel = 'stylesheet';
+                                link.href = href;
+                                return link;
+                            });
                         }
                     }
                 );
@@ -184,16 +187,19 @@ export class BlockListPreviewCustomView
 
                             this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
                             this.#observeBlockValue();
-                            const { data } = await BlockPreviewService.getListStylesheet({
+                            const { data } = await BlockPreviewService.getListStylesheets({
                                 query: {
                                     documentTypeUnique: this._blockContext.documentTypeUnique,
                                     nodeKey: this._blockContext.unique
                                 }
                             });
-                            if(data) {
-                                this._styleElement = document.createElement('link');
-                                this._styleElement.rel = 'stylesheet';
-                                this._styleElement.href = data;
+                            if(data && data.length > 0) {
+                                this._styleElements = data.map(href => {
+                                    const link = document.createElement('link');
+                                    link.rel = 'stylesheet';
+                                    link.href = href;
+                                    return link;
+                                });
                             }
                         });
                     }
@@ -349,10 +355,8 @@ export class BlockListPreviewCustomView
         ];
 
         const containsElement = path.filter(x => x instanceof Element && elements.includes(x.tagName));
-
         if (containsElement.length > 0) {
             const containsEditButton = path.find(x => x instanceof Element && x.tagName === 'UUI-BUTTON');
-
             if (containsEditButton != null) {
                 if (containsEditButton instanceof UUIButtonElement) {
                     if (containsEditButton.href?.includes('block/edit')) {
@@ -360,11 +364,29 @@ export class BlockListPreviewCustomView
                     }
                 }
             }
+        }
 
-            if (blockEvent) {
-                event.preventDefault();
-                event.stopPropagation();
+        const containsBlockPreviewEdit = path.filter(x => x instanceof Element && x.tagName === 'A' && x.classList.contains('block-preview-edit')) as Element[];
+        if (containsBlockPreviewEdit.length > 0) {
+            blockEvent = false;
+        }
+
+        const containsLink = path.filter(x => x instanceof Element && x.tagName === 'A' && x.hasAttribute('data-block-preview-link')) as Element[];
+        if (containsLink.length > 0) {
+            if (containsBlockPreviewEdit.length > 0) {
+                window.history.pushState({}, '', containsBlockPreviewEdit[0].getAttribute('href'));
             }
+            else {
+                window.history.pushState({}, '', this._blockContext.workspaceEditContentPath);
+            }
+            return;
+        }
+
+
+        if (blockEvent) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
         }
     }
 
@@ -384,8 +406,8 @@ export class BlockListPreviewCustomView
 
             if (this._htmlMarkup) {
                 return html`
-                    ${this._styleElement}
-                    <a 
+                    ${this._styleElements}
+                    <a
                         href=${ifDefined(this._blockContext.workspaceEditContentPath)}
                         @click=${this._handleClick}
                         aria-label="Edit block"

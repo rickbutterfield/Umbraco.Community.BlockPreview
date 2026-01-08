@@ -45,12 +45,20 @@ dotnet build Umbraco.Community.BlockPreview.sln
 **Main Package (Release):**
 ```bash
 dotnet build src/Umbraco.Community.BlockPreview/Umbraco.Community.BlockPreview.csproj --configuration Release
+dotnet build examples/Umbraco.Community.BlockPreview.TestSite/Umbraco.Community.BlockPreview.TestSite.csproj
 ```
 
 **Frontend Assets:**
 ```bash
 cd src/Umbraco.Community.BlockPreview.UI
+
+# Install dependencies (requires Node.js >=22.12.0)
 npm install
+
+# Development mode with hot reload
+npm run dev
+
+# Build for production
 npm run build
 ```
 

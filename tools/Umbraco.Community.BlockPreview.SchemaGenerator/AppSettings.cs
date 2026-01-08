@@ -16,7 +16,9 @@
         public List<string> ViewLocations { get; set; } = [];
         public List<string> ContentTypes { get; set; } = [];
         public List<string> IgnoredContentTypes { get; set; } = [];
+        [Obsolete("Use Stylesheets instead to specify one or more stylesheets.")]
         public string Stylesheet { get; set; }
+        public List<string> Stylesheets { get; set; } = [];
       }
     }
 
