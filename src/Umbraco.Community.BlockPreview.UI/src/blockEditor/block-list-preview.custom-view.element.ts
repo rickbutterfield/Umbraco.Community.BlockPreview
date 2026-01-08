@@ -179,7 +179,12 @@ export class BlockListPreviewCustomView
                 this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
                     if (context) {
                         this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
+                            // Try to get unique from context, then fallback to extraction
                             this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
+                            if (!this._blockContext.unique && this._blockContext.workspaceEditContentPath) {
+                                this._blockContext.unique = this.#extractUniqueFromWorkspacePath(this._blockContext.workspaceEditContentPath);
+                            }
+
                             this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
                             this.#observeBlockValue();
                             const { data } = await BlockPreviewService.getListStylesheets({
@@ -272,12 +277,19 @@ export class BlockListPreviewCustomView
 
     async #renderBlockPreview() {
         const context = this._blockContext;
+
+        // Try to get unique from context, then fallback to extraction
         if (this.#blockPreviewContext != null && context.unique == '') {
             context.unique = this.#blockPreviewContext.getUnique();
+            if (!context.unique && context.workspaceEditContentPath) {
+                context.unique = this.#extractUniqueFromWorkspacePath(context.workspaceEditContentPath);
+            }
         }
+
         if (this.#blockPreviewContext != null && context.documentTypeUnique == '') {
             context.documentTypeUnique = this.#blockPreviewContext.getDocumentTypeUnique();
         }
+
         const isDataValid = this.#validatePreviewData(context);
 
         if (!isDataValid) {
@@ -325,6 +337,13 @@ export class BlockListPreviewCustomView
             context.contentUdi != '' &&
             context.contentElementTypeAlias != ''
         );
+    }
+
+    #extractUniqueFromWorkspacePath(path: string): string {
+        // Extract the document unique from the workspace edit path
+        // Pattern: /workspace/document/edit/{unique}/
+        const match = path.match(/\/workspace\/document\/edit\/([a-f0-9-]{36})/i);
+        return match ? match[1] : '';
     }
 
     _handleClick(event: PointerEvent) {
