@@ -19,6 +19,9 @@ jobs:
 
     - name: Checkout repository
       uses: actions/checkout@v6
+      with:
+        fetch-depth: 0
+        fetch-tags: true
 
     - name: Cache .NET packages
       uses: actions/cache@v4
