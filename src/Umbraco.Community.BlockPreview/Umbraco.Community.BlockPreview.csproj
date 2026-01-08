@@ -36,7 +36,6 @@
 			<Pack>True</Pack>
 			<PackagePath>\</PackagePath>
 		</None>
-		<None Include="appsettings-schema.blockpreview.json" Pack="true" PackagePath="\" />
 	</ItemGroup>
 
     <!-- Add JSON schema file to package output -->
