@@ -237,7 +237,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             ConfigureBlockInstanceAreas(blockValue!, blockInstance, config, matchingBlockConfig, matchingLayout!, content);
 
-            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext);
+            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext, hasNestedBlockGrid);
             return await GetMarkup(previewContext);
         }
 
