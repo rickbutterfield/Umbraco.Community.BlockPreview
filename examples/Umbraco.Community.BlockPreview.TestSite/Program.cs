@@ -31,6 +31,7 @@ builder.CreateUmbracoBuilder()
 
 builder.Services.AddUnique<IBlockPreviewService, CustomBlockPreviewService>(ServiceLifetime.Scoped);
 builder.Services.AddUnique<IBlockPreviewRequestEnricher, BlockPreviewRequestEnricher>(ServiceLifetime.Scoped);
+builder.Services.AddUnique<IBlockPreviewResponseEnricher, BlockPreviewResponseEnricher>(ServiceLifetime.Scoped);
 
 WebApplication app = builder.Build();
 
