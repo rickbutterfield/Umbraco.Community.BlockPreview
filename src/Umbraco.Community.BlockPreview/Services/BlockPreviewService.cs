@@ -749,6 +749,9 @@ namespace Umbraco.Community.BlockPreview.Services
         {
             var viewComponent = _viewComponentSelector.SelectComponent(context.ContentAlias?.ToPascalCase());
 
+            if (viewComponent == null)
+                viewComponent = _viewComponentSelector.SelectComponent(context.ContentAlias);
+
             return viewComponent != null
                 ? await GetMarkupFromViewComponent(viewComponent, context)
                 : await GetMarkupFromPartial(context);
