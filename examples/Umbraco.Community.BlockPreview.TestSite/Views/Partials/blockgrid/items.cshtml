@@ -15,8 +15,8 @@
              data-row-span="@item.RowSpan"
              style=" --umb-block-grid--item-column-span: @item.ColumnSpan; --umb-block-grid--item-row-span: @item.RowSpan; ">
             @{
-                var viewAlias = item.Content.ContentType.Alias.ToFirstUpper();
-                var viewComponent = Selector.SelectComponent(viewAlias);
+                var viewAlias = item.Content.ContentType.Alias;
+                var viewComponent = Selector.SelectComponent(viewAlias.ToFirstUpper()) ?? Selector.SelectComponent(viewAlias.ToCamelCase());
                 if (viewComponent != null)
                 {
                     @await Component.InvokeAsync(viewComponent.TypeInfo.AsType(), item)
