@@ -19,7 +19,7 @@
   "devDependencies": {
     "@hey-api/client-fetch": "^0.13.1",
     "@hey-api/openapi-ts": "^0.85.0",
-    "@umbraco-cms/backoffice": "^17.0.0",
+    "@umbraco-cms/backoffice": "^17.1.0",
     "glob": "^10.3.10",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"

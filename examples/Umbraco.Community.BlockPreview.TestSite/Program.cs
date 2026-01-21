@@ -14,17 +14,17 @@ builder.CreateUmbracoBuilder()
         options.BlockGrid = new()
         {
             Enabled = true,
-            Stylesheet = "/css/myblockgridlayout.css"
+            Stylesheets = ["/css/myblockgridlayout.css"]
         };
         options.BlockList = new()
         {
             Enabled = true,
-            Stylesheet = "/css/myblockgridlayout.css"
+            Stylesheets = ["/css/myblockgridlayout.css"]
         };
         options.RichText = new()
         {
             Enabled = true,
-            Stylesheet = "/css/myblockgridlayout.css"
+            Stylesheets = ["/css/myblockgridlayout.css"]
         };
     })
     .Build();

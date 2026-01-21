@@ -4,11 +4,13 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Composing;
+using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Cms.Core.Routing;
@@ -50,6 +52,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockPreviewApiController"/> class.
         /// </summary>
+        [ActivatorUtilitiesConstructor]
         public BlockPreviewApiController(
             IPublishedRouter publishedRouter,
             ILogger<BlockPreviewApiController> logger,
@@ -81,6 +84,44 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _scopeProvider = scopeProvider;
             _requestEnricher = requestEnricher;
             _responseEnricher = responseEnricher;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockPreviewApiController"/> class.
+        /// </summary>
+        [Obsolete("Use the constructor with IBlockPreviewResponseEnricher parameter instead.")]
+        public BlockPreviewApiController(
+            IPublishedRouter publishedRouter,
+            ILogger<BlockPreviewApiController> logger,
+            IUmbracoContextAccessor umbracoContextAccessor,
+            ContextCultureService contextCultureSwitcher,
+            IBlockPreviewService blockPreviewService,
+            ILanguageService languageService,
+            IOptions<BlockPreviewOptions> blockPreviewSettings,
+            ITypeFinder typeFinder,
+            AppCaches appCaches,
+            IElementsCache elementsCache,
+            IDocumentCacheService documentCacheService,
+            IPublishedContentTypeCache contentTypeCache,
+            IScopeProvider scopeProvider,
+            IBlockPreviewRequestEnricher requestEnricher)
+            : this(
+                publishedRouter,
+                logger,
+                umbracoContextAccessor,
+                contextCultureSwitcher,
+                blockPreviewService,
+                languageService,
+                blockPreviewSettings,
+                typeFinder,
+                appCaches,
+                elementsCache,
+                documentCacheService,
+                contentTypeCache,
+                scopeProvider,
+                requestEnricher,
+                StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewResponseEnricher>())
+        {
         }
 
         #region Public
@@ -268,8 +309,58 @@ namespace Umbraco.Community.BlockPreview.Controllers
         [AllowAnonymous]
         [HttpGet("settings")]
         [ProducesResponseType(typeof(BlockPreviewOptions), 200)]
-        public BlockPreviewOptions GetSettings() =>
-            _blockPreviewSettings.Value;
+        public BlockPreviewOptions GetSettings()
+        {
+            var settings = _blockPreviewSettings.Value;
+
+            // If any block type has IgnoredContentTypes configured (and ContentTypes is not set), compute ContentTypes dynamically
+            if (ShouldApplyIgnoredContentTypes(settings.BlockGrid) ||
+                ShouldApplyIgnoredContentTypes(settings.BlockList) ||
+                ShouldApplyIgnoredContentTypes(settings.RichText))
+            {
+                var contentTypeService = HttpContext.RequestServices.GetRequiredService<IContentTypeService>();
+                var allElementAliases = contentTypeService.GetAll()
+                    .Where(ct => ct.IsElement)
+                    .Select(ct => ct.Alias)
+                    .ToList();
+
+                return new BlockPreviewOptions
+                {
+                    BlockGrid = ApplyIgnoredContentTypes(settings.BlockGrid, allElementAliases),
+                    BlockList = ApplyIgnoredContentTypes(settings.BlockList, allElementAliases),
+                    RichText = ApplyIgnoredContentTypes(settings.RichText, allElementAliases)
+                };
+            }
+
+            return settings;
+        }
+
+        private static bool ShouldApplyIgnoredContentTypes(BlockTypeSettings? blockTypeSettings) =>
+            blockTypeSettings?.IgnoredContentTypes.Count > 0 &&
+            (blockTypeSettings.ContentTypes == null || blockTypeSettings.ContentTypes.Count == 0);
+
+        private static BlockTypeSettings ApplyIgnoredContentTypes(BlockTypeSettings original, List<string> allElementAliases)
+        {
+            // Only apply if ContentTypes is not explicitly set
+            if (original.ContentTypes?.Count > 0 || original.IgnoredContentTypes.Count == 0)
+            {
+                return original;
+            }
+
+            return new BlockTypeSettings
+            {
+                Enabled = original.Enabled,
+                ViewLocations = original.ViewLocations,
+                ContentTypes = allElementAliases
+                    .Except(original.IgnoredContentTypes, StringComparer.OrdinalIgnoreCase)
+                    .ToList(),
+                IgnoredContentTypes = original.IgnoredContentTypes,
+#pragma warning disable CS0618 // Type or member is obsolete
+                Stylesheet = original.Stylesheet,
+#pragma warning restore CS0618 // Type or member is obsolete
+                Stylesheets = original.Stylesheets
+            };
+        }
 
 
         /// <summary>

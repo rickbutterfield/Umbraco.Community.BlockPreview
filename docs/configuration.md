@@ -10,6 +10,7 @@ builder.AddBlockPreview(options =>
   {
       Enabled = true,
       ContentTypes = [],
+      IgnoredContentTypes = [],
       ViewLocations = [],
       Stylesheets = []
   };
@@ -18,6 +19,7 @@ builder.AddBlockPreview(options =>
   {
       Enabled = true,
       ContentTypes = [],
+      IgnoredContentTypes = [],
       ViewLocations = [],
       Stylesheets = []
   };
@@ -26,6 +28,7 @@ builder.AddBlockPreview(options =>
   {
       Enabled = true,
       ContentTypes = [],
+      IgnoredContentTypes = [],
       ViewLocations = [],
       Stylesheets = []
   };
@@ -38,18 +41,21 @@ builder.AddBlockPreview(options =>
     "BlockGrid": {
       "Enabled": true,
       "ContentTypes": [],
+      "IgnoredContentTypes": [],
       "ViewLocations": [],
       "Stylesheets": []
     },
     "BlockList": {
       "Enabled": false,
       "ContentTypes": [],
+      "IgnoredContentTypes": [],
       "ViewLocations": [],
       "Stylesheets": []
     },
     "RichText": {
       "Enabled": false,
       "ContentTypes": [],
+      "IgnoredContentTypes": [],
       "ViewLocations": [],
       "Stylesheets": []
     }
@@ -67,13 +73,54 @@ builder.AddBlockPreview(options =>
 | RichText  | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Rich Text previews  |
 
 ### BlockTypeSettings
-| Property      | Type                     | Description                                                                                                                                                                                                   |
-|---------------|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Enabled       | boolean                  | Toggle previews on or off for a given data type.                                                                                                                                                              |
-| ContentTypes  | string[] \| List<string> | A list of content type aliases to enable the previews for. If left blank, all blocks will be enabled.                                                                                                         |
-| ViewLocations | string[] \| List<string> | A list of custom view paths to be searched for your partial views. Use `{0}` as a placeholder for the content type alias. Custom locations are searched before default paths. Default paths are automatically included. |
-| Stylesheets   | string[] \| List<string> | Paths to stylesheets (relative to `/wwwroot`) to be loaded for every block preview of this type. For example: `["/css/grid-layout.css", "/css/custom-blocks.css"]`. Can be overridden by implementing a custom `IBlockPreviewService`. |
-| Stylesheet    | string                   | **Deprecated.** Use `Stylesheets` instead. Path to a single stylesheet (relative to `/wwwroot`). Still supported for backwards compatibility but will generate a compiler warning. |
+| Property            | Type                     | Description                                                                                                                                                                                                   |
+|---------------------|--------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Enabled             | boolean                  | Toggle previews on or off for a given data type.                                                                                                                                                              |
+| ContentTypes        | string[] \| List<string> | A list of content type aliases to enable the previews for. If left blank, all blocks will be enabled.                                                                                                         |
+| IgnoredContentTypes | string[] \| List<string> | A list of content type aliases to exclude from previews. Only applies when `ContentTypes` is not set. See [Ignoring Content Types](#ignoring-content-types) for details.                                      |
+| ViewLocations       | string[] \| List<string> | A list of custom view paths to be searched for your partial views. Use `{0}` as a placeholder for the content type alias. Custom locations are searched before default paths. Default paths are automatically included. |
+| Stylesheets         | string[] \| List<string> | Paths to stylesheets (relative to `/wwwroot`) to be loaded for every block preview of this type. For example: `["/css/grid-layout.css", "/css/custom-blocks.css"]`. Can be overridden by implementing a custom `IBlockPreviewService`. |
+| Stylesheet          | string                   | **Deprecated.** Use `Stylesheets` instead. Path to a single stylesheet (relative to `/wwwroot`). Still supported for backwards compatibility but will generate a compiler warning. |
+
+## Ignoring Content Types
+
+The `IgnoredContentTypes` property allows you to exclude specific element types from previews without having to explicitly list all the ones you want. This is useful when you have many element types but only want to exclude a few.
+
+Configure in `Program.cs`:
+```cs
+builder.AddBlockPreview(options =>
+{
+    options.BlockGrid = new()
+    {
+        Enabled = true,
+        IgnoredContentTypes = ["internalBlock", "deprecatedBlock"]
+    };
+})
+```
+
+Or in `appsettings.json`:
+```json
+{
+  "BlockPreview": {
+    "BlockGrid": {
+      "Enabled": true,
+      "IgnoredContentTypes": ["internalBlock", "deprecatedBlock"]
+    }
+  }
+}
+```
+
+**How it works:**
+
+| `ContentTypes` | `IgnoredContentTypes` | Result |
+|----------------|----------------------|--------|
+| Set | Any | Uses `ContentTypes` as-is (ignores `IgnoredContentTypes`) |
+| Empty/not set | Set | All element types minus ignored ones |
+| Empty/not set | Empty/not set | Previews enabled for all element types |
+
+- `ContentTypes` takes priority - if you explicitly set `ContentTypes`, the `IgnoredContentTypes` setting is ignored
+- `IgnoredContentTypes` is a convenience for "all element types except these"
+- The comparison is case-insensitive
 
 ## Custom View Locations
 If your block partials are not in the usual `/Views/Partials/block[grid|list]/Components/` paths, you can specify custom locations to search for your views. The `ViewLocations` property accepts an array of view paths with a `{0}` placeholder that will be replaced with the content type alias.

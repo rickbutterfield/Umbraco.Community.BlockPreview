@@ -115,7 +115,9 @@ namespace Umbraco.Community.BlockPreview
         public List<string>? ContentTypes { get; set; } = [];
 
         /// <summary>
-        /// Gets or sets the content types to ignore for this block type.
+        /// Gets or sets the content type aliases to exclude from previews.
+        /// Only applies when <see cref="ContentTypes"/> is not set.
+        /// When configured, previews will be enabled for all element types except those listed here.
         /// </summary>
         public List<string> IgnoredContentTypes { get; set; } = [];
 
