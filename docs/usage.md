@@ -52,6 +52,47 @@ You will also need to use `@await Html.GetPreviewBlockGridItemAreasHtmlAsync(Mod
 </section>
 ```
 
+### View Component Support
+If your solution supports or needs to support View Comonents, you will also need to edit your items.cshtml file.  Your implementation may differ based on your requirements, however when looking up the ViewComponent to Invoke it should resolve the component as follow:
+
+`/Views/Partials/blockgrid/items.cshtml`
+```diff
+<div
+            class="umb-block-grid__layout-item"
+            data-content-element-type-alias="@item.Content.ContentType.Alias"
+            data-content-element-type-key="@item.Content.ContentType.Key"
+            data-element-key="@item.ContentKey"
+            data-col-span="@item.ColumnSpan"
+            data-row-span="@item.RowSpan"
+            style=" --umb-block-grid--item-column-span: @item.ColumnSpan; --umb-block-grid--item-row-span: @item.RowSpan; ">
+            @{
++                var viewAlias = item.Content.ContentType.Alias;
++                var viewComponent = Selector.SelectComponent(viewAlias.ToFirstUpper()) ?? Selector.SelectComponent(viewAlias.ToCamelCase());
++                if (viewComponent != null)
++                {
++                    @await Component.InvokeAsync(viewComponent.TypeInfo.AsType(), item)
++                }
++                else
++                {
+                var partialViewName = "blockgrid/Components/" + item.Content.ContentType.Alias;
+                try
+                {
+                    @await Html.PartialAsync(partialViewName, item)
+                }
+                catch (InvalidOperationException)
+                {
+                    <p>
+                        <strong>Could not render component of type: @(item.Content.ContentType.Alias)</strong>
+                        <br/>
+                        This likely happened because the partial view <em>@partialViewName</em> could not be found.
+                    </p>
+                }
++                }
+            }
+        </div>
+```
+
+
 All of these extensions can be found in the namespace `Umbraco.Community.BlockPreview.Extensions`. This ensures that the grid editors correctly load in the back office.
 
 ## Preview mode
