@@ -193,3 +193,57 @@ builder.Services.AddUnique<IBlockPreviewRequestEnricher, BlockPreviewRequestEnri
 - `contentUdi` - The UDI of the content element
 - `settingsUdi` - The UDI of the settings element (if applicable)
 - `blockIndex` - The index of the block in the list/grid (if applicable)
+
+## Response Enricher
+The `IBlockPreviewResponseEnricher` interface allows you to modify the rendered preview markup, before they are sent to the backoffice. This is useful for:
+- Adding additional information to the previews
+- Add backoffice specific styling in general
+
+**Example: Adding Content Type name to the preview**
+
+```cs
+using Umbraco.Community.BlockPreview.Interfaces;
+
+public class BlockPreviewResponseEnricher : IBlockPreviewResponseEnricher
+{
+    public Task<string> EnrichAsync(
+        string markup,
+        HttpContext httpContext,
+        IPublishedContent? content,
+        string? blockEditorAlias = null,
+        string? contentElementAlias = null,
+        string? contentUdi = null,
+        string? settingsUdi = null,
+        int? blockIndex = null
+    )
+    {
+        return Task.FromResult(
+            $"<div>Content Type Alias: {contentElementAlias}</div>{markup}"
+        );
+    }
+}
+```
+
+Register your enricher in `Program.cs`:
+```cs
+builder.CreateUmbracoBuilder()
+    .AddBackOffice()
+    .AddWebsite()
+    .AddDeliveryApi()
+    .AddComposers()
+    .AddBlockPreview(options => { /* configure options */ })
+    .Build();
+
+// Register custom enricher (must be after AddBlockPreview)
+builder.Services.AddUnique<IBlockPreviewResponseEnricher, BlockPreviewResponseEnricher>(ServiceLifetime.Scoped);
+```
+
+**Available parameters:**
+- `markup` - The markup rendered by the `BlockPreviewService`
+- `httpContext` - The current HTTP context
+- `content` - The published content being edited
+- `blockEditorAlias` - The alias of the block editor property
+- `contentElementAlias` - The content type alias of the block element
+- `contentUdi` - The UDI of the content element
+- `settingsUdi` - The UDI of the settings element (if applicable)
+- `blockIndex` - The index of the block in the list/grid (if applicable)
