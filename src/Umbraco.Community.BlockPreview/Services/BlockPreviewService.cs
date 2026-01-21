@@ -747,7 +747,13 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private async Task<string> GetMarkup(BlockPreviewContext context)
         {
-            var viewComponent = _viewComponentSelector.SelectComponent(context.ContentAlias?.ToPascalCase());
+            // If using a View Component we dont know if it has been setup with a First Upper Case Letter name or a Camel Case name.  This code checks for both so that View Components are resolved in both cases.  
+            var viewComponent = _viewComponentSelector.SelectComponent(context.ContentAlias?.ToFirstUpper());
+
+            if (viewComponent == null)
+            {
+                viewComponent = _viewComponentSelector.SelectComponent(context.ContentAlias?.ToCamelCase());
+            }
 
             return viewComponent != null
                 ? await GetMarkupFromViewComponent(viewComponent, context)
