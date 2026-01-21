@@ -53,7 +53,7 @@ export class BlockListPreviewCustomView
     @state()
     private _error: string | null = null;
 
-    private _styleElement?: HTMLLinkElement;
+    private _styleElements: HTMLLinkElement[] = [];
 
     private _previewTimeout: number | undefined;
 
@@ -119,7 +119,6 @@ export class BlockListPreviewCustomView
 
     async #setupContextObservers() {
         this.#observeSortMode();
-        this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
         await this.#observeDocumentWorkspace();
     }
@@ -128,16 +127,6 @@ export class BlockListPreviewCustomView
         this.observe(this.#blockPreviewContext?.sortModeActive, (isActive) => {
             if (isActive !== undefined) {
                 this._sortModeActive = isActive;
-            }
-        });
-    }
-
-    #observeBlockPreviewSettings() {
-        this.observe(this.#blockPreviewContext?.settings, (settings) => {
-            if (settings?.blockList?.stylesheet) {
-                this._styleElement = document.createElement('link');
-                this._styleElement.rel = 'stylesheet';
-                this._styleElement.href = settings.blockList.stylesheet as string;
             }
         });
     }
@@ -168,6 +157,20 @@ export class BlockListPreviewCustomView
                         this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
+                        const { data } = await BlockPreviewService.getListStylesheets({
+                            query: {
+                                documentTypeUnique: this._blockContext.documentTypeUnique,
+                                nodeKey: this._blockContext.unique
+                            }
+                        });
+                        if(data && data.length > 0) {
+                            this._styleElements = data.map(href => {
+                                const link = document.createElement('link');
+                                link.rel = 'stylesheet';
+                                link.href = href;
+                                return link;
+                            });
+                        }
                     }
                 );
             });
@@ -175,10 +178,29 @@ export class BlockListPreviewCustomView
             if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
                 this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
                     if (context) {
-                        this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                        this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
+                            // Try to get unique from context, then fallback to extraction
                             this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
+                            if (!this._blockContext.unique && this._blockContext.workspaceEditContentPath) {
+                                this._blockContext.unique = this.#extractUniqueFromWorkspacePath(this._blockContext.workspaceEditContentPath);
+                            }
+
                             this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
                             this.#observeBlockValue();
+                            const { data } = await BlockPreviewService.getListStylesheets({
+                                query: {
+                                    documentTypeUnique: this._blockContext.documentTypeUnique,
+                                    nodeKey: this._blockContext.unique
+                                }
+                            });
+                            if(data && data.length > 0) {
+                                this._styleElements = data.map(href => {
+                                    const link = document.createElement('link');
+                                    link.rel = 'stylesheet';
+                                    link.href = href;
+                                    return link;
+                                });
+                            }
                         });
                     }
                 });
@@ -255,12 +277,19 @@ export class BlockListPreviewCustomView
 
     async #renderBlockPreview() {
         const context = this._blockContext;
+
+        // Try to get unique from context, then fallback to extraction
         if (this.#blockPreviewContext != null && context.unique == '') {
             context.unique = this.#blockPreviewContext.getUnique();
+            if (!context.unique && context.workspaceEditContentPath) {
+                context.unique = this.#extractUniqueFromWorkspacePath(context.workspaceEditContentPath);
+            }
         }
+
         if (this.#blockPreviewContext != null && context.documentTypeUnique == '') {
             context.documentTypeUnique = this.#blockPreviewContext.getDocumentTypeUnique();
         }
+
         const isDataValid = this.#validatePreviewData(context);
 
         if (!isDataValid) {
@@ -308,6 +337,13 @@ export class BlockListPreviewCustomView
             context.contentUdi != '' &&
             context.contentElementTypeAlias != ''
         );
+    }
+
+    #extractUniqueFromWorkspacePath(path: string): string {
+        // Extract the document unique from the workspace edit path
+        // Pattern: /workspace/document/edit/{unique}/
+        const match = path.match(/\/workspace\/document\/edit\/([a-f0-9-]{36})/i);
+        return match ? match[1] : '';
     }
 
     _handleClick(event: PointerEvent) {
@@ -370,8 +406,8 @@ export class BlockListPreviewCustomView
 
             if (this._htmlMarkup) {
                 return html`
-                    ${this._styleElement}
-                    <a 
+                    ${this._styleElements}
+                    <a
                         href=${ifDefined(this._blockContext.workspaceEditContentPath)}
                         @click=${this._handleClick}
                         aria-label="Edit block"
@@ -398,57 +434,63 @@ export class BlockListPreviewCustomView
 
     static styles = [
         css`
-        a.block-preview-edit {
-          display: block;
-          color: inherit;
-          text-decoration: inherit;
-          border: 1px solid transparent;
-          border-radius: 2px;
-        }
+            :host {
+                display: block;
+                height: 100%;
+            }
 
-        a.block-preview-edit:hover {
-            border-color: var(--uui-color-interactive-emphasis, #3544b1);
-        }
+            a.block-preview-edit {
+              display: block;
+              height: 100%;
+              color: inherit;
+              text-decoration: inherit;
+              border: 1px solid transparent;
+              border-radius: 2px;
+            }
 
-        .preview-alert {
-            background-color: var(--uui-color-danger, #f0ac00);
-            border: 1px solid transparent;
-            border-radius: 0;
-            margin-bottom: 20px;
-            padding: 8px 35px 8px 14px;
-            position: relative;
+            a.block-preview-edit:hover {
+                border-color: var(--uui-color-interactive-emphasis, #3544b1);
+            }
 
-            &, a, h4 {
+            .preview-alert {
+                background-color: var(--uui-color-danger, #f0ac00);
+                border: 1px solid transparent;
+                border-radius: 0;
+                margin-bottom: 20px;
+                padding: 8px 35px 8px 14px;
+                position: relative;
+
+                &, a, h4 {
+                    color: #fff;
+                }
+
+                pre {
+                    white-space: normal;
+                }
+
+                uui-loader {
+                    margin-right: 16px;
+                }
+            }
+
+            .preview-alert-warning {
+                background-color: var(--uui-color-warning, #f0ac00);
+                border-color: transparent;
+                color: #000;
+            }
+
+            .preview-alert-info {
+                background-color: var(--uui-color-default, #3544b1);
+                border-color: transparent;
                 color: #fff;
             }
 
-            pre {
-                white-space: normal;
+            .preview-alert-danger, .preview-alert-error {
+                background-color: var(--uui-color-danger, #f0ac00);
+                border-color: transparent;
+                color: #fff;
             }
-
-            uui-loader {
-                margin-right: 16px;
-            }
-        }
-
-        .preview-alert-warning {
-            background-color: var(--uui-color-warning, #f0ac00);
-            border-color: transparent;
-            color: #000;
-        }
-
-        .preview-alert-info {
-            background-color: var(--uui-color-default, #3544b1);
-            border-color: transparent;
-            color: #fff;
-        }
-
-        .preview-alert-danger, .preview-alert-error {
-            background-color: var(--uui-color-danger, #f0ac00);
-            border-color: transparent;
-            color: #fff;
-        }
-    `
+        `
     ]
 }
 

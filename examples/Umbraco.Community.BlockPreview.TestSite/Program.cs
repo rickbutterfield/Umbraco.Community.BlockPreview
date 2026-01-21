@@ -1,4 +1,6 @@
 using Umbraco.Community.BlockPreview.Extensions;
+using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.TestSite.Services;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -12,20 +14,24 @@ builder.CreateUmbracoBuilder()
         options.BlockGrid = new()
         {
             Enabled = true,
-            Stylesheet = "/css/myblockgridlayout.css"
+            Stylesheets = ["/css/myblockgridlayout.css"]
         };
         options.BlockList = new()
         {
             Enabled = true,
-            Stylesheet = "/css/myblockgridlayout.css"
+            Stylesheets = ["/css/myblockgridlayout.css"]
         };
         options.RichText = new()
         {
             Enabled = true,
-            Stylesheet = "/css/myblockgridlayout.css"
+            Stylesheets = ["/css/myblockgridlayout.css"]
         };
     })
     .Build();
+
+builder.Services.AddUnique<IBlockPreviewService, CustomBlockPreviewService>(ServiceLifetime.Scoped);
+builder.Services.AddUnique<IBlockPreviewRequestEnricher, BlockPreviewRequestEnricher>(ServiceLifetime.Scoped);
+builder.Services.AddUnique<IBlockPreviewResponseEnricher, BlockPreviewResponseEnricher>(ServiceLifetime.Scoped);
 
 WebApplication app = builder.Build();
 

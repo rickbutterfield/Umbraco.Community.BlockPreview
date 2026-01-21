@@ -5,42 +5,42 @@ using System.Text.Json.Serialization;
 
 namespace Umbraco.Community.BlockPreview.SchemaGenerator
 {
-    internal class BlockPreviewSchemaGenerator
+  internal class BlockPreviewSchemaGenerator
+  {
+    private readonly JsonSchemaGenerator _schemaGenerator;
+
+    public BlockPreviewSchemaGenerator()
+        => _schemaGenerator = new JsonSchemaGenerator(new BlockPreviewSchemaGeneratorSettings());
+
+    public string Generate()
     {
-        private readonly JsonSchemaGenerator _schemaGenerator;
-
-        public BlockPreviewSchemaGenerator()
-            => _schemaGenerator = new JsonSchemaGenerator(new BlockPreviewSchemaGeneratorSettings());
-
-        public string Generate()
-        {
-            var blockPreviewSchema = GenerateBlockPreviewSchema();
-            return blockPreviewSchema.ToString();
-        }
-
-        private JsonObject GenerateBlockPreviewSchema()
-        {
-            var schema = _schemaGenerator.Generate(typeof(AppSettings));
-            return JsonSerializer.Deserialize<JsonObject>(schema.ToJson());
-        }
+      var blockPreviewSchema = GenerateBlockPreviewSchema();
+      return blockPreviewSchema.ToString();
     }
 
-    internal class BlockPreviewSchemaGeneratorSettings : SystemTextJsonSchemaGeneratorSettings
+    private JsonObject GenerateBlockPreviewSchema()
     {
-        public BlockPreviewSchemaGeneratorSettings()
-        {
-            AlwaysAllowAdditionalObjectProperties = true;
-            SerializerOptions = new JsonSerializerOptions();
-            DefaultReferenceTypeNullHandling = ReferenceTypeNullHandling.NotNull;
-            SchemaNameGenerator = new NamespacePrefixedSchemaNameGenerator();
-            SerializerOptions.Converters.Add(new JsonStringEnumConverter());
-            IgnoreObsoleteProperties = true;
-            GenerateExamples = true;
-        }
+      var schema = _schemaGenerator.Generate(typeof(AppSettings));
+      return JsonSerializer.Deserialize<JsonObject>(schema.ToJson());
     }
+  }
 
-    internal class NamespacePrefixedSchemaNameGenerator : DefaultSchemaNameGenerator
+  internal class BlockPreviewSchemaGeneratorSettings : SystemTextJsonSchemaGeneratorSettings
+  {
+    public BlockPreviewSchemaGeneratorSettings()
     {
-        public override string Generate(Type type) => type.Namespace.Replace(".", string.Empty) + base.Generate(type);
+      AlwaysAllowAdditionalObjectProperties = true;
+      SerializerOptions = new JsonSerializerOptions();
+      DefaultReferenceTypeNullHandling = ReferenceTypeNullHandling.NotNull;
+      SchemaNameGenerator = new NamespacePrefixedSchemaNameGenerator();
+      SerializerOptions.Converters.Add(new JsonStringEnumConverter());
+      IgnoreObsoleteProperties = true;
+      GenerateExamples = true;
     }
+  }
+
+  internal class NamespacePrefixedSchemaNameGenerator : DefaultSchemaNameGenerator
+  {
+    public override string Generate(Type type) => type.Namespace.Replace(".", string.Empty) + base.Generate(type);
+  }
 }

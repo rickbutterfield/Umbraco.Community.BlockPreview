@@ -1,8 +1,8 @@
 ﻿@inherits UmbracoViewPage<RichTextBlockItem<HeroBlock>>
 @{
-    var backgroundColor = Model.Content.BackgroundColor;
-    var image = Model.Content.Image;
-    var hasBrightContrast = Model.Content.Contrast == "#ffffff";
+    var backgroundColor = Model.Content?.BackgroundColor;
+    var image = Model.Content?.Image;
+    var hasBrightContrast = Model.Content?.Contrast == "#ffffff";
 }
 
 
@@ -18,7 +18,7 @@
 
     
     <div class="hero-content">
-        <h1>@Model.Content.Headline</h1>
+        <h1>@Model.Content?.Headline</h1>
     </div>
 </div>
     

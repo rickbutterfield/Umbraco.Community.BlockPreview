@@ -2,8 +2,8 @@
 @inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage<Umbraco.Cms.Core.Models.Blocks.BlockGridItem<InspirationBlock, SectionSettingsBlock>>
 @using ContentModels = Umbraco.Cms.Web.Common.PublishedModels;
 @{
-    var backgroundColor = Model.Settings.BackgroundColor;
-    var hasBrightContrast = Model.Settings.Contrast == "#ffffff";
+    var backgroundColor = Model.Settings?.BackgroundColor;
+    var hasBrightContrast = Model.Settings?.Contrast == "#ffffff";
 }
 
 <section 
