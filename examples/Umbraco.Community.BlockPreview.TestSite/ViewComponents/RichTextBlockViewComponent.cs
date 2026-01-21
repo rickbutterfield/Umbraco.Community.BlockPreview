@@ -4,7 +4,9 @@ using Umbraco.Cms.Web.Common.PublishedModels;
 
 namespace Umbraco.Community.BlockPreview.TestSite.ViewComponents
 {
-    // Example of a View Component with its name defined using the Models constant in the camel case format
+    /// <summary>
+    /// Example ViewComponent using a strongly typed camelCase naming convention.
+    /// </summary>
     [ViewComponent(Name = RichTextBlock.ModelTypeAlias)]
     public class RichTextBlockViewComponent : ViewComponent
     {

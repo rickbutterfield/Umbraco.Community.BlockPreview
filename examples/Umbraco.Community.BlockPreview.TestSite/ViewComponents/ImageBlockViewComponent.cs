@@ -4,7 +4,9 @@ using Umbraco.Cms.Web.Common.PublishedModels;
 
 namespace Umbraco.Community.BlockPreview.TestSite.ViewComponents
 {
-    // Example of a View Component with its name in the default First Letter Uppercase format 
+    /// <summary>
+    /// Example ViewComponent using a weakly typed PascalCase naming convention.
+    /// </summary>
     [ViewComponent(Name = "ImageBlock")]
     public class ImageBlockViewComponent : ViewComponent
     {
