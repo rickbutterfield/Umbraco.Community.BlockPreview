@@ -1,11 +1,11 @@
 ﻿<Project Sdk="Microsoft.VisualStudio.JavaScript.Sdk/1.0.3498087">
-    <PropertyGroup>
-        <ResolveNuGetPackages>false</ResolveNuGetPackages>
-        <IsPackable>false</IsPackable>
-        <EnablePackageValidation>false</EnablePackageValidation>
-        <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
-        <ShouldRunBuildScript>false</ShouldRunBuildScript>
-        <StaticWebAssetSourceId>Umbraco.Community.BlockPreview</StaticWebAssetSourceId>
-        <DebugAssetsDirectory>$(MSBuildProjectDirectory)\dist</DebugAssetsDirectory>
-    </PropertyGroup>
+  <PropertyGroup>
+    <ResolveNuGetPackages>false</ResolveNuGetPackages>
+    <IsPackable>false</IsPackable>
+    <EnablePackageValidation>false</EnablePackageValidation>
+    <ShouldRunNpmInstall>false</ShouldRunNpmInstall>
+    <ShouldRunBuildScript>false</ShouldRunBuildScript>
+    <StaticWebAssetSourceId>Umbraco.Community.BlockPreview</StaticWebAssetSourceId>
+    <DebugAssetsDirectory>$(MSBuildProjectDirectory)\dist</DebugAssetsDirectory>
+  </PropertyGroup>
 </Project>

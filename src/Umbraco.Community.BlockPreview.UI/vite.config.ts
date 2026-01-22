@@ -57,7 +57,6 @@ export default defineConfig({
             onwarn: () => { },
             output: {
                 entryFileNames: '[name].js',
-                chunkFileNames: '[name]-[hash].js',
             },
         },
     },
