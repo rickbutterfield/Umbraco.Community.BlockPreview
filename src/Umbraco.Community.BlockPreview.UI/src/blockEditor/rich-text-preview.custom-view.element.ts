@@ -43,7 +43,7 @@ export class RichTextPreviewCustomView
     @state()
     private _error: string | null = null;
 
-    private _styleElement?: HTMLLinkElement;
+    private _styleElements: HTMLLinkElement[] = [];
 
     private _previewTimeout: number | undefined;
 
@@ -109,13 +109,7 @@ export class RichTextPreviewCustomView
     }
 
     #observeBlockPreviewSettings() {
-        this.observe(this.#blockPreviewContext?.settings, (settings) => {
-            if (settings?.richText?.stylesheet) {
-                this._styleElement = document.createElement('link');
-                this._styleElement.rel = 'stylesheet';
-                this._styleElement.href = settings.richText.stylesheet as string;
-            }
-        });
+        // No longer needed - stylesheets are fetched via API endpoint
     }
 
     #observePropertyDataset() {
@@ -139,15 +133,30 @@ export class RichTextPreviewCustomView
                         this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
+                        
+                        const { data } = await BlockPreviewService.getRteStylesheets({
+                            query: {
+                                documentTypeUnique: this._blockContext.documentTypeUnique,
+                                nodeKey: this._blockContext.unique
+                            }
+                        });
+                        if(data && data.length > 0) {
+                            this._styleElements = data.map(href => {
+                                const link = document.createElement('link');
+                                link.rel = 'stylesheet';
+                                link.href = href;
+                                return link;
+                            });
+                        }
                     }
                 );
             }
         });
 
         if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
-            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async (context) => {
                 if (context) {
-                    this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                    this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
                         // Try to get unique from context, then fallback to extraction
                         this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
                         if (!this._blockContext.unique && this._blockContext.workspaceEditContentPath) {
@@ -156,6 +165,21 @@ export class RichTextPreviewCustomView
 
                         this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
                         this.#observeBlockValue();
+                        
+                        const { data } = await BlockPreviewService.getRteStylesheets({
+                            query: {
+                                documentTypeUnique: this._blockContext.documentTypeUnique,
+                                nodeKey: this._blockContext.unique
+                            }
+                        });
+                        if(data && data.length > 0) {
+                            this._styleElements = data.map(href => {
+                                const link = document.createElement('link');
+                                link.rel = 'stylesheet';
+                                link.href = href;
+                                return link;
+                            });
+                        }
                     });
                 }
             });
@@ -337,7 +361,7 @@ export class RichTextPreviewCustomView
 
         if (this._htmlMarkup) {
             return html`
-                ${this._styleElement}
+                ${this._styleElements}
                 <a
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)}
                     @click=${this._handleClick}

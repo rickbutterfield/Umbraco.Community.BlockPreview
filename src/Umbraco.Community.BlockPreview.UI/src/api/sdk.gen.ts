@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetGridStylesheetData, GetGridStylesheetErrors, GetGridStylesheetResponses, GetGridStylesheetsData, GetGridStylesheetsErrors, GetGridStylesheetsResponses, GetListStylesheetData, GetListStylesheetErrors, GetListStylesheetResponses, GetListStylesheetsData, GetListStylesheetsErrors, GetListStylesheetsResponses, GetSettingsData, GetSettingsResponses, PreviewGridBlockData, PreviewGridBlockResponses, PreviewListBlockData, PreviewListBlockResponses, PreviewRichTextMarkupData, PreviewRichTextMarkupResponses } from './types.gen';
+import type { GetGridStylesheetData, GetGridStylesheetErrors, GetGridStylesheetResponses, GetGridStylesheetsData, GetGridStylesheetsErrors, GetGridStylesheetsResponses, GetListStylesheetData, GetListStylesheetErrors, GetListStylesheetResponses, GetListStylesheetsData, GetListStylesheetsErrors, GetListStylesheetsResponses, GetRteStylesheetData, GetRteStylesheetErrors, GetRteStylesheetResponses, GetRteStylesheetsData, GetRteStylesheetsErrors, GetRteStylesheetsResponses, GetSettingsData, GetSettingsResponses, PreviewGridBlockData, PreviewGridBlockResponses, PreviewListBlockData, PreviewListBlockResponses, PreviewRichTextMarkupData, PreviewRichTextMarkupResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -83,6 +83,23 @@ export class BlockPreviewService {
                 'Content-Type': 'application/json',
                 ...options?.headers
             }
+        });
+    }
+    
+    /**
+     * @deprecated Use getRteStylesheets instead to support multiple stylesheets
+     */
+    public static getRteStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetRteStylesheetData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetRteStylesheetResponses, GetRteStylesheetErrors, ThrowOnError>({
+            url: '/umbraco/block-preview/api/v1/preview/rte/stylesheet',
+            ...options
+        });
+    }
+
+    public static getRteStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetRteStylesheetsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetRteStylesheetsResponses, GetRteStylesheetsErrors, ThrowOnError>({
+            url: '/umbraco/block-preview/api/v1/preview/rte/stylesheets',
+            ...options
         });
     }
     

@@ -212,6 +212,58 @@ export type PreviewRichTextMarkupResponses = {
 
 export type PreviewRichTextMarkupResponse = PreviewRichTextMarkupResponses[keyof PreviewRichTextMarkupResponses];
 
+export type GetRteStylesheetData = {
+    body?: never;
+    path?: never;
+    query?: {
+        nodeKey?: string;
+        documentTypeUnique?: string;
+    };
+    url: '/umbraco/block-preview/api/v1/preview/rte/stylesheet';
+};
+
+export type GetRteStylesheetErrors = {
+    /**
+     * Not Found
+     */
+    404: unknown;
+};
+
+export type GetRteStylesheetResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type GetRteStylesheetResponse = GetRteStylesheetResponses[keyof GetRteStylesheetResponses];
+
+export type GetRteStylesheetsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        nodeKey?: string;
+        documentTypeUnique?: string;
+    };
+    url: '/umbraco/block-preview/api/v1/preview/rte/stylesheets';
+};
+
+export type GetRteStylesheetsErrors = {
+    /**
+     * Not Found
+     */
+    404: unknown;
+};
+
+export type GetRteStylesheetsResponses = {
+    /**
+     * OK
+     */
+    200: Array<string>;
+};
+
+export type GetRteStylesheetsResponse = GetRteStylesheetsResponses[keyof GetRteStylesheetsResponses];
+
 export type GetSettingsData = {
     body?: never;
     path?: never;
