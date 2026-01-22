@@ -134,20 +134,7 @@ export class RichTextPreviewCustomView
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
                         
-                        const { data } = await BlockPreviewService.getRteStylesheets({
-                            query: {
-                                documentTypeUnique: this._blockContext.documentTypeUnique,
-                                nodeKey: this._blockContext.unique
-                            }
-                        });
-                        if(data && data.length > 0) {
-                            this._styleElements = data.map(href => {
-                                const link = document.createElement('link');
-                                link.rel = 'stylesheet';
-                                link.href = href;
-                                return link;
-                            });
-                        }
+                        await this.#loadStylesheets(this._blockContext.documentTypeUnique, this._blockContext.unique);
                     }
                 );
             }
@@ -166,20 +153,7 @@ export class RichTextPreviewCustomView
                         this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
                         this.#observeBlockValue();
                         
-                        const { data } = await BlockPreviewService.getRteStylesheets({
-                            query: {
-                                documentTypeUnique: this._blockContext.documentTypeUnique,
-                                nodeKey: this._blockContext.unique
-                            }
-                        });
-                        if(data && data.length > 0) {
-                            this._styleElements = data.map(href => {
-                                const link = document.createElement('link');
-                                link.rel = 'stylesheet';
-                                link.href = href;
-                                return link;
-                            });
-                        }
+                        await this.#loadStylesheets(this._blockContext.documentTypeUnique, this._blockContext.unique);
                     });
                 }
             });
@@ -316,6 +290,28 @@ export class RichTextPreviewCustomView
         // Pattern: /workspace/document/edit/{unique}/
         const match = path.match(/\/workspace\/document\/edit\/([a-f0-9-]{36})/i);
         return match ? match[1] : '';
+    }
+
+    async #loadStylesheets(documentTypeUnique: string, nodeKey: string): Promise<void> {
+        try {
+            const { data } = await BlockPreviewService.getRteStylesheets({
+                query: {
+                    documentTypeUnique,
+                    nodeKey
+                }
+            });
+            if (data && data.length > 0) {
+                this._styleElements = data.map(href => {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = href;
+                    return link;
+                });
+            }
+        } catch (error) {
+            // Stylesheet loading is optional - log error but don't break preview
+            console.warn('Failed to load stylesheets for RTE preview:', error);
+        }
     }
 
     _handleClick(event: PointerEvent) {
