@@ -396,9 +396,3 @@ FodyWeavers.xsd
 
 # Claude
 .claude/settings.local.json
-
-# Generated schema files
-src/Umbraco.Community.BlockPreview/appsettings-schema.BlockPreview.json
-
-# Build artifacts
-src/Umbraco.Community.BlockPreview.UI/obj/
