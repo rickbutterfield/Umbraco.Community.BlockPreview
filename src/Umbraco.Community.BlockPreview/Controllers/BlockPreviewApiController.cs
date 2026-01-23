@@ -472,6 +472,61 @@ namespace Umbraco.Community.BlockPreview.Controllers
             }
             return Ok(stylesheetPaths);
         }
+
+        /// <summary>
+        /// Retrieves the stylesheet path for a rich text block preview.
+        /// </summary>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
+        /// <returns>The stylesheet path if configured; otherwise, a 404 response.</returns>
+        [Obsolete("Use GetRteStylesheets instead to support multiple stylesheets.")]
+        [HttpGet("preview/rte/stylesheet")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetRteStylesheet(
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+#pragma warning disable CS0618 // Type or member is obsolete
+            String? stylesheetPath = await _blockPreviewService.GetStylesheetPath(BlockType.RichText, content!, ControllerContext);
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            if (string.IsNullOrWhiteSpace(stylesheetPath))
+            {
+                return NotFound("Stylesheet path is not configured.");
+            }
+            return Ok(stylesheetPath);
+        }
+
+        /// <summary>
+        /// Retrieves the stylesheet paths for a rich text block preview.
+        /// </summary>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
+        /// <returns>A list of stylesheet paths if configured; otherwise, a 404 response.</returns>
+        [HttpGet("preview/rte/stylesheets")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<IActionResult> GetRteStylesheets(
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+            IEnumerable<string>? stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.RichText, content!, ControllerContext);
+
+            if (stylesheetPaths == null || !stylesheetPaths.Any())
+            {
+                return NotFound("Stylesheet paths are not configured.");
+            }
+            return Ok(stylesheetPaths);
+        }
         #endregion
 
         #region Private
