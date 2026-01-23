@@ -218,3 +218,56 @@ options.BlockGrid = new()
 ```
 
 > **Note:** The deprecated `Stylesheet` property still works for backwards compatibility. If both `Stylesheet` and `Stylesheets` are configured, all stylesheets are combined (with duplicates removed).
+
+## Razor Class Library (RCL) Support
+
+BlockPreview works seamlessly with views hosted in Razor Class Libraries (RCLs). If you've configured a custom `IViewLocationExpander` for your RCL views, the same expander will be used for previews in the backoffice.
+
+### How It Works
+
+BlockPreview uses the standard ASP.NET Core Razor view engine and adds its own `IViewLocationExpander` to support custom view locations. This means:
+
+- Any existing `IViewLocationExpander` implementations you've registered are respected
+- Views embedded in RCLs are discovered automatically
+- No additional configuration is required for RCL support
+
+### Example RCL Setup
+
+If your blocks are in an RCL with views at `/Views/Partials/blocklist/Components/`:
+
+1. Ensure your RCL project has views configured for embedding (this is the default for RCL projects)
+2. Register your view location expander as normal in your main project
+3. BlockPreview will automatically discover and render these views
+
+```csharp
+// Example: Custom view location expander for an RCL
+public class MyRclViewLocationExpander : IViewLocationExpander
+{
+    public void PopulateValues(ViewLocationExpanderContext context) { }
+
+    public IEnumerable<string> ExpandViewLocations(
+        ViewLocationExpanderContext context,
+        IEnumerable<string> viewLocations)
+    {
+        // Add your RCL view locations
+        return viewLocations.Concat(new[]
+        {
+            "/Views/Partials/blockgrid/Components/{0}.cshtml",
+            "/Views/Partials/blocklist/Components/{0}.cshtml"
+        });
+    }
+}
+```
+
+Alternatively, you can use the `ViewLocations` configuration option to specify custom paths without creating an expander:
+
+```json
+{
+  "BlockPreview": {
+    "BlockGrid": {
+      "Enabled": true,
+      "ViewLocations": ["/Views/MyRcl/BlockGrid/{0}.cshtml"]
+    }
+  }
+}
+```
