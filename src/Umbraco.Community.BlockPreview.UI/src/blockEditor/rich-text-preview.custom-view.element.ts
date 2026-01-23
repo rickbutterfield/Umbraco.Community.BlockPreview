@@ -47,6 +47,8 @@ export class RichTextPreviewCustomView
 
     private _previewTimeout: number | undefined;
 
+    private _isConnected: boolean = false;
+
     private _blockContext = {
         unique: '',
         documentTypeUnique: '',
@@ -87,6 +89,20 @@ export class RichTextPreviewCustomView
             this.#blockPreviewContext = context;
             this.#setupContextObservers();
         });
+    }
+
+    override connectedCallback() {
+        super.connectedCallback();
+        this._isConnected = true;
+    }
+
+    override disconnectedCallback() {
+        super.disconnectedCallback();
+        this._isConnected = false;
+        if (this._previewTimeout) {
+            clearTimeout(this._previewTimeout);
+            this._previewTimeout = undefined;
+        }
     }
 
     protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
@@ -133,10 +149,15 @@ export class RichTextPreviewCustomView
                 this.observe(
                     observeMultiple([context.unique, context.contentTypeUnique]),
                     async ([unique, documentTypeUnique]) => {
+                        // Early exit if disconnected or missing required data
+                        if (!this._isConnected || !documentTypeUnique) {
+                            return;
+                        }
+
                         this._blockContext.unique = unique?.toString() ?? '';
                         this.#blockPreviewContext?.setUnique(this._blockContext.unique);
 
-                        this._blockContext.documentTypeUnique = documentTypeUnique ?? '';
+                        this._blockContext.documentTypeUnique = documentTypeUnique;
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
                     }
@@ -148,13 +169,20 @@ export class RichTextPreviewCustomView
             this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
                 if (context) {
                     this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                        const documentTypeUnique = contentTypeUniques[0];
+
+                        // Early exit if disconnected or missing required data
+                        if (!this._isConnected || !documentTypeUnique) {
+                            return;
+                        }
+
                         // Try to get unique from context, then fallback to extraction
                         this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
                         if (!this._blockContext.unique && this._blockContext.workspaceEditContentPath) {
                             this._blockContext.unique = this.#extractUniqueFromWorkspacePath(this._blockContext.workspaceEditContentPath);
                         }
 
-                        this._blockContext.documentTypeUnique = contentTypeUniques[0] ?? '';
+                        this._blockContext.documentTypeUnique = documentTypeUnique;
                         this.#observeBlockValue();
                     });
                 }
@@ -227,6 +255,10 @@ export class RichTextPreviewCustomView
 
 
     async #renderBlockPreview() {
+        if (!this._isConnected) {
+            return;
+        }
+
         const context = this._blockContext;
 
         // Try to get unique from context, then fallback to extraction
