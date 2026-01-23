@@ -2,7 +2,7 @@
 
 import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
-import type { GetGridStylesheetData, GetGridStylesheetErrors, GetGridStylesheetResponses, GetGridStylesheetsData, GetGridStylesheetsErrors, GetGridStylesheetsResponses, GetListStylesheetData, GetListStylesheetErrors, GetListStylesheetResponses, GetListStylesheetsData, GetListStylesheetsErrors, GetListStylesheetsResponses, GetSettingsData, GetSettingsResponses, PreviewGridBlockData, PreviewGridBlockResponses, PreviewListBlockData, PreviewListBlockResponses, PreviewRichTextMarkupData, PreviewRichTextMarkupResponses } from './types.gen';
+import type { GetGridStylesheetData, GetGridStylesheetErrors, GetGridStylesheetResponses, GetGridStylesheetsData, GetGridStylesheetsErrors, GetGridStylesheetsResponses, GetListStylesheetData, GetListStylesheetErrors, GetListStylesheetResponses, GetListStylesheetsData, GetListStylesheetsErrors, GetListStylesheetsResponses, GetRteStylesheetData, GetRteStylesheetErrors, GetRteStylesheetResponses, GetRteStylesheetsData, GetRteStylesheetsErrors, GetRteStylesheetsResponses, GetSettingsData, GetSettingsResponses, PreviewGridBlockData, PreviewGridBlockResponses, PreviewListBlockData, PreviewListBlockResponses, PreviewRichTextMarkupData, PreviewRichTextMarkupResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -31,7 +31,7 @@ export class BlockPreviewService {
     }
     
     /**
-     * @deprecated Use getGridStylesheets instead to support multiple stylesheets
+     * @deprecated
      */
     public static getGridStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetGridStylesheetData, ThrowOnError>) {
         return (options?.client ?? client).get<GetGridStylesheetResponses, GetGridStylesheetErrors, ThrowOnError>({
@@ -39,7 +39,7 @@ export class BlockPreviewService {
             ...options
         });
     }
-
+    
     public static getGridStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetGridStylesheetsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetGridStylesheetsResponses, GetGridStylesheetsErrors, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/grid/stylesheets',
@@ -59,7 +59,7 @@ export class BlockPreviewService {
     }
     
     /**
-     * @deprecated Use getListStylesheets instead to support multiple stylesheets
+     * @deprecated
      */
     public static getListStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetListStylesheetData, ThrowOnError>) {
         return (options?.client ?? client).get<GetListStylesheetResponses, GetListStylesheetErrors, ThrowOnError>({
@@ -67,7 +67,7 @@ export class BlockPreviewService {
             ...options
         });
     }
-
+    
     public static getListStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetListStylesheetsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetListStylesheetsResponses, GetListStylesheetsErrors, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/list/stylesheets',
@@ -83,6 +83,23 @@ export class BlockPreviewService {
                 'Content-Type': 'application/json',
                 ...options?.headers
             }
+        });
+    }
+    
+    /**
+     * @deprecated
+     */
+    public static getRteStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetRteStylesheetData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetRteStylesheetResponses, GetRteStylesheetErrors, ThrowOnError>({
+            url: '/umbraco/block-preview/api/v1/preview/rte/stylesheet',
+            ...options
+        });
+    }
+    
+    public static getRteStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetRteStylesheetsData, ThrowOnError>) {
+        return (options?.client ?? client).get<GetRteStylesheetsResponses, GetRteStylesheetsErrors, ThrowOnError>({
+            url: '/umbraco/block-preview/api/v1/preview/rte/stylesheets',
+            ...options
         });
     }
     

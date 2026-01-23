@@ -43,7 +43,7 @@ export class RichTextPreviewCustomView
     @state()
     private _error: string | null = null;
 
-    private _styleElement?: HTMLLinkElement;
+    private _styleElements: HTMLLinkElement[] = [];
 
     private _previewTimeout: number | undefined;
 
@@ -119,19 +119,8 @@ export class RichTextPreviewCustomView
     }
 
     #setupContextObservers() {
-        this.#observeBlockPreviewSettings();
         this.#observePropertyDataset();
         this.#observeDocumentWorkspace();
-    }
-
-    #observeBlockPreviewSettings() {
-        this.observe(this.#blockPreviewContext?.settings, (settings) => {
-            if (settings?.richText?.stylesheet) {
-                this._styleElement = document.createElement('link');
-                this._styleElement.rel = 'stylesheet';
-                this._styleElement.href = settings.richText.stylesheet as string;
-            }
-        });
     }
 
     #observePropertyDataset() {
@@ -160,15 +149,30 @@ export class RichTextPreviewCustomView
                         this._blockContext.documentTypeUnique = documentTypeUnique;
                         this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
                         this.#observeBlockValue();
+
+                        const { data } = await tryExecute(this, BlockPreviewService.getRteStylesheets({
+                            query: {
+                                documentTypeUnique: this._blockContext.documentTypeUnique,
+                                nodeKey: this._blockContext.unique
+                            }
+                        }));
+                        if (data && data.length > 0) {
+                            this._styleElements = data.map(href => {
+                                const link = document.createElement('link');
+                                link.rel = 'stylesheet';
+                                link.href = href;
+                                return link;
+                            });
+                        }
                     }
                 );
             }
         });
 
         if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
-            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async (context) => {
                 if (context) {
-                    this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                    this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
                         const documentTypeUnique = contentTypeUniques[0];
 
                         // Early exit if disconnected or missing required data
@@ -184,6 +188,21 @@ export class RichTextPreviewCustomView
 
                         this._blockContext.documentTypeUnique = documentTypeUnique;
                         this.#observeBlockValue();
+
+                        const { data } = await tryExecute(this, BlockPreviewService.getRteStylesheets({
+                            query: {
+                                documentTypeUnique: this._blockContext.documentTypeUnique,
+                                nodeKey: this._blockContext.unique
+                            }
+                        }));
+                        if (data && data.length > 0) {
+                            this._styleElements = data.map(href => {
+                                const link = document.createElement('link');
+                                link.rel = 'stylesheet';
+                                link.href = href;
+                                return link;
+                            });
+                        }
                     });
                 }
             });
@@ -369,7 +388,7 @@ export class RichTextPreviewCustomView
 
         if (this._htmlMarkup) {
             return html`
-                ${this._styleElement}
+                ${this._styleElements}
                 <a
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)}
                     @click=${this._handleClick}
