@@ -16,7 +16,7 @@ export type BlockTypeSettings = {
     contentTypes?: Array<string> | null;
     ignoredContentTypes: Array<string>;
     /**
-     * @deprecated Use stylesheets instead
+     * @deprecated
      */
     stylesheet?: string | null;
     stylesheets?: Array<string> | null;

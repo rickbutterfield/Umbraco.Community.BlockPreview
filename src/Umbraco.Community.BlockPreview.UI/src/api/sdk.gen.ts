@@ -31,7 +31,7 @@ export class BlockPreviewService {
     }
     
     /**
-     * @deprecated Use getGridStylesheets instead to support multiple stylesheets
+     * @deprecated
      */
     public static getGridStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetGridStylesheetData, ThrowOnError>) {
         return (options?.client ?? client).get<GetGridStylesheetResponses, GetGridStylesheetErrors, ThrowOnError>({
@@ -39,7 +39,7 @@ export class BlockPreviewService {
             ...options
         });
     }
-
+    
     public static getGridStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetGridStylesheetsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetGridStylesheetsResponses, GetGridStylesheetsErrors, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/grid/stylesheets',
@@ -59,7 +59,7 @@ export class BlockPreviewService {
     }
     
     /**
-     * @deprecated Use getListStylesheets instead to support multiple stylesheets
+     * @deprecated
      */
     public static getListStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetListStylesheetData, ThrowOnError>) {
         return (options?.client ?? client).get<GetListStylesheetResponses, GetListStylesheetErrors, ThrowOnError>({
@@ -67,7 +67,7 @@ export class BlockPreviewService {
             ...options
         });
     }
-
+    
     public static getListStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetListStylesheetsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetListStylesheetsResponses, GetListStylesheetsErrors, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/list/stylesheets',
@@ -87,7 +87,7 @@ export class BlockPreviewService {
     }
     
     /**
-     * @deprecated Use getRteStylesheets instead to support multiple stylesheets
+     * @deprecated
      */
     public static getRteStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetRteStylesheetData, ThrowOnError>) {
         return (options?.client ?? client).get<GetRteStylesheetResponses, GetRteStylesheetErrors, ThrowOnError>({
@@ -95,7 +95,7 @@ export class BlockPreviewService {
             ...options
         });
     }
-
+    
     public static getRteStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetRteStylesheetsData, ThrowOnError>) {
         return (options?.client ?? client).get<GetRteStylesheetsResponses, GetRteStylesheetsErrors, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/rte/stylesheets',
