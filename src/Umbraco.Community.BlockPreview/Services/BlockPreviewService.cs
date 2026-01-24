@@ -60,6 +60,7 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly BlockEditorValues<RichTextBlockValue, RichTextBlockLayoutItem> _richTextBlockEditorValues;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
         private readonly ILogger<BlockPreviewService> _logger;
+        private readonly bool _hasModelFactory;
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
@@ -112,6 +113,7 @@ namespace Umbraco.Community.BlockPreview.Services
             _webHostEnvironment = webHostEnvironment;
             _runtimeCache = appCaches.RuntimeCache;
             _logger = logger;
+            _hasModelFactory = publishedModelFactory is not NoopPublishedModelFactory;
 
             _blockGridEditorValues = new BlockEditorValues<BlockGridValue, BlockGridLayoutItem>(new BlockGridEditorDataConverter(jsonSerializer), elementTypeCache, logger);
             _blockListEditorValues = new BlockEditorValues<BlockListValue, BlockListLayoutItem>(new BlockListEditorDataConverter(jsonSerializer), elementTypeCache, logger);
@@ -228,7 +230,7 @@ namespace Umbraco.Community.BlockPreview.Services
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
-                return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.NoGeneratedModels);
+                return GetNoModelsErrorMessage();
 
             BlockGridItem? blockInstance = CreateBlockInstance(
                 BlockType.BlockGrid,
@@ -337,7 +339,7 @@ namespace Umbraco.Community.BlockPreview.Services
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
-                return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.NoGeneratedModels);
+                return GetNoModelsErrorMessage();
 
             BlockListItem? blockInstance = CreateBlockInstance(
                 BlockType.BlockList,
@@ -397,7 +399,7 @@ namespace Umbraco.Community.BlockPreview.Services
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
-                return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.NoGeneratedModels);
+                return GetNoModelsErrorMessage();
 
             RichTextBlockItem? blockInstance = CreateBlockInstance(
                 BlockType.RichText,
@@ -495,6 +497,15 @@ namespace Umbraco.Community.BlockPreview.Services
 
             // GetModelType returns typeof(IPublishedElement) when no model exists
             return type == typeof(IPublishedElement) ? null : type;
+        }
+
+        private string GetNoModelsErrorMessage()
+        {
+            var errorMessage = _hasModelFactory
+                ? Constants.ErrorMessages.NoGeneratedModels
+                : Constants.ErrorMessages.ModelsNotConfigured;
+
+            return string.Format(Constants.ErrorMessages.WarningTemplate, errorMessage);
         }
 
         private IContentType? GetContentType(Guid documentTypeUnique)
