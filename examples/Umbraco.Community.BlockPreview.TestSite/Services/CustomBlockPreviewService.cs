@@ -36,8 +36,11 @@ namespace Umbraco.Community.BlockPreview.TestSite.Services
             IWebHostEnvironment webHostEnvironment,
             IBlockEditorElementTypeCache elementTypeCache,
             ILogger<BlockPreviewService> logger,
-            IBlockModelFactory blockModelFactory)
-        : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine, publishedModelFactory, blockEditorConverter, viewComponentSelector, publishedValueFallback, options, jsonSerializer, contentTypeService, dataTypeService, appCaches, webHostEnvironment, elementTypeCache, logger, blockModelFactory)
+            IBlockModelFactory blockModelFactory,
+            IBlockViewRenderer blockViewRenderer,
+            IBlockDataConverter blockDataConverter,
+            IBlockTypeCacheService blockTypeCacheService)
+        : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine, publishedModelFactory, blockEditorConverter, viewComponentSelector, publishedValueFallback, options, jsonSerializer, contentTypeService, dataTypeService, appCaches, webHostEnvironment, elementTypeCache, logger, blockModelFactory, blockViewRenderer, blockDataConverter, blockTypeCacheService)
         {
             _razorViewEngine = razorViewEngine;
             _webHostEnvironment = webHostEnvironment;
