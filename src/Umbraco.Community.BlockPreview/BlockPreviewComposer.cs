@@ -38,6 +38,7 @@ namespace Umbraco.Community.BlockPreview
 
             builder.Services.AddSingleton<IOperationIdHandler, CustomOperationIdHandler>();
 
+            builder.Services.AddScoped<IBlockModelFactory, BlockModelFactory>();
             builder.Services.AddScoped<IBlockPreviewService, BlockPreviewService>();
             builder.Services.AddScoped<IBlockPreviewRequestEnricher, NoopBlockPreviewRequestEnricher>();
             builder.Services.AddScoped<IBlockPreviewResponseEnricher, NoopBlockPreviewResponseEnricher>();
