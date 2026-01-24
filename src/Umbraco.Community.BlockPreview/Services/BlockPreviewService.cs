@@ -224,8 +224,8 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
-            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
+            Type? contentBlockType = FindBlockType(contentElement?.ContentType);
+            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
                 return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.NoGeneratedModels);
@@ -333,8 +333,8 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
-            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
+            Type? contentBlockType = FindBlockType(contentElement?.ContentType);
+            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
                 return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.NoGeneratedModels);
@@ -393,8 +393,8 @@ namespace Umbraco.Community.BlockPreview.Services
             BlockItemData? settingsData = blockValue?.BlockValue.SettingsData.FirstOrDefault();
             IPublishedElement? settingsElement = settingsData != null ? ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType.Alias);
-            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType.Alias) : default;
+            Type? contentBlockType = FindBlockType(contentElement?.ContentType);
+            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
                 return string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.NoGeneratedModels);
@@ -486,12 +486,12 @@ namespace Umbraco.Community.BlockPreview.Services
         #endregion
 
         #region Private
-        private Type? FindBlockType(string? contentTypeAlias)
+        private Type? FindBlockType(IPublishedContentType? contentType)
         {
-            if (string.IsNullOrEmpty(contentTypeAlias))
+            if (contentType == null)
                 return null;
 
-            var type = _publishedModelFactory.GetModelType(contentTypeAlias);
+            var type = _blockEditorConverter.GetModelType(contentType.Key);
 
             // GetModelType returns typeof(IPublishedElement) when no model exists
             return type == typeof(IPublishedElement) ? null : type;
