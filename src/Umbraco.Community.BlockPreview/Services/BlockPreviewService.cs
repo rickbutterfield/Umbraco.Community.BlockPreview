@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System.Text.Encodings.Web;
@@ -18,6 +19,7 @@ using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Cache.PropertyEditors;
 using Umbraco.Cms.Core.Composing;
+using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
@@ -44,7 +46,7 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly IViewComponentHelperWrapper _viewComponentHelperWrapper;
         private readonly IRazorViewEngine _razorViewEngine;
         private readonly BlockPreviewOptions _options;
-        private readonly ITypeFinder _typeFinder;
+        private readonly IPublishedModelFactory _publishedModelFactory;
         private readonly BlockEditorConverter _blockEditorConverter;
         private readonly IViewComponentSelector _viewComponentSelector;
         private readonly IPublishedValueFallback _publishedValueFallback;
@@ -67,7 +69,7 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="tempDataProvider">The temp data provider.</param>
         /// <param name="viewComponentHelperWrapper">The view component helper wrapper.</param>
         /// <param name="razorViewEngine">The Razor view engine.</param>
-        /// <param name="typeFinder">The type finder.</param>
+        /// <param name="publishedModelFactory">The published model factory.</param>
         /// <param name="blockEditorConverter">The block editor converter.</param>
         /// <param name="viewComponentSelector">The view component selector.</param>
         /// <param name="publishedValueFallback">The published value fallback.</param>
@@ -83,7 +85,7 @@ namespace Umbraco.Community.BlockPreview.Services
             ITempDataProvider tempDataProvider,
             IViewComponentHelperWrapper viewComponentHelperWrapper,
             IRazorViewEngine razorViewEngine,
-            ITypeFinder typeFinder,
+            IPublishedModelFactory publishedModelFactory,
             BlockEditorConverter blockEditorConverter,
             IViewComponentSelector viewComponentSelector,
             IPublishedValueFallback publishedValueFallback,
@@ -99,7 +101,7 @@ namespace Umbraco.Community.BlockPreview.Services
             _tempDataProvider = tempDataProvider;
             _viewComponentHelperWrapper = viewComponentHelperWrapper;
             _razorViewEngine = razorViewEngine;
-            _typeFinder = typeFinder;
+            _publishedModelFactory = publishedModelFactory;
             _blockEditorConverter = blockEditorConverter;
             _viewComponentSelector = viewComponentSelector;
             _publishedValueFallback = publishedValueFallback;
@@ -127,6 +129,45 @@ namespace Umbraco.Community.BlockPreview.Services
                     new JsonBlockValueConverter()
                 }
             };
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockPreviewService"/> class.
+        /// </summary>
+        [Obsolete("Use the constructor that accepts IPublishedModelFactory instead. This constructor will be removed in a future version.")]
+        public BlockPreviewService(
+            ITempDataProvider tempDataProvider,
+            IViewComponentHelperWrapper viewComponentHelperWrapper,
+            IRazorViewEngine razorViewEngine,
+            ITypeFinder typeFinder,
+            BlockEditorConverter blockEditorConverter,
+            IViewComponentSelector viewComponentSelector,
+            IPublishedValueFallback publishedValueFallback,
+            IOptions<BlockPreviewOptions> options,
+            IJsonSerializer jsonSerializer,
+            IContentTypeService contentTypeService,
+            IDataTypeService dataTypeService,
+            AppCaches appCaches,
+            IWebHostEnvironment webHostEnvironment,
+            IBlockEditorElementTypeCache elementTypeCache,
+            ILogger<BlockPreviewService> logger)
+            : this(
+                tempDataProvider,
+                viewComponentHelperWrapper,
+                razorViewEngine,
+                StaticServiceProvider.Instance.GetRequiredService<IPublishedModelFactory>(),
+                blockEditorConverter,
+                viewComponentSelector,
+                publishedValueFallback,
+                options,
+                jsonSerializer,
+                contentTypeService,
+                dataTypeService,
+                appCaches,
+                webHostEnvironment,
+                elementTypeCache,
+                logger)
+        {
         }
 
         #region Public
@@ -450,13 +491,10 @@ namespace Umbraco.Community.BlockPreview.Services
             if (string.IsNullOrEmpty(contentTypeAlias))
                 return null;
 
-            var cacheKey = string.Format(Constants.CacheKeys.BlockType, contentTypeAlias);
-            return _runtimeCache.GetCacheItem(cacheKey, () =>
-            {
-                return _typeFinder
-                    .FindClassesWithAttribute<PublishedModelAttribute>()
-                    .FirstOrDefault(x => x.GetCustomAttribute<PublishedModelAttribute>(false)?.ContentTypeAlias == contentTypeAlias);
-            }, CacheDuration);
+            var type = _publishedModelFactory.GetModelType(contentTypeAlias);
+
+            // GetModelType returns typeof(IPublishedElement) when no model exists
+            return type == typeof(IPublishedElement) ? null : type;
         }
 
         private IContentType? GetContentType(Guid documentTypeUnique)

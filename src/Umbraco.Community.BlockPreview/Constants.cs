@@ -161,8 +161,9 @@
             /// <summary>
             /// Cache key template for block type.
             /// </summary>
+            [Obsolete("No longer used. Block types are now resolved via IPublishedModelFactory.")]
             public static string BlockType = "BlockPreview_BlockType_{0}";
-            
+
             /// <summary>
             /// Cache key template for content type.
             /// </summary>
