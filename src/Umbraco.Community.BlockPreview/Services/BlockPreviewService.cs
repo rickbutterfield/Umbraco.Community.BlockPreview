@@ -236,7 +236,7 @@ namespace Umbraco.Community.BlockPreview.Services
             var layoutItems = blockValue?.BlockValue?.GetLayouts();
             BlockGridLayoutItem? matchingLayout = GetMatchingGridLayout(layoutItems!, blockInstance);
 
-            IContentType? documentType = _blockTypeCacheService.GetContentType(documentTypeUnique);
+            IContentType? documentType = await _blockTypeCacheService.GetContentType(documentTypeUnique);
             if (documentType == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidDocumentType);
 

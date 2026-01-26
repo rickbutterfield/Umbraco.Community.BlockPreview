@@ -26,17 +26,16 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
         /// <param name="notification">The notification.</param>
         public void Handle(ContentTypeSavedNotification notification)
         {
-            if (notification.SavedEntities == null || notification.SavedEntities.Count() == 0)
+            if (notification.SavedEntities == null || !notification.SavedEntities.Any())
                 return;
 
-            IContentType? savedContentType = notification.SavedEntities.FirstOrDefault();
-            if (savedContentType != null)
+            foreach (var savedContentType in notification.SavedEntities)
             {
                 bool matchingEditor = savedContentType.PropertyTypes.Any(x => x.PropertyEditorAlias.ContainsAny(new[] {
-                Cms.Core.Constants.PropertyEditors.Aliases.BlockGrid,
-                Cms.Core.Constants.PropertyEditors.Aliases.BlockList,
-                Cms.Core.Constants.PropertyEditors.Aliases.RichText
-            }));
+                    Cms.Core.Constants.PropertyEditors.Aliases.BlockGrid,
+                    Cms.Core.Constants.PropertyEditors.Aliases.BlockList,
+                    Cms.Core.Constants.PropertyEditors.Aliases.RichText
+                }));
 
                 if (matchingEditor)
                     _runtimeCache.ClearByKey(string.Format(Constants.CacheKeys.ContentType, savedContentType.Key));

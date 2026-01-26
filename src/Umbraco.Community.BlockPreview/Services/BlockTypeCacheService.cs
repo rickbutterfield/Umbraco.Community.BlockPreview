@@ -34,12 +34,12 @@ namespace Umbraco.Community.BlockPreview.Services
         }
 
         /// <inheritdoc/>
-        public IContentType? GetContentType(Guid documentTypeUnique)
+        public async Task<IContentType?> GetContentType(Guid documentTypeUnique)
         {
             var cacheKey = string.Format(Constants.CacheKeys.ContentType, documentTypeUnique);
-            return _runtimeCache.GetCacheItem(cacheKey, () =>
+            return await _runtimeCache.GetCacheItemAsync(cacheKey, async () =>
             {
-                return _contentTypeService.Get(documentTypeUnique);
+                return await _contentTypeService.GetAsync(documentTypeUnique);
             }, CacheDuration);
         }
 
@@ -49,8 +49,7 @@ namespace Umbraco.Community.BlockPreview.Services
             var cacheKey = string.Format(Constants.CacheKeys.DataType, dataTypeKey);
             return await _runtimeCache.GetCacheItemAsync(cacheKey, async () =>
             {
-                IDataType? dataType = await _dataTypeService.GetAsync(dataTypeKey);
-                return dataType;
+                return await _dataTypeService.GetAsync(dataTypeKey);
             }, CacheDuration);
         }
     }

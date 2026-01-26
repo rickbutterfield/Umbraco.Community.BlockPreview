@@ -12,7 +12,7 @@ namespace Umbraco.Community.BlockPreview.Interfaces
         /// </summary>
         /// <param name="documentTypeUnique">The unique identifier of the content type.</param>
         /// <returns>The content type, or null if not found.</returns>
-        IContentType? GetContentType(Guid documentTypeUnique);
+        Task<IContentType?> GetContentType(Guid documentTypeUnique);
 
         /// <summary>
         /// Gets a data type by its key, with caching.
