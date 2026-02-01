@@ -1,7 +1,10 @@
-﻿using Umbraco.Cms.Core.Cache;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Umbraco.Cms.Core.Cache;
+using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
+using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Extensions;
 
 namespace Umbraco.Community.BlockPreview.NotificationHandlers
@@ -12,13 +15,28 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
     public class ContentTypeSavedNotificationHandler : INotificationHandler<ContentTypeSavedNotification>
     {
         private readonly IAppPolicyCache _runtimeCache;
+        private readonly IBlockPreviewViewResolver _viewResolver;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ContentTypeSavedNotificationHandler"/> class.
         /// </summary>
         /// <param name="appCaches">The application caches.</param>
+        /// <param name="viewResolver">The view resolver.</param>
+        public ContentTypeSavedNotificationHandler(AppCaches appCaches, IBlockPreviewViewResolver viewResolver)
+        {
+            _runtimeCache = appCaches.RuntimeCache;
+            _viewResolver = viewResolver;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ContentTypeSavedNotificationHandler"/> class.
+        /// </summary>
+        /// <param name="appCaches">The application caches.</param>
+        [Obsolete("Use the constructor that accepts IBlockPreviewViewResolver.")]
         public ContentTypeSavedNotificationHandler(AppCaches appCaches)
-            => _runtimeCache = appCaches.RuntimeCache;
+            : this(appCaches, StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewViewResolver>())
+        {
+        }
 
         /// <summary>
         /// Handles the content type saved notification.
@@ -39,6 +57,11 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
 
                 if (matchingEditor)
                     _runtimeCache.ClearByKey(string.Format(Constants.CacheKeys.ContentType, savedContentType.Key));
+
+                // Clear the view cache for this content type alias
+                // This ensures view changes are picked up after content type modifications
+                if (savedContentType.IsElement)
+                    _viewResolver.ClearCacheForAlias(savedContentType.Alias);
             }
         }
     }

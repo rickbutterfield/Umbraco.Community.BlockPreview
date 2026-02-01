@@ -51,6 +51,7 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly IBlockViewRenderer _blockViewRenderer;
         private readonly IBlockDataConverter _blockDataConverter;
         private readonly IBlockTypeCacheService _blockTypeCacheService;
+        private readonly IBlockPreviewViewResolver _viewResolver;
         private readonly bool _hasModelFactory;
 
         /// <summary>
@@ -66,6 +67,7 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="blockViewRenderer">The block view renderer.</param>
         /// <param name="blockDataConverter">The block data converter.</param>
         /// <param name="blockTypeCacheService">The block type cache service.</param>
+        /// <param name="viewResolver">The view resolver.</param>
         public BlockPreviewService(
             IRazorViewEngine razorViewEngine,
             IPublishedModelFactory publishedModelFactory,
@@ -76,7 +78,8 @@ namespace Umbraco.Community.BlockPreview.Services
             IBlockModelFactory blockModelFactory,
             IBlockViewRenderer blockViewRenderer,
             IBlockDataConverter blockDataConverter,
-            IBlockTypeCacheService blockTypeCacheService)
+            IBlockTypeCacheService blockTypeCacheService,
+            IBlockPreviewViewResolver viewResolver)
         {
             _razorViewEngine = razorViewEngine;
             _blockEditorConverter = blockEditorConverter;
@@ -87,6 +90,7 @@ namespace Umbraco.Community.BlockPreview.Services
             _blockViewRenderer = blockViewRenderer;
             _blockDataConverter = blockDataConverter;
             _blockTypeCacheService = blockTypeCacheService;
+            _viewResolver = viewResolver;
             _hasModelFactory = publishedModelFactory is not NoopPublishedModelFactory;
         }
 
@@ -143,7 +147,8 @@ namespace Umbraco.Community.BlockPreview.Services
                 blockModelFactory,
                 blockViewRenderer,
                 blockDataConverter,
-                blockTypeCacheService)
+                blockTypeCacheService,
+                StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewViewResolver>())
         {
         }
 
@@ -177,7 +182,8 @@ namespace Umbraco.Community.BlockPreview.Services
                 StaticServiceProvider.Instance.GetRequiredService<IBlockModelFactory>(),
                 StaticServiceProvider.Instance.GetRequiredService<IBlockViewRenderer>(),
                 StaticServiceProvider.Instance.GetRequiredService<IBlockDataConverter>(),
-                StaticServiceProvider.Instance.GetRequiredService<IBlockTypeCacheService>())
+                StaticServiceProvider.Instance.GetRequiredService<IBlockTypeCacheService>(),
+                StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewViewResolver>())
         {
         }
 
@@ -650,8 +656,8 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <summary>
         /// Attempts to locate a view based on the provided block preview context.
         /// </summary>
-        /// <remarks>This method searches for views using the view locations specified in the options for
-        /// the given block type.</remarks>
+        /// <remarks>This method uses the cached view resolver to find views, improving performance
+        /// by avoiding repeated file system checks.</remarks>
         /// <param name="context">The context containing information about the block preview, including the content alias and block type.</param>
         /// <returns>A <see cref="ViewEngineResult"/> representing the located view if a matching view is found; otherwise, <see
         /// langword="null"/>.</returns>
@@ -660,46 +666,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (string.IsNullOrEmpty(context.ContentAlias))
                 return null;
 
-            var viewPaths = _options.GetViewLocations(context.BlockType);
-
-            if (viewPaths == null || !viewPaths.Any())
-                return null;
-
-            ViewEngineResult? viewResult = null;
-            string appRoot = _webHostEnvironment.ContentRootPath;
-
-            foreach (var viewPath in viewPaths)
-            {
-                string baseViewPath = viewPath.TrimStart($"~{Path.DirectorySeparatorChar}").TrimStart("/");
-
-                var pathNonPascal = string.Format(baseViewPath, context.ContentAlias ?? "");
-                var viewPathNonPascal = Path.Combine(appRoot, pathNonPascal);
-
-                if (System.IO.File.Exists(viewPathNonPascal))
-                {
-                    viewResult = _razorViewEngine.GetView("", pathNonPascal, false);
-
-                    if (viewResult.Success)
-                        return viewResult;
-                }
-
-                else
-                {
-                    var pathPascal = string.Format(baseViewPath, context.ContentAlias?.ToPascalCase() ?? "");
-                    var viewPathPascal = Path.Combine(appRoot, pathPascal);
-
-                    if (System.IO.File.Exists(viewPathPascal))
-                    {
-                        viewResult = _razorViewEngine.GetView("", pathPascal, false);
-
-                        if (viewResult.Success)
-                            return viewResult;
-                    }
-                }
-                return null;
-            }
-
-            return null;
+            return _viewResolver.ResolveView(context.ContentAlias, context.BlockType);
         }
         #endregion
     }
