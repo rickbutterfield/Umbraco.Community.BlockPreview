@@ -1,5 +1,5 @@
 import { UMB_BLOCK_LIST_ENTRY_CONTEXT, UMB_BLOCK_LIST_MANAGER_CONTEXT, UmbBlockListValueModel } from "@umbraco-cms/backoffice/block-list";
-import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
+import { UMB_CONTENT_WORKSPACE_CONTEXT, type UmbContentWorkspaceContext } from "@umbraco-cms/backoffice/content";
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { css, customElement, html, ifDefined, property, PropertyValueMap, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
@@ -21,7 +21,7 @@ export class BlockListPreviewCustomView
     implements UmbBlockEditorCustomViewElement {
 
     #blockPreviewContext?: BlockPreviewContext;
-    #documentWorkspaceContext?: UmbDocumentWorkspaceContext;
+    #contentWorkspaceContext?: UmbContentWorkspaceContext;
 
     @property({ attribute: false })
     content?: UmbBlockDataType;
@@ -136,7 +136,7 @@ export class BlockListPreviewCustomView
     async #setupContextObservers() {
         this.#observeSortMode();
         this.#observePropertyDataset();
-        await this.#observeDocumentWorkspace();
+        await this.#observeContentWorkspace();
     }
 
     #observeSortMode() {
@@ -155,18 +155,20 @@ export class BlockListPreviewCustomView
         });
     }
 
-    async #observeDocumentWorkspace() {
+    async #observeContentWorkspace() {
         try {
-            await this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT);
+            await this.getContext(UMB_CONTENT_WORKSPACE_CONTEXT);
 
-            this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+            this.consumeContext(UMB_CONTENT_WORKSPACE_CONTEXT, (context) => {
                 if (!context)
                     return;
 
-                this.#documentWorkspaceContext = context;
+                this.#contentWorkspaceContext = context;
                 this.observe(
-                    observeMultiple([context.unique, context.contentTypeUnique]),
-                    async ([unique, documentTypeUnique]) => {
+                    observeMultiple([context.unique, context.structure.contentTypeUniques]),
+                    async ([unique, contentTypeUniques]) => {
+                        const documentTypeUnique = contentTypeUniques?.[0];
+
                         // Early exit if disconnected or missing required data
                         if (!this._isConnected || !documentTypeUnique) {
                             return;
@@ -197,7 +199,7 @@ export class BlockListPreviewCustomView
                 );
             });
         } catch (ex) {
-            if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
+            if (this.#contentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
                 this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
                     if (context) {
                         this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {

@@ -6,7 +6,7 @@ import { css, customElement, html, ifDefined, property, PropertyValueMap, state,
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
-import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
+import { UMB_CONTENT_WORKSPACE_CONTEXT, type UmbContentWorkspaceContext } from "@umbraco-cms/backoffice/content";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
@@ -21,7 +21,7 @@ export class BlockGridPreviewCustomView
     implements UmbBlockEditorCustomViewElement {
 
     #blockPreviewContext?: BlockPreviewContext;
-    #documentWorkspaceContext?: UmbDocumentWorkspaceContext;
+    #contentWorkspaceContext?: UmbContentWorkspaceContext;
 
     @property({ attribute: false })
     content?: UmbBlockDataType;
@@ -135,7 +135,7 @@ export class BlockGridPreviewCustomView
     async #setupContextObservers() {
         this.#observeSortMode();
         this.#observePropertyDataset();
-        await this.#observeDocumentWorkspace();
+        await this.#observeContentWorkspace();
     }
 
     #observeSortMode() {
@@ -154,17 +154,19 @@ export class BlockGridPreviewCustomView
         });
     }
 
-    async #observeDocumentWorkspace() {
+    async #observeContentWorkspace() {
         try {
-            await this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT);
-            this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+            await this.getContext(UMB_CONTENT_WORKSPACE_CONTEXT);
+            this.consumeContext(UMB_CONTENT_WORKSPACE_CONTEXT, (context) => {
                 if (!context)
                     return;
 
-                this.#documentWorkspaceContext = context;
+                this.#contentWorkspaceContext = context;
                 this.observe(
-                    observeMultiple([context.unique, context.contentTypeUnique]),
-                    async ([unique, documentTypeUnique]) => {
+                    observeMultiple([context.unique, context.structure.contentTypeUniques]),
+                    async ([unique, contentTypeUniques]) => {
+                        const documentTypeUnique = contentTypeUniques?.[0];
+
                         // Early exit if disconnected or missing required data
                         if (!this._isConnected || !documentTypeUnique) {
                             return;
@@ -194,7 +196,7 @@ export class BlockGridPreviewCustomView
                 );
             });
         } catch (ex) {
-            if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
+            if (this.#contentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
                 this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async (context) => {
                     if (context) {
                         this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
