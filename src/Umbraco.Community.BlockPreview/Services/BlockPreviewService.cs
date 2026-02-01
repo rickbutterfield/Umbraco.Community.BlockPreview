@@ -469,9 +469,9 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="blockType">The type of block for which the stylesheet paths are requested.</param>
         /// <param name="content">The content associated with the block.</param>
         /// <param name="controllerContext">The context of the controller handling the request.</param>
-        /// <returns>A task that represents the asynchronous operation. The task result contains a list of stylesheet paths,
-        /// or <see langword="null"/> if no stylesheets are associated with the specified block type.</returns>
-        public virtual Task<IEnumerable<string>?> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
+        /// <returns>A task that represents the asynchronous operation. The task result contains a list of stylesheet paths.
+        /// Returns an empty collection if no stylesheets are associated with the specified block type.</returns>
+        public virtual Task<IReadOnlyList<string>> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
         {
             BlockTypeSettings? settings = blockType switch
             {
@@ -482,7 +482,7 @@ namespace Umbraco.Community.BlockPreview.Services
             };
 
             if (settings == null)
-                return Task.FromResult<IEnumerable<string>?>(null);
+                return Task.FromResult<IReadOnlyList<string>>([]);
 
             var stylesheets = new List<string>();
 
@@ -497,8 +497,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 stylesheets.AddRange(settings.Stylesheets.Where(s => !string.IsNullOrWhiteSpace(s)));
 
             // Return distinct stylesheets to avoid duplicates
-            var result = stylesheets.Distinct().ToList();
-            return Task.FromResult<IEnumerable<string>?>(result.Any() ? result : null);
+            return Task.FromResult<IReadOnlyList<string>>(stylesheets.Distinct().ToList());
         }
         #endregion
 

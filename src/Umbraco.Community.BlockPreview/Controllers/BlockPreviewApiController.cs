@@ -409,12 +409,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
-            IEnumerable<string>? stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockGrid, content!, ControllerContext);
+            var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockGrid, content!, ControllerContext);
 
-            if (stylesheetPaths == null || !stylesheetPaths.Any())
-            {
+            if (stylesheetPaths.Count == 0)
                 return NotFound("Stylesheet paths are not configured.");
-            }
+
             return Ok(stylesheetPaths);
         }
 
@@ -464,12 +463,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
-            IEnumerable<string>? stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockList, content!, ControllerContext);
+            var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockList, content!, ControllerContext);
 
-            if (stylesheetPaths == null || !stylesheetPaths.Any())
-            {
+            if (stylesheetPaths.Count == 0)
                 return NotFound("Stylesheet paths are not configured.");
-            }
+
             return Ok(stylesheetPaths);
         }
 
@@ -519,12 +517,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
-            IEnumerable<string>? stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.RichText, content!, ControllerContext);
+            var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.RichText, content!, ControllerContext);
 
-            if (stylesheetPaths == null || !stylesheetPaths.Any())
-            {
+            if (stylesheetPaths.Count == 0)
                 return NotFound("Stylesheet paths are not configured.");
-            }
+
             return Ok(stylesheetPaths);
         }
         #endregion
