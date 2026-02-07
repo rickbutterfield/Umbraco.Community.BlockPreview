@@ -2,7 +2,7 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [5.2.1] - 2026-01-23
@@ -19,9 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Fixes #220 for v5 ([#221](https://github.com/rickbutterfield/BlockPreview/pull/221))
 
-### Contributors
-- @lakesol made their first contribution in [#221](https://github.com/rickbutterfield/BlockPreview/pull/221)
-- @skttl made their first contribution in [#218](https://github.com/rickbutterfield/BlockPreview/pull/218)
+**New Contributors:** @lakesol ([#221](https://github.com/rickbutterfield/BlockPreview/pull/221)), @skttl ([#218](https://github.com/rickbutterfield/BlockPreview/pull/218))
 
 ## [5.1.0] - 2026-01-08
 
@@ -36,12 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Workaround for empty unique variable editing blockgrid / blocklist ([#214](https://github.com/rickbutterfield/BlockPreview/pull/214))
 - Fix for #179
 
-### Documentation
-- Document ViewLocations, Stylesheet, and extensibility features from PR #116 ([#175](https://github.com/rickbutterfield/BlockPreview/pull/175))
-
-### Contributors
-- @Copilot made their first contribution in [#175](https://github.com/rickbutterfield/BlockPreview/pull/175)
-- @GianniDPC made their first contribution in [#214](https://github.com/rickbutterfield/BlockPreview/pull/214)
+**New Contributors:** @Copilot ([#175](https://github.com/rickbutterfield/BlockPreview/pull/175)), @GianniDPC ([#214](https://github.com/rickbutterfield/BlockPreview/pull/214))
 
 ## [5.0.0] - 2025-11-27
 
@@ -52,8 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Project restructure ([#178](https://github.com/rickbutterfield/BlockPreview/pull/178))
 
-### Contributors
-- @BenWhite27 made their first contribution in [#116](https://github.com/rickbutterfield/BlockPreview/pull/116)
+**New Contributors:** @BenWhite27 ([#116](https://github.com/rickbutterfield/BlockPreview/pull/116))
 
 ---
 
