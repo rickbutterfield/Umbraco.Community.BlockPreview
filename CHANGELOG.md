@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 - Adds IBlockPreviewResponseEnricher ([#218](https://github.com/rickbutterfield/BlockPreview/pull/218))
+- Add IgnoredContentTypes support to BlockPreview config for excluding element types from previews ([82133cc](https://github.com/rickbutterfield/BlockPreview/commit/82133cc565ec2e37ccf66292844494afa36b6f9b))
 
 ### Fixed
 - Fixes #220 for v5 ([#221](https://github.com/rickbutterfield/BlockPreview/pull/221))
