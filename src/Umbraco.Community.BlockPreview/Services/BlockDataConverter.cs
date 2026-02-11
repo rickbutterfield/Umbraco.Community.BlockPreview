@@ -1,17 +1,17 @@
 using System.Text.Json;
-using System.Text.Json.Nodes;
 using System.Text.Json.Serialization;
 using Microsoft.Extensions.Logging;
 using Umbraco.Cms.Core;
+using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Cache.PropertyEditors;
 using Umbraco.Cms.Core.Models.Blocks;
+using Umbraco.Cms.Core.Models.Editors;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Cms.Core.Serialization;
 using Umbraco.Cms.Infrastructure.Serialization;
 using Umbraco.Community.BlockPreview.Interfaces;
-using Umbraco.Community.BlockPreview.Models;
 using static Umbraco.Cms.Core.Constants;
 
 namespace Umbraco.Community.BlockPreview.Services
@@ -24,6 +24,8 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly BlockEditorConverter _blockEditorConverter;
         private readonly IJsonSerializer _jsonSerializer;
         private readonly ILogger<BlockDataConverter> _logger;
+        private readonly PropertyEditorCollection _propertyEditors;
+        private readonly IDataTypeConfigurationCache _dataTypeConfigurationCache;
         private readonly BlockEditorValues<BlockGridValue, BlockGridLayoutItem> _blockGridEditorValues;
         private readonly BlockEditorValues<BlockListValue, BlockListLayoutItem> _blockListEditorValues;
         private readonly BlockEditorValues<RichTextBlockValue, RichTextBlockLayoutItem> _richTextBlockEditorValues;
@@ -36,15 +38,21 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="jsonSerializer">The JSON serializer.</param>
         /// <param name="elementTypeCache">The block editor element type cache.</param>
         /// <param name="logger">The logger.</param>
+        /// <param name="propertyEditors">The property editor collection.</param>
+        /// <param name="dataTypeConfigurationCache">The data type configuration cache.</param>
         public BlockDataConverter(
             BlockEditorConverter blockEditorConverter,
             IJsonSerializer jsonSerializer,
             IBlockEditorElementTypeCache elementTypeCache,
-            ILogger<BlockDataConverter> logger)
+            ILogger<BlockDataConverter> logger,
+            PropertyEditorCollection propertyEditors,
+            IDataTypeConfigurationCache dataTypeConfigurationCache)
         {
             _blockEditorConverter = blockEditorConverter;
             _jsonSerializer = jsonSerializer;
             _logger = logger;
+            _propertyEditors = propertyEditors;
+            _dataTypeConfigurationCache = dataTypeConfigurationCache;
 
             _blockGridEditorValues = new BlockEditorValues<BlockGridValue, BlockGridLayoutItem>(
                 new BlockGridEditorDataConverter(jsonSerializer), elementTypeCache, logger);
@@ -152,15 +160,7 @@ namespace Umbraco.Community.BlockPreview.Services
             {
                 foreach (var propertyData in contentData.Values)
                 {
-                    if (propertyData.EditorAlias == PropertyEditors.Aliases.ContentPicker)
-                    {
-                        if (Guid.TryParse(propertyData.Value?.ToString(), out Guid parsedGuid))
-                        {
-                            propertyData.Value = StringUdi.Create("document", parsedGuid).UriValue.ToString();
-                        }
-                    }
-
-                    else if (propertyData.EditorAlias == PropertyEditors.Aliases.RichText)
+                    if (propertyData.EditorAlias == PropertyEditors.Aliases.RichText)
                     {
                         if (RichTextPropertyEditorHelper.TryParseRichTextEditorValue(propertyData.Value, _jsonSerializer, _logger, out RichTextEditorValue? richTextEditorValue))
                         {
@@ -203,35 +203,28 @@ namespace Umbraco.Community.BlockPreview.Services
                         }
                     }
 
-                    else if (propertyData.Value is JsonObject jsonObject)
-                    {
-                        propertyData.Value = JsonSerializer.Serialize(jsonObject, _jsonSerializerOptions);
-                    }
-
-                    else if (propertyData.Value is JsonArray jsonArray)
-                    {
-                        if (propertyData.EditorAlias == PropertyEditors.Aliases.MultiNodeTreePicker)
-                        {
-                            List<EditorEntityReference>? convertedReferences = JsonSerializer.Deserialize<List<EditorEntityReference>>(propertyData.Value.ToString()!);
-                            IEnumerable<Udi>? convertedData = convertedReferences?.Select(x => StringUdi.Create(x.Type, x.Unique));
-                            string? stringifiedData = string.Join(",", convertedData!);
-                            propertyData.Value = stringifiedData;
-                        }
-
-                        else propertyData.Value = JsonSerializer.Serialize(jsonArray, _jsonSerializerOptions);
-                    }
-
-                    else if (propertyData.Value is List<string> list)
-                    {
-                        propertyData.Value = JsonSerializer.Serialize(list, _jsonSerializerOptions);
-                    }
-
-                    else if (propertyData.Value is string str)
-                    {
-                        propertyData.Value = str;
-                    }
+                    else ConvertPropertyValue(propertyData);
                 }
             }
+        }
+
+        /// <summary>
+        /// Converts a property value from its editor format to its database/intermediate format
+        /// using the CMS property editor's FromEditor method.
+        /// </summary>
+        private void ConvertPropertyValue(BlockPropertyValue propertyData)
+        {
+            if (propertyData.PropertyType is null || propertyData.EditorAlias is null)
+                return;
+
+            if (!_propertyEditors.TryGet(propertyData.EditorAlias, out var editor))
+                return;
+
+            var config = _dataTypeConfigurationCache.GetConfiguration(propertyData.PropertyType.DataTypeKey);
+            var editorValue = new ContentPropertyData(propertyData.Value, config);
+            var valueEditor = editor.GetValueEditor();
+
+            propertyData.Value = valueEditor.FromEditor(editorValue, null);
         }
     }
 }

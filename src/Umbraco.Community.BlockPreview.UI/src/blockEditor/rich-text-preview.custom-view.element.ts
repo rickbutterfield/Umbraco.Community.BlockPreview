@@ -319,8 +319,8 @@ export class RichTextPreviewCustomView
                 this._htmlMarkup = data ?? '';
                 this._isLoading = false;
             }
-            else if (UmbApiError.isUmbApiError(error)) {
-                this._error = error.message;
+            else if (error) {
+                this._error = UmbApiError.isUmbApiError(error) ? error.message : 'An error occurred rendering the block preview';
                 this._isLoading = false;
             }
         } catch (error) {
