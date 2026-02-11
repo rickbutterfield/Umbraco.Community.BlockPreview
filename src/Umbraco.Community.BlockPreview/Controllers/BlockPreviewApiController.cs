@@ -387,7 +387,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             if (string.IsNullOrWhiteSpace(stylesheetPath))
             {
-                return NotFound("Stylesheet path is not configured.");
+                return Ok(string.Empty);
             }
             return Ok(stylesheetPath);
         }
@@ -410,9 +410,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
             var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockGrid, content!, ControllerContext);
-
-            if (stylesheetPaths.Count == 0)
-                return NotFound("Stylesheet paths are not configured.");
 
             return Ok(stylesheetPaths);
         }
@@ -441,7 +438,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             if (string.IsNullOrWhiteSpace(stylesheetPath))
             {
-                return NotFound("Stylesheet path is not configured.");
+                return Ok(string.Empty);
             }
             return Ok(stylesheetPath);
         }
@@ -464,9 +461,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
             var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockList, content!, ControllerContext);
-
-            if (stylesheetPaths.Count == 0)
-                return NotFound("Stylesheet paths are not configured.");
 
             return Ok(stylesheetPaths);
         }
@@ -495,7 +489,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             if (string.IsNullOrWhiteSpace(stylesheetPath))
             {
-                return NotFound("Stylesheet path is not configured.");
+                return Ok(string.Empty);
             }
             return Ok(stylesheetPath);
         }
@@ -518,9 +512,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
             var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.RichText, content!, ControllerContext);
-
-            if (stylesheetPaths.Count == 0)
-                return NotFound("Stylesheet paths are not configured.");
 
             return Ok(stylesheetPaths);
         }
