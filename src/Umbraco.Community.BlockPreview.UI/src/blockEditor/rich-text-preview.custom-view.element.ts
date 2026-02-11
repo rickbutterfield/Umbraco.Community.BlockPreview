@@ -346,30 +346,23 @@ export class RichTextPreviewCustomView
     }
 
     _handleClick(event: PointerEvent) {
-        let blockEvent = true;
         const path = event.composedPath();
-        const elements = [
-            'UUI-ACTION-BAR',
-            'UMB-BLOCK-SCALE-HANDLER'
-        ];
 
-        const containsElement = path.filter(x => x instanceof Element && elements.includes(x.tagName));
-
-        if (containsElement.length > 0) {
-            const containsEditButton = path.find(x => x instanceof Element && x.tagName === 'UUI-BUTTON');
-
-            if (containsEditButton != null) {
-                if (containsEditButton instanceof UUIButtonElement) {
-                    if (containsEditButton.href?.includes('block/edit')) {
-                        blockEvent = false;
-                    }
-                }
+        // Check for clicks on action bars or resize handlers.
+        const interactiveElements = ['UUI-ACTION-BAR', 'UMB-BLOCK-SCALE-HANDLER'];
+        if (path.some(x => x instanceof Element && interactiveElements.includes(x.tagName))) {
+            // Allow edit button clicks through — the <a> tag handles navigation.
+            const editButton = path.find(x => x instanceof UUIButtonElement && x.href?.includes('block/edit'));
+            if (editButton) {
+                return;
             }
 
-            if (blockEvent) {
-                event.preventDefault();
-                event.stopPropagation();
-            }
+            // Block all other action bar clicks (delete, copy, etc.) to prevent
+            // the parent block's <a> from navigating when interacting with
+            // child blocks inside areas.
+            event.preventDefault();
+            event.stopPropagation();
+            return;
         }
     }
 
