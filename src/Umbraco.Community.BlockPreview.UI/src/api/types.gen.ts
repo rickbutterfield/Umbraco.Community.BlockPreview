@@ -71,13 +71,6 @@ export type GetGridStylesheetData = {
     url: '/umbraco/block-preview/api/v1/preview/grid/stylesheet';
 };
 
-export type GetGridStylesheetErrors = {
-    /**
-     * Not Found
-     */
-    404: unknown;
-};
-
 export type GetGridStylesheetResponses = {
     /**
      * OK
@@ -95,13 +88,6 @@ export type GetGridStylesheetsData = {
         documentTypeUnique?: string;
     };
     url: '/umbraco/block-preview/api/v1/preview/grid/stylesheets';
-};
-
-export type GetGridStylesheetsErrors = {
-    /**
-     * Not Found
-     */
-    404: unknown;
 };
 
 export type GetGridStylesheetsResponses = {
@@ -148,13 +134,6 @@ export type GetListStylesheetData = {
     url: '/umbraco/block-preview/api/v1/preview/list/stylesheet';
 };
 
-export type GetListStylesheetErrors = {
-    /**
-     * Not Found
-     */
-    404: unknown;
-};
-
 export type GetListStylesheetResponses = {
     /**
      * OK
@@ -172,13 +151,6 @@ export type GetListStylesheetsData = {
         documentTypeUnique?: string;
     };
     url: '/umbraco/block-preview/api/v1/preview/list/stylesheets';
-};
-
-export type GetListStylesheetsErrors = {
-    /**
-     * Not Found
-     */
-    404: unknown;
 };
 
 export type GetListStylesheetsResponses = {
@@ -222,13 +194,6 @@ export type GetRteStylesheetData = {
     url: '/umbraco/block-preview/api/v1/preview/rte/stylesheet';
 };
 
-export type GetRteStylesheetErrors = {
-    /**
-     * Not Found
-     */
-    404: unknown;
-};
-
 export type GetRteStylesheetResponses = {
     /**
      * OK
@@ -246,13 +211,6 @@ export type GetRteStylesheetsData = {
         documentTypeUnique?: string;
     };
     url: '/umbraco/block-preview/api/v1/preview/rte/stylesheets';
-};
-
-export type GetRteStylesheetsErrors = {
-    /**
-     * Not Found
-     */
-    404: unknown;
 };
 
 export type GetRteStylesheetsResponses = {
