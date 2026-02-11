@@ -372,7 +372,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         [Obsolete("Use GetGridStylesheets instead to support multiple stylesheets.")]
         [HttpGet("preview/grid/stylesheet")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetGridStylesheet(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
@@ -400,7 +399,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <returns>A list of stylesheet paths if configured; otherwise, a 404 response.</returns>
         [HttpGet("preview/grid/stylesheets")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetGridStylesheets(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
@@ -423,7 +421,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         [Obsolete("Use GetListStylesheets instead to support multiple stylesheets.")]
         [HttpGet("preview/list/stylesheet")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetListStylesheet(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
@@ -451,7 +448,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <returns>A list of stylesheet paths if configured; otherwise, a 404 response.</returns>
         [HttpGet("preview/list/stylesheets")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetListStylesheets(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
@@ -474,7 +470,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         [Obsolete("Use GetRteStylesheets instead to support multiple stylesheets.")]
         [HttpGet("preview/rte/stylesheet")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(string))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRteStylesheet(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
@@ -502,7 +497,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <returns>A list of stylesheet paths if configured; otherwise, a 404 response.</returns>
         [HttpGet("preview/rte/stylesheets")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<IActionResult> GetRteStylesheets(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
