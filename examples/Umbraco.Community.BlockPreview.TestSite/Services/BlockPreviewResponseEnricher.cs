@@ -14,11 +14,6 @@ namespace Umbraco.Community.BlockPreview.TestSite.Services
             string? contentUdi = null,
             string? settingsUdi = null,
             int? blockIndex = null
-        )
-        {
-            return Task.FromResult(
-                $"<div>BlockEditorAlias: {blockEditorAlias}</div><div>contentElementAlias: {contentElementAlias}</div><div>contentUdi: {contentUdi}</div><div>settingsUdi: {settingsUdi}</div><div>blockIndex: {blockIndex}</div>{markup}"
-            );
-        }
+        ) => Task.FromResult(markup);
     }
 }

@@ -6,7 +6,7 @@ import { css, customElement, html, ifDefined, property, PropertyValueMap, state,
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
-import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from "@umbraco-cms/backoffice/document";
+import { UMB_CONTENT_WORKSPACE_CONTEXT, type UmbContentWorkspaceContext } from "@umbraco-cms/backoffice/content";
 import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
@@ -21,7 +21,7 @@ export class BlockGridPreviewCustomView
     implements UmbBlockEditorCustomViewElement {
 
     #blockPreviewContext?: BlockPreviewContext;
-    #documentWorkspaceContext?: UmbDocumentWorkspaceContext;
+    #contentWorkspaceContext?: UmbContentWorkspaceContext;
 
     @property({ attribute: false })
     content?: UmbBlockDataType;
@@ -135,7 +135,7 @@ export class BlockGridPreviewCustomView
     async #setupContextObservers() {
         this.#observeSortMode();
         this.#observePropertyDataset();
-        await this.#observeDocumentWorkspace();
+        await this.#observeContentWorkspace();
     }
 
     #observeSortMode() {
@@ -154,17 +154,19 @@ export class BlockGridPreviewCustomView
         });
     }
 
-    async #observeDocumentWorkspace() {
+    async #observeContentWorkspace() {
         try {
-            await this.getContext(UMB_DOCUMENT_WORKSPACE_CONTEXT);
-            this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+            await this.getContext(UMB_CONTENT_WORKSPACE_CONTEXT);
+            this.consumeContext(UMB_CONTENT_WORKSPACE_CONTEXT, (context) => {
                 if (!context)
                     return;
 
-                this.#documentWorkspaceContext = context;
+                this.#contentWorkspaceContext = context;
                 this.observe(
-                    observeMultiple([context.unique, context.contentTypeUnique]),
-                    async ([unique, documentTypeUnique]) => {
+                    observeMultiple([context.unique, context.structure.contentTypeUniques]),
+                    async ([unique, contentTypeUniques]) => {
+                        const documentTypeUnique = contentTypeUniques?.[0];
+
                         // Early exit if disconnected or missing required data
                         if (!this._isConnected || !documentTypeUnique) {
                             return;
@@ -194,7 +196,7 @@ export class BlockGridPreviewCustomView
                 );
             });
         } catch (ex) {
-            if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
+            if (this.#contentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
                 this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async (context) => {
                     if (context) {
                         this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
@@ -370,8 +372,8 @@ export class BlockGridPreviewCustomView
                 this._htmlMarkup = data ?? '';
                 this._isLoading = false;
             }
-            else if (UmbApiError.isUmbApiError(error)) {
-                this._error = error.message;
+            else if (error) {
+                this._error = UmbApiError.isUmbApiError(error) ? error.message : 'An error occurred rendering the block preview';
                 this._isLoading = false;
             }
         } catch (error) {
@@ -398,47 +400,41 @@ export class BlockGridPreviewCustomView
     }
 
     _handleClick(event: PointerEvent) {
-        let blockEvent = true;
         const path = event.composedPath();
-        const elements = [
-            'UUI-ACTION-BAR',
-            'UMB-BLOCK-SCALE-HANDLER'
-        ];
 
-        const containsElement = path.filter(x => x instanceof Element && elements.includes(x.tagName));
-        if (containsElement.length > 0) {
-            const containsEditButton = path.find(x => x instanceof Element && x.tagName === 'UUI-BUTTON');
-            if (containsEditButton != null) {
-                if (containsEditButton instanceof UUIButtonElement) {
-                    if (containsEditButton.href?.includes('block/edit')) {
-                        blockEvent = false;
-                    }
-                }
+        // Check for clicks on action bars or resize handlers.
+        const interactiveElements = ['UUI-ACTION-BAR', 'UMB-BLOCK-SCALE-HANDLER'];
+        if (path.some(x => x instanceof Element && interactiveElements.includes(x.tagName))) {
+            // Allow edit button clicks through — the <a> tag handles navigation.
+            const editButton = path.find(x => x instanceof UUIButtonElement && x.href?.includes('block/edit'));
+            if (editButton) {
+                return;
             }
+
+            // Block all other action bar clicks (delete, copy, etc.) to prevent
+            // the parent block's <a> from navigating when interacting with
+            // child blocks inside areas.
+            event.preventDefault();
+            event.stopPropagation();
+            return;
         }
 
-        const containsBlockPreviewEdit = path.filter(x => x instanceof Element && x.tagName === 'A' && x.classList.contains('block-preview-edit')) as Element[];
-        if (containsBlockPreviewEdit.length > 0) {
-            blockEvent = false;
-        }
-
+        // Handle custom links within the preview
         const containsLink = path.filter(x => x instanceof Element && x.tagName === 'A' && x.hasAttribute('data-block-preview-link')) as Element[];
         if (containsLink.length > 0) {
-            if (containsBlockPreviewEdit.length > 0) {
-                window.history.pushState({}, '', containsBlockPreviewEdit[0].getAttribute('href'));
-            }
-            else {
+            event.preventDefault();
+            event.stopPropagation();
+            const blockPreviewEdit = path.find(x => x instanceof Element && x.tagName === 'A' && x.classList.contains('block-preview-edit'));
+            if (blockPreviewEdit instanceof Element) {
+                window.history.pushState({}, '', blockPreviewEdit.getAttribute('href'));
+            } else {
                 window.history.pushState({}, '', this._blockContext.workspaceEditContentPath);
             }
             return;
         }
 
-
-        if (blockEvent) {
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-        }
+        // All other clicks fall through to the <a> element's default behavior,
+        // which navigates to this block's edit workspace.
     }
 
     override render() {
