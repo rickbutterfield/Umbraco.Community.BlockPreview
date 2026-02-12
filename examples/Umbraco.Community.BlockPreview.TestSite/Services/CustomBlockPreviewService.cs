@@ -6,12 +6,10 @@ using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Cache.PropertyEditors;
-using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Cms.Core.Serialization;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Community.BlockPreview;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Community.BlockPreview.Services;
@@ -26,7 +24,7 @@ namespace Umbraco.Community.BlockPreview.TestSite.Services
             ITempDataProvider tempDataProvider,
             IViewComponentHelperWrapper viewComponentHelperWrapper,
             IRazorViewEngine razorViewEngine,
-            ITypeFinder typeFinder,
+            IPublishedModelFactory publishedModelFactory,
             BlockEditorConverter blockEditorConverter,
             IViewComponentSelector viewComponentSelector,
             IPublishedValueFallback publishedValueFallback,
@@ -37,8 +35,12 @@ namespace Umbraco.Community.BlockPreview.TestSite.Services
             AppCaches appCaches,
             IWebHostEnvironment webHostEnvironment,
             IBlockEditorElementTypeCache elementTypeCache,
-            ILogger<BlockPreviewService> logger)
-        : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine, typeFinder, blockEditorConverter, viewComponentSelector, publishedValueFallback, options, jsonSerializer,contentTypeService, dataTypeService, appCaches, webHostEnvironment, elementTypeCache, logger)
+            ILogger<BlockPreviewService> logger,
+            IBlockModelFactory blockModelFactory,
+            IBlockViewRenderer blockViewRenderer,
+            IBlockDataConverter blockDataConverter,
+            IBlockTypeCacheService blockTypeCacheService)
+        : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine, publishedModelFactory, blockEditorConverter, viewComponentSelector, publishedValueFallback, options, jsonSerializer, contentTypeService, dataTypeService, appCaches, webHostEnvironment, elementTypeCache, logger, blockModelFactory, blockViewRenderer, blockDataConverter, blockTypeCacheService)
         {
             _razorViewEngine = razorViewEngine;
             _webHostEnvironment = webHostEnvironment;

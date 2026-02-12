@@ -36,18 +36,15 @@ Install-Package Umbraco.Community.BlockPreview -Version 5.0.0
 ## Quick Start
 
 > [!IMPORTANT]
-> Generated strongly typed models must exist on disk for BlockPreview to work. `Umbraco:Cms:ModelsBuilder:ModelsMode` **must** be set to either `SourceCodeAuto` or `SourceCodeManual` in your development environment and generated files committed to disk before deploying.
-> 
-> If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Limbo.Umbraco.ModelsBuilder), the default configuration is to have `ModelsMode` set to nothing. Once this is set, generate models in the backoffice as normal.
-> ```json
-> "Umbraco": {
->  "CMS": {
->    "ModelsBuilder": {
->      "ModelsMode": "SourceCodeAuto"
->    }
->  }
->}
->```
+> BlockPreview requires [strongly-typed models](https://docs.umbraco.com/umbraco-cms/reference/templating/modelsbuilder/introduction) (classes with the `[PublishedModel]` attribute) to be compiled into your application.
+>
+> **Supported configurations:**
+> - `SourceCodeAuto` or `SourceCodeManual` - Models are generated as `.cs` files and compiled into your assembly
+> - `InMemoryAuto` - Models are generated at runtime (development only, requires `Umbraco.Cms.DevelopmentMode.Backoffice`)
+>
+> If you are using [Limbo.Umbraco.ModelsBuilder](https://github.com/limbo-works/Limbo.Umbraco.ModelsBuilder), the default configuration is to have `ModelsMode` set to nothing. Once configured, generate models in the backoffice as normal.
+>
+> Once models are compiled into your assembly, you can deploy with `ModelsMode=Nothing` to disable runtime regeneration - the compiled model types will still work with BlockPreview.
 
 BlockPreview can be configured in the `Program.cs` file, before the call to the `.Build()` method:
 ```diff
@@ -131,4 +128,4 @@ This package is entirely based on the amazing work done by [Dave Woestenborghs](
 
 Copyright &copy; 2022-2025 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
 
-Licensed under the [MIT License](https://github.com/rickbutterfield/Umbraco.Community.BlockPreview/blob/develop/LICENSE.md).
+Licensed under the [MIT License](https://github.com/rickbutterfield/BlockPreview/blob/v5/main/LICENSE).
