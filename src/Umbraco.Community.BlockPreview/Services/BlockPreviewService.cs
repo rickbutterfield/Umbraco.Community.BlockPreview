@@ -67,6 +67,7 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="blockDataConverter">The block data converter.</param>
         /// <param name="blockTypeCacheService">The block type cache service.</param>
         /// <param name="viewResolver">The view resolver.</param>
+        [ActivatorUtilitiesConstructor]
         public BlockPreviewService(
             IRazorViewEngine razorViewEngine,
             IPublishedModelFactory publishedModelFactory,
