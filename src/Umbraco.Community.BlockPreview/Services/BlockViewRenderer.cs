@@ -89,7 +89,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 new RouteData(),
                 new ActionDescriptor());
 
-            await using var sw = new StringWriter();
+            var sw = new StringWriter();
 
             if (context.ViewData != null)
             {
@@ -117,7 +117,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (viewComponent == null)
                 return null;
 
-            await using var sw = new StringWriter();
+            var sw = new StringWriter();
             var viewContext = new ViewContext(
                 context.ControllerContext,
                 new FakeView(),
