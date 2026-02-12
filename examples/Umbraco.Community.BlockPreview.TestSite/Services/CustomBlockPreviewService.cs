@@ -1,65 +1,50 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Options;
-using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Cache.PropertyEditors;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Cms.Core.Serialization;
-using Umbraco.Cms.Core.Services;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Community.BlockPreview.Services;
 
 namespace Umbraco.Community.BlockPreview.TestSite.Services
 {
+    /// <inheritdoc/>
     public class CustomBlockPreviewService : BlockPreviewService
     {
         private readonly IRazorViewEngine _razorViewEngine;
-        private readonly IWebHostEnvironment _webHostEnvironment;
+
+        /// <inheritdoc/>
         public CustomBlockPreviewService(
-            ITempDataProvider tempDataProvider,
-            IViewComponentHelperWrapper viewComponentHelperWrapper,
             IRazorViewEngine razorViewEngine,
             IPublishedModelFactory publishedModelFactory,
             BlockEditorConverter blockEditorConverter,
-            IViewComponentSelector viewComponentSelector,
-            IPublishedValueFallback publishedValueFallback,
             IOptions<BlockPreviewOptions> options,
             IJsonSerializer jsonSerializer,
-            IContentTypeService contentTypeService,
-            IDataTypeService dataTypeService,
-            AppCaches appCaches,
             IWebHostEnvironment webHostEnvironment,
-            IBlockEditorElementTypeCache elementTypeCache,
-            ILogger<BlockPreviewService> logger,
             IBlockModelFactory blockModelFactory,
             IBlockViewRenderer blockViewRenderer,
             IBlockDataConverter blockDataConverter,
-            IBlockTypeCacheService blockTypeCacheService)
-        : base(tempDataProvider, viewComponentHelperWrapper, razorViewEngine, publishedModelFactory, blockEditorConverter, viewComponentSelector, publishedValueFallback, options, jsonSerializer, contentTypeService, dataTypeService, appCaches, webHostEnvironment, elementTypeCache, logger, blockModelFactory, blockViewRenderer, blockDataConverter, blockTypeCacheService)
-        {
-            _razorViewEngine = razorViewEngine;
-            _webHostEnvironment = webHostEnvironment;
-        }
-        
-        /// <inheritdoc/>
-        protected override ViewDataDictionary CreateViewData(object? typedBlockInstance, BlockPreviewContext context, bool? hasNestedBlockGrid = false)
-        {
-            return base.CreateViewData(typedBlockInstance, context, hasNestedBlockGrid);
-        }
+            IBlockTypeCacheService blockTypeCacheService,
+            IBlockPreviewViewResolver viewResolver)
+        : base(publishedModelFactory, blockEditorConverter, options, jsonSerializer, blockModelFactory, blockViewRenderer, blockDataConverter, blockTypeCacheService, viewResolver)
+            => _razorViewEngine = razorViewEngine;
 
         /// <inheritdoc/>
-        public override Task<string?> GetStylesheetPath(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
+        protected override async Task<ViewDataDictionary> CreateViewDataAsync(object? typedBlockInstance, BlockPreviewContext context, bool? hasNestedBlockGrid = false)
+            => await base.CreateViewDataAsync(typedBlockInstance, context, hasNestedBlockGrid);
+
+        /// <inheritdoc/>
+        public override async Task<IReadOnlyList<string>> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
         {
             if (controllerContext.HttpContext.Items.TryGetValue("theme", out var themeObj) && themeObj is string theme)
             {
-                return Task.FromResult<string?>($"/css/{theme}.blockgridlayout.css");
+                return new[] { $"/css/{theme}.blockgridlayout.css" };
             }
-            return base.GetStylesheetPath(blockType, content, controllerContext);
+            return await base.GetStylesheetPaths(blockType, content, controllerContext);
         }
 
         /// <inheritdoc/>
@@ -90,4 +75,3 @@ namespace Umbraco.Community.BlockPreview.TestSite.Services
         }
     }
 }
- 

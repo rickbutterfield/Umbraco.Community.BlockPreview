@@ -3,10 +3,17 @@ import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { SettingsRepository } from "..";
 import { UmbBooleanState, UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
 import { BlockPreviewOptions } from "../api";
+import { BlockPreviewRequestQueue } from "./block-preview-request-queue";
 
 export class BlockPreviewContext extends UmbControllerBase {
 
     #settingsRepository: SettingsRepository;
+    #requestQueue = new BlockPreviewRequestQueue(3);
+
+    /** Shared concurrency-limited queue for preview API requests. */
+    get requestQueue(): BlockPreviewRequestQueue {
+        return this.#requestQueue;
+    }
 
     #settings = new UmbObjectState<BlockPreviewOptions | undefined>(undefined);
     public readonly settings = this.#settings.asObservable();

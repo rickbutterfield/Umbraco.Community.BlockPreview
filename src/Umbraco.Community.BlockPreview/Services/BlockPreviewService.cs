@@ -1,21 +1,13 @@
 ﻿using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Nodes;
-using System.Text.Json.Serialization;
-using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Cache.PropertyEditors;
 using Umbraco.Cms.Core.Composing;
@@ -27,9 +19,7 @@ using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Cms.Core.Serialization;
 using Umbraco.Cms.Core.Services;
-using Umbraco.Cms.Infrastructure.Serialization;
 using Umbraco.Community.BlockPreview.Enums;
-using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Extensions;
 using static Umbraco.Cms.Core.Constants;
@@ -41,11 +31,9 @@ namespace Umbraco.Community.BlockPreview.Services
     /// </summary>
     public class BlockPreviewService : IBlockPreviewService
     {
-        private readonly IRazorViewEngine _razorViewEngine;
         private readonly BlockPreviewOptions _options;
         private readonly BlockEditorConverter _blockEditorConverter;
         private readonly IJsonSerializer _jsonSerializer;
-        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IBlockModelFactory _blockModelFactory;
         private readonly IBlockViewRenderer _blockViewRenderer;
         private readonly IBlockDataConverter _blockDataConverter;
@@ -56,12 +44,10 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockPreviewService"/> class.
         /// </summary>
-        /// <param name="razorViewEngine">The Razor view engine.</param>
         /// <param name="publishedModelFactory">The published model factory.</param>
         /// <param name="blockEditorConverter">The block editor converter.</param>
         /// <param name="options">The block preview options.</param>
         /// <param name="jsonSerializer">The JSON serializer.</param>
-        /// <param name="webHostEnvironment">The web host environment.</param>
         /// <param name="blockModelFactory">The block model factory.</param>
         /// <param name="blockViewRenderer">The block view renderer.</param>
         /// <param name="blockDataConverter">The block data converter.</param>
@@ -69,23 +55,19 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="viewResolver">The view resolver.</param>
         [ActivatorUtilitiesConstructor]
         public BlockPreviewService(
-            IRazorViewEngine razorViewEngine,
             IPublishedModelFactory publishedModelFactory,
             BlockEditorConverter blockEditorConverter,
             IOptions<BlockPreviewOptions> options,
             IJsonSerializer jsonSerializer,
-            IWebHostEnvironment webHostEnvironment,
             IBlockModelFactory blockModelFactory,
             IBlockViewRenderer blockViewRenderer,
             IBlockDataConverter blockDataConverter,
             IBlockTypeCacheService blockTypeCacheService,
             IBlockPreviewViewResolver viewResolver)
         {
-            _razorViewEngine = razorViewEngine;
             _blockEditorConverter = blockEditorConverter;
             _options = options.Value;
             _jsonSerializer = jsonSerializer;
-            _webHostEnvironment = webHostEnvironment;
             _blockModelFactory = blockModelFactory;
             _blockViewRenderer = blockViewRenderer;
             _blockDataConverter = blockDataConverter;
@@ -138,12 +120,10 @@ namespace Umbraco.Community.BlockPreview.Services
             IBlockDataConverter blockDataConverter,
             IBlockTypeCacheService blockTypeCacheService)
             : this(
-                razorViewEngine,
                 publishedModelFactory,
                 blockEditorConverter,
                 options,
                 jsonSerializer,
-                webHostEnvironment,
                 blockModelFactory,
                 blockViewRenderer,
                 blockDataConverter,
@@ -173,12 +153,10 @@ namespace Umbraco.Community.BlockPreview.Services
             IBlockEditorElementTypeCache elementTypeCache,
             ILogger<BlockPreviewService> logger)
             : this(
-                razorViewEngine,
                 StaticServiceProvider.Instance.GetRequiredService<IPublishedModelFactory>(),
                 blockEditorConverter,
                 options,
                 jsonSerializer,
-                webHostEnvironment,
                 StaticServiceProvider.Instance.GetRequiredService<IBlockModelFactory>(),
                 StaticServiceProvider.Instance.GetRequiredService<IBlockViewRenderer>(),
                 StaticServiceProvider.Instance.GetRequiredService<IBlockDataConverter>(),
