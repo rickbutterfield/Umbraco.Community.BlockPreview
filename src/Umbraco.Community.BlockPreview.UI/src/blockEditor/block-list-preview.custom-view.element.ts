@@ -57,6 +57,8 @@ export class BlockListPreviewCustomView
 
     private _previewTimeout: number | undefined;
 
+    private _requestId: number = 0;
+
     private _isConnected: boolean = false;
 
     @state()
@@ -337,29 +339,40 @@ export class BlockListPreviewCustomView
         this._isLoading = true;
         this._error = null;
 
+        const requestId = ++this._requestId;
+
         try {
-            const { data, error } = await tryExecute(this, BlockPreviewService.previewListBlock({
-                body: JSON.stringify(this.blockListValue),
-                query: {
-                    blockEditorAlias: context.blockEditorAlias,
-                    nodeKey: context.unique,
-                    contentElementAlias: context.contentElementTypeAlias,
-                    documentTypeUnique: context.documentTypeUnique,
-                    contentUdi: context.contentUdi,
-                    settingsUdi: context.settingsUdi,
-                    culture: context.culture,
-                    blockIndex: context.blockIndex,
-                }
-            }));
-            if (data) {
-                this._htmlMarkup = data ?? '';
+            const { data, error } = await this.#blockPreviewContext!.requestQueue.enqueue(() =>
+                tryExecute(this, BlockPreviewService.previewListBlock({
+                    body: JSON.stringify(this.blockListValue),
+                    query: {
+                        blockEditorAlias: context.blockEditorAlias,
+                        nodeKey: context.unique,
+                        contentElementAlias: context.contentElementTypeAlias,
+                        documentTypeUnique: context.documentTypeUnique,
+                        contentUdi: context.contentUdi,
+                        settingsUdi: context.settingsUdi,
+                        culture: context.culture,
+                        blockIndex: context.blockIndex,
+                    }
+                }))
+            );
+
+            if (this._requestId !== requestId) return;
+
+            if (data != null) {
+                this._htmlMarkup = data;
                 this._isLoading = false;
             }
             else if (error) {
                 this._error = UmbApiError.isUmbApiError(error) ? error.message : 'An error occurred rendering the block preview';
                 this._isLoading = false;
             }
+            else {
+                this._isLoading = false;
+            }
         } catch (error) {
+            if (this._requestId !== requestId) return;
             this._error = 'Failed to render block preview';
             this._isLoading = false;
             console.error('Block preview error:', error);

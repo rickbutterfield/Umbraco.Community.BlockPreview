@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [5.3.2] - 2026-02-12
+
+### Fixed
+- Fix concurrent block preview rendering producing empty strings or ObjectDisposedException by caching view paths instead of ViewEngineResult objects (shared IRazorPage race condition)
+- Fix frontend preview elements treating empty API responses as loading forever (`if (data)` to `if (data != null)`)
+- Add concurrency-limited request queue (max 3) to prevent overwhelming the server with simultaneous preview requests
+- Add stale response protection to prevent outdated API responses from overwriting newer previews
+- Add retry with child service scope for ObjectDisposedException during Razor view rendering
+- Add diagnostic logging throughout BlockViewRenderer and BlockDataConverter for easier troubleshooting
+- Protect BlockDataConverter.ConvertPropertyValue against exceptions from FromEditor, preserving original value on failure
+
+## [5.3.1] - 2026-02-12
+
+### Fixed
+- Resolve ambiguous constructor error in BlockPreviewService
+
 ## [5.3.0] - 2026-02-12
 
 ### Added
@@ -66,6 +82,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 **Full Changelog**: https://github.com/rickbutterfield/BlockPreview/releases
 
+[5.3.2]: https://github.com/rickbutterfield/BlockPreview/compare/release-5.3.1...release-5.3.2
+[5.3.1]: https://github.com/rickbutterfield/BlockPreview/compare/release-5.3.0...release-5.3.1
 [5.3.0]: https://github.com/rickbutterfield/BlockPreview/compare/release-5.2.1...release-5.3.0
 [5.2.1]: https://github.com/rickbutterfield/BlockPreview/compare/release-5.2.0...release-5.2.1
 [5.2.0]: https://github.com/rickbutterfield/BlockPreview/compare/release-5.1.0...release-5.2.0

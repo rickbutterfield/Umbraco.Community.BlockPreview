@@ -1,0 +1,8 @@
+# EditorConfig is awesome: https://EditorConfig.org
+
+# top-most EditorConfig file
+root = true
+
+# Suppress CS1591 (Missing XML comment) for generated files
+[*.generated.cs]
+dotnet_diagnostic.CS1591.severity = none
