@@ -537,12 +537,22 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
         private async Task<string?> GetCurrentCulture(string? culture, IPublishedContent? content = null)
         {
-            var currentCulture = string.IsNullOrWhiteSpace(culture)
-                ? content?.GetCultureFromDomains()
+            var currentCulture = string.IsNullOrWhiteSpace(culture) || culture == "undefined"
+                ? null
                 : culture;
 
-            if (string.IsNullOrEmpty(currentCulture) || culture == "undefined")
-                currentCulture = await _languageService.GetDefaultIsoCodeAsync();
+            // Try domain-based culture from the content
+            currentCulture ??= content?.GetCultureFromDomains();
+
+            // If only one language is configured, use it regardless of default flag
+            if (string.IsNullOrEmpty(currentCulture))
+            {
+                var allLanguages = await _languageService.GetAllAsync();
+                var languages = allLanguages.ToList();
+                currentCulture = languages.Count == 1
+                    ? languages[0].IsoCode
+                    : await _languageService.GetDefaultIsoCodeAsync();
+            }
 
             _contextCultureService.SetCulture(currentCulture);
 
