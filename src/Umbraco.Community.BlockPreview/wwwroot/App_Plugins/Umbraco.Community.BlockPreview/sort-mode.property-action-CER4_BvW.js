@@ -1,6 +1,6 @@
 import { UmbPropertyActionBase as r } from "@umbraco-cms/backoffice/property-action";
 import { UMB_PROPERTY_CONTEXT as s } from "@umbraco-cms/backoffice/property";
-import { B as i } from './index-BkYMm439.js?v=4.1.0';
+import { B as i } from './index-B6JjhnTg.js?v=4.2.0';
 class m extends r {
   #o;
   #e;
@@ -26,4 +26,4 @@ export {
   m as UmbSortModePropertyAction,
   m as api
 };
-//# sourceMappingURL=sort-mode.property-action-Diym3sLG.js.map
+//# sourceMappingURL=sort-mode.property-action-CER4_BvW.js.map

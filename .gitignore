@@ -394,5 +394,15 @@ FodyWeavers.xsd
 *.sln.iml
 .idea
 
+.env
+
 # Claude
 .claude/settings.local.json
+
+# Acceptance tests
+tests/Umbraco.Community.BlockPreview.AcceptanceTests/.env
+tests/Umbraco.Community.BlockPreview.AcceptanceTests/node_modules/
+tests/Umbraco.Community.BlockPreview.AcceptanceTests/playwright/.auth/
+tests/Umbraco.Community.BlockPreview.AcceptanceTests/playwright-report/
+tests/Umbraco.Community.BlockPreview.AcceptanceTests/results/
+tests/Umbraco.Community.BlockPreview.AcceptanceTests/test-results/

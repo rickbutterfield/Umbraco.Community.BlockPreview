@@ -88,6 +88,11 @@
             public static string NoGeneratedModels = "Generated model(s) could not be found. Please try regenerating models and restarting the application.";
 
             /// <summary>
+            /// Error message when ModelsBuilder is not configured to generate models.
+            /// </summary>
+            public static string ModelsNotConfigured = "BlockPreview requires strongly-typed models. Please configure ModelsBuilder with SourceCodeAuto or SourceCodeManual mode.";
+
+            /// <summary>
             /// Error message for invalid block data.
             /// </summary>
             public static string InvalidBlockData = "The block data is invalid.";
@@ -161,8 +166,9 @@
             /// <summary>
             /// Cache key template for block type.
             /// </summary>
+            [Obsolete("No longer used. Block types are now resolved via IPublishedModelFactory.")]
             public static string BlockType = "BlockPreview_BlockType_{0}";
-            
+
             /// <summary>
             /// Cache key template for content type.
             /// </summary>

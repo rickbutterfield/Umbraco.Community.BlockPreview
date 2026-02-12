@@ -78,12 +78,12 @@ namespace Umbraco.Community.BlockPreview.Interfaces
         /// <param name="blockType">The type of block editor.</param>
         /// <param name="content">The published content.</param>
         /// <param name="controllerContext">The controller context.</param>
-        /// <returns>A list of stylesheet paths, or null if none configured.</returns>
+        /// <returns>A list of stylesheet paths. Returns an empty collection if none configured.</returns>
 #pragma warning disable CS0618 // Type or member is obsolete
-        async Task<IEnumerable<string>?> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
+        async Task<IReadOnlyList<string>> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
         {
             var path = await GetStylesheetPath(blockType, content, controllerContext);
-            return path is not null ? [path] : null;
+            return path is not null ? [path] : [];
         }
 #pragma warning restore CS0618
     }

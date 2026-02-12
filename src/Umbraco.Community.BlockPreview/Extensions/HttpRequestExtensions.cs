@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Umbraco.Community.BlockPreview.Controllers;
-using Umbraco.Extensions;
 
 namespace Umbraco.Community.BlockPreview.Extensions
 {
@@ -18,9 +17,6 @@ namespace Umbraco.Community.BlockPreview.Extensions
         {
             var httpContext = request.HttpContext;
 
-            // We're always going to be coming from the back office so let's check that
-            bool isBackOffice = request.IsBackOfficeRequest();
-
             string requestControllerName = (string)httpContext.Request.RouteValues["controller"]! + "Controller";
 
             bool requestControllerMatches = requestControllerName.Equals(nameof(BlockPreviewApiController));
@@ -28,9 +24,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
             bool isBlockListPreview = httpContext.Request.RouteValues["action"]!.Equals(nameof(BlockPreviewApiController.PreviewListBlock));
             bool isRichTextPreview = httpContext.Request.RouteValues["action"]!.Equals(nameof(BlockPreviewApiController.PreviewRichTextMarkup));
 
-            bool isBlockPreviewController = requestControllerMatches && (isBlockGridPreview || isBlockListPreview || isRichTextPreview);
-
-            return isBackOffice || isBlockPreviewController;
+            return requestControllerMatches && (isBlockGridPreview || isBlockListPreview || isRichTextPreview);
         }
     }
 }
