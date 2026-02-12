@@ -364,6 +364,20 @@ export class RichTextPreviewCustomView
             event.stopPropagation();
             return;
         }
+
+        // Handle custom links within the preview
+        const containsLink = path.filter(x => x instanceof Element && x.tagName === 'A' && x.hasAttribute('data-block-preview-link')) as Element[];
+        if (containsLink.length > 0) {
+            event.preventDefault();
+            event.stopPropagation();
+            const blockPreviewEdit = path.find(x => x instanceof Element && x.tagName === 'A' && x.classList.contains('block-preview-edit'));
+            if (blockPreviewEdit instanceof Element) {
+                window.history.pushState({}, '', blockPreviewEdit.getAttribute('href'));
+            } else {
+                window.history.pushState({}, '', this._blockContext.workspaceEditContentPath);
+            }
+            return;
+        }
     }
 
     override render() {
