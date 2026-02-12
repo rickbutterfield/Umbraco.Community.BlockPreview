@@ -31,7 +31,6 @@ using Umbraco.Cms.Infrastructure.Serialization;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Interfaces;
-using Umbraco.Community.BlockPreview.Models;
 using Umbraco.Extensions;
 using static Umbraco.Cms.Core.Constants;
 

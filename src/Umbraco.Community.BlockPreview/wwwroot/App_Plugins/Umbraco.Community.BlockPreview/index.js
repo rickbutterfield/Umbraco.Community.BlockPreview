@@ -938,7 +938,7 @@ Fe = async function() {
         blockIndex: e.blockIndex
       }
     }));
-    i ? (this._htmlMarkup = i ?? "", this._isLoading = !1) : we.isUmbApiError(o) && (this._error = o.message, this._isLoading = !1);
+    i ? (this._htmlMarkup = i ?? "", this._isLoading = !1) : o && (this._error = we.isUmbApiError(o) ? o.message : "An error occurred rendering the block preview", this._isLoading = !1);
   } catch (i) {
     this._error = "Failed to render block preview", this._isLoading = !1, console.error("Block preview error:", i);
   }
@@ -1282,7 +1282,7 @@ ot = async function() {
         blockIndex: e.blockIndex
       }
     }));
-    i ? (this._htmlMarkup = i ?? "", this._isLoading = !1) : we.isUmbApiError(o) && (this._error = o.message, this._isLoading = !1);
+    i ? (this._htmlMarkup = i ?? "", this._isLoading = !1) : o && (this._error = we.isUmbApiError(o) ? o.message : "An error occurred rendering the block preview", this._isLoading = !1);
   } catch (i) {
     this._error = "Failed to render block preview", this._isLoading = !1, console.error("Block preview error:", i);
   }
@@ -1602,7 +1602,7 @@ dt = async function() {
         culture: e.culture
       }
     }));
-    i ? (this._htmlMarkup = i ?? "", this._isLoading = !1) : we.isUmbApiError(o) && (this._error = o.message, this._isLoading = !1);
+    i ? (this._htmlMarkup = i ?? "", this._isLoading = !1) : o && (this._error = we.isUmbApiError(o) ? o.message : "An error occurred rendering the block preview", this._isLoading = !1);
   } catch (i) {
     this._error = "Failed to render block preview", this._isLoading = !1, console.error("Block preview error:", i);
   }
