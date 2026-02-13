@@ -2,14 +2,14 @@
   "$schema": "../umbraco-package-schema.json",
   "name": "Umbraco.Community.BlockPreview",
   "id": "Umbraco.Community.BlockPreview",
-  "version": "4.2.2",
+  "version": "4.3.0--preview.0.g2834e36",
   "allowTelemetry": true,
   "extensions": [
     {
       "name": "Umbraco.Community.BlockPreview.EntryPoint",
       "alias": "Umbraco.Community.BlockPreview.EntryPoint",
       "type": "backofficeEntryPoint",
-      "js": "/App_Plugins/Umbraco.Community.BlockPreview/index.js?v=4.2.2"
+      "js": "/App_Plugins/Umbraco.Community.BlockPreview/index.js?v=4.3.0-alpha"
     }
   ]
 }

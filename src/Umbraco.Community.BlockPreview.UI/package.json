@@ -1,7 +1,7 @@
 {
   "name": "block-preview",
   "private": true,
-  "version": "4.2.2",
+  "version": "4.3.0-alpha",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -19,7 +19,7 @@
   "devDependencies": {
     "@hey-api/client-fetch": "^0.13.1",
     "@hey-api/openapi-ts": "^0.85.0",
-    "@umbraco-cms/backoffice": "^16.4.0",
+    "@umbraco-cms/backoffice": "^16.5.0",
     "glob": "^10.3.10",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
