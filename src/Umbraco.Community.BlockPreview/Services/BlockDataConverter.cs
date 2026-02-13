@@ -77,21 +77,15 @@ namespace Umbraco.Community.BlockPreview.Services
 
         /// <inheritdoc/>
         public BlockEditorData<BlockGridValue, BlockGridLayoutItem>? DeserializeBlockGrid(string? blockData)
-        {
-            return _blockGridEditorValues.DeserializeAndClean(blockData);
-        }
+            => _blockGridEditorValues.DeserializeAndClean(blockData);
 
         /// <inheritdoc/>
         public BlockEditorData<BlockListValue, BlockListLayoutItem>? DeserializeBlockList(string? blockData)
-        {
-            return _blockListEditorValues.DeserializeAndClean(blockData);
-        }
+            => _blockListEditorValues.DeserializeAndClean(blockData);
 
         /// <inheritdoc/>
         public BlockEditorData<RichTextBlockValue, RichTextBlockLayoutItem>? DeserializeRichText(string? blockData)
-        {
-            return _richTextBlockEditorValues.DeserializeAndClean(blockData);
-        }
+            => _richTextBlockEditorValues.DeserializeAndClean(blockData);
 
         /// <inheritdoc/>
         public IPublishedElement ConvertToElement(BlockItemData data, IPublishedElement owner)
@@ -218,13 +212,46 @@ namespace Umbraco.Community.BlockPreview.Services
                 return;
 
             if (!_propertyEditors.TryGet(propertyData.EditorAlias, out var editor))
+            {
+                _logger.LogDebug(
+                    "BlockPreview: No property editor found for alias '{EditorAlias}', skipping conversion",
+                    propertyData.EditorAlias);
                 return;
+            }
 
-            var config = _dataTypeConfigurationCache.GetConfiguration(propertyData.PropertyType.DataTypeKey);
-            var editorValue = new ContentPropertyData(propertyData.Value, config);
-            var valueEditor = editor.GetValueEditor();
+            var originalValue = propertyData.Value;
+            var originalType = originalValue?.GetType().Name ?? "null";
 
-            propertyData.Value = valueEditor.FromEditor(editorValue, null);
+            try
+            {
+                var config = _dataTypeConfigurationCache.GetConfiguration(propertyData.PropertyType.DataTypeKey);
+                var editorValue = new ContentPropertyData(propertyData.Value, config);
+                var valueEditor = editor.GetValueEditor();
+
+                propertyData.Value = valueEditor.FromEditor(editorValue, null);
+
+                var newType = propertyData.Value?.GetType().Name ?? "null";
+
+                if (propertyData.Value is null && originalValue is not null)
+                {
+                    _logger.LogWarning(
+                        "BlockPreview: FromEditor returned null for property '{EditorAlias}' (was {OriginalType}). Original value: {OriginalValue}",
+                        propertyData.EditorAlias, originalType, originalValue?.ToString()?[..Math.Min(originalValue.ToString()!.Length, 200)]);
+                }
+                else if (originalType != newType)
+                {
+                    _logger.LogDebug(
+                        "BlockPreview: FromEditor converted '{EditorAlias}' from {OriginalType} to {NewType}",
+                        propertyData.EditorAlias, originalType, newType);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex,
+                    "BlockPreview: FromEditor threw for property '{EditorAlias}' ({OriginalType}). Keeping original value",
+                    propertyData.EditorAlias, originalType);
+                propertyData.Value = originalValue;
+            }
         }
     }
 }

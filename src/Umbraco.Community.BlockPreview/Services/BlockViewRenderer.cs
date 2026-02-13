@@ -6,8 +6,12 @@ using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using System.Text.Encodings.Web;
+using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Community.BlockPreview.Extensions;
+using Umbraco.Community.BlockPreview.Helpers;
 using Umbraco.Community.BlockPreview.Interfaces;
 
 namespace Umbraco.Community.BlockPreview.Services
@@ -21,6 +25,8 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly IViewComponentHelperWrapper _viewComponentHelperWrapper;
         private readonly IRazorViewEngine _razorViewEngine;
         private readonly IViewComponentSelector _viewComponentSelector;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
+        private readonly ILogger<BlockViewRenderer> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockViewRenderer"/> class.
@@ -29,29 +35,71 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="viewComponentHelperWrapper">The view component helper wrapper.</param>
         /// <param name="razorViewEngine">The Razor view engine.</param>
         /// <param name="viewComponentSelector">The view component selector.</param>
+        /// <param name="serviceScopeFactory">The service scope factory.</param>
+        /// <param name="logger">The logger.</param>
+        [ActivatorUtilitiesConstructor]
         public BlockViewRenderer(
             ITempDataProvider tempDataProvider,
             IViewComponentHelperWrapper viewComponentHelperWrapper,
             IRazorViewEngine razorViewEngine,
-            IViewComponentSelector viewComponentSelector)
+            IViewComponentSelector viewComponentSelector,
+            IServiceScopeFactory serviceScopeFactory,
+            ILogger<BlockViewRenderer> logger)
         {
             _tempDataProvider = tempDataProvider;
             _viewComponentHelperWrapper = viewComponentHelperWrapper;
             _razorViewEngine = razorViewEngine;
             _viewComponentSelector = viewComponentSelector;
+            _serviceScopeFactory = serviceScopeFactory;
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BlockViewRenderer"/> class.
+        /// </summary>
+        /// <param name="tempDataProvider">The temp data provider.</param>
+        /// <param name="viewComponentHelperWrapper">The view component helper wrapper.</param>
+        /// <param name="razorViewEngine">The Razor view engine.</param>
+        /// <param name="viewComponentSelector">The view component selector.</param>
+        [Obsolete("Use the constructor that accepts IServiceScopeFactory. Scheduled for removal in v6.")]
+        public BlockViewRenderer(
+            ITempDataProvider tempDataProvider,
+            IViewComponentHelperWrapper viewComponentHelperWrapper,
+            IRazorViewEngine razorViewEngine,
+            IViewComponentSelector viewComponentSelector)
+            : this(
+                tempDataProvider,
+                viewComponentHelperWrapper,
+                razorViewEngine,
+                viewComponentSelector,
+                StaticServiceProvider.Instance.GetRequiredService<IServiceScopeFactory>(),
+                StaticServiceProvider.Instance.GetRequiredService<ILogger<BlockViewRenderer>>())
+        {
         }
 
         /// <inheritdoc/>
         public async Task<string> RenderAsync(BlockPreviewContext context, ViewEngineResult? viewResult = null)
         {
+            _logger.LogDebug("BlockPreview: RenderAsync starting for '{ContentAlias}' (BlockType: {BlockType})",
+                context.ContentAlias, context.BlockType);
+
             // Try ViewComponent first
             var viewComponentResult = await RenderViewComponentAsync(context);
-            if (viewComponentResult != null)
+            if (!string.IsNullOrEmpty(viewComponentResult))
                 return viewComponentResult;
+
+            if (viewComponentResult is not null)
+            {
+                _logger.LogWarning("BlockPreview: ViewComponent for '{ContentAlias}' returned empty string, falling through to partial view",
+                    context.ContentAlias);
+            }
 
             // Fall back to partial view
             if (viewResult == null || !viewResult.Success)
             {
+                _logger.LogDebug("BlockPreview: No cached view for '{ContentAlias}', using FindView fallback",
+                    context.ContentAlias);
+
                 viewResult = _razorViewEngine.FindView(context.ControllerContext, context.ContentAlias!, false);
 
                 if (!viewResult.Success)
@@ -60,6 +108,9 @@ namespace Umbraco.Community.BlockPreview.Services
 
             if (!viewResult.Success || viewResult.View == null)
             {
+                _logger.LogWarning("BlockPreview: View not found for '{ContentAlias}'. Searched: {Locations}",
+                    context.ContentAlias, string.Join(", ", viewResult.SearchedLocations ?? Array.Empty<string>()));
+
                 return string.Format(
                     Constants.ErrorMessages.WarningTemplate,
                     string.Format(
@@ -68,7 +119,15 @@ namespace Umbraco.Community.BlockPreview.Services
                         string.Join("<br/>", viewResult.SearchedLocations ?? Array.Empty<string>())));
             }
 
-            return await RenderPartialAsync(context, viewResult);
+            var partialResult = await RenderPartialAsync(context, viewResult);
+
+            if (string.IsNullOrEmpty(partialResult))
+            {
+                _logger.LogWarning("BlockPreview: RenderPartialAsync returned empty string for '{ContentAlias}' (view: {ViewName})",
+                    context.ContentAlias, viewResult.ViewName);
+            }
+
+            return partialResult;
         }
 
         /// <inheritdoc/>
@@ -84,27 +143,69 @@ namespace Umbraco.Community.BlockPreview.Services
                         string.Join("<br/>", viewResult.SearchedLocations ?? Array.Empty<string>())));
             }
 
-            var actionContext = new ActionContext(
-                context.ControllerContext.HttpContext,
-                new RouteData(),
-                new ActionDescriptor());
-
-            var sw = new StringWriter();
-
-            if (context.ViewData != null)
+            try
             {
-                var viewContext = new ViewContext(
-                    actionContext,
-                    viewResult.View,
-                    context.ViewData,
-                    new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
-                    sw,
-                    new HtmlHelperOptions());
+                var actionContext = new ActionContext(
+                    context.ControllerContext.HttpContext,
+                    new RouteData(),
+                    new ActionDescriptor());
 
-                await viewResult.View.RenderAsync(viewContext);
+                await using var sw = new StringWriter();
+
+                if (context.ViewData != null)
+                {
+                    var viewContext = new ViewContext(
+                        actionContext,
+                        viewResult.View,
+                        context.ViewData,
+                        new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
+                        sw,
+                        new HtmlHelperOptions());
+
+                    await viewResult.View.RenderAsync(viewContext);
+                }
+
+                return sw.ToString();
             }
+            catch (ObjectDisposedException ex)
+            {
+                _logger.LogWarning(ex, "BlockPreview: ObjectDisposedException in RenderPartialAsync for '{ContentAlias}', retrying with child scope",
+                    context.ContentAlias);
 
-            return sw.ToString();
+                // The request scope's IViewBufferScope was disposed before rendering completed
+                // (race condition under load, request cancellation, or middleware timing).
+                // Retry with a child scope that we control the lifetime of.
+                await using var scope = _serviceScopeFactory.CreateAsyncScope();
+                var httpContext = context.ControllerContext.HttpContext;
+                var originalServices = httpContext.RequestServices;
+
+                try
+                {
+                    httpContext.RequestServices = scope.ServiceProvider;
+
+                    var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+                    await using var sw = new StringWriter();
+
+                    if (context.ViewData != null)
+                    {
+                        var viewContext = new ViewContext(
+                            actionContext,
+                            viewResult.View,
+                            context.ViewData,
+                            new TempDataDictionary(actionContext.HttpContext, _tempDataProvider),
+                            sw,
+                            new HtmlHelperOptions());
+
+                        await viewResult.View.RenderAsync(viewContext);
+                    }
+
+                    return sw.ToString();
+                }
+                finally
+                {
+                    httpContext.RequestServices = originalServices;
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -117,23 +218,69 @@ namespace Umbraco.Community.BlockPreview.Services
             if (viewComponent == null)
                 return null;
 
-            var sw = new StringWriter();
-            var viewContext = new ViewContext(
-                context.ControllerContext,
-                new FakeView(),
-                context.ViewData!,
-                new TempDataDictionary(context.ControllerContext.HttpContext, _tempDataProvider),
-                sw,
-                new HtmlHelperOptions());
+            try
+            {
+                await using var sw = new StringWriter();
+                var viewContext = new ViewContext(
+                    context.ControllerContext,
+                    new FakeView(),
+                    context.ViewData!,
+                    new TempDataDictionary(context.ControllerContext.HttpContext, _tempDataProvider),
+                    sw,
+                    new HtmlHelperOptions());
 
-            _viewComponentHelperWrapper.Contextualize(viewContext);
+                _viewComponentHelperWrapper.Contextualize(viewContext);
 
-            var result = await _viewComponentHelperWrapper.InvokeAsync(
-                viewComponent.TypeInfo.AsType(),
-                context.ViewData?.Model);
+                var result = await _viewComponentHelperWrapper.InvokeAsync(
+                    viewComponent.TypeInfo.AsType(),
+                    context.ViewData?.Model);
 
-            result.WriteTo(sw, HtmlEncoder.Default);
-            return sw.ToString();
+                result.WriteTo(sw, HtmlEncoder.Default);
+                return sw.ToString();
+            }
+            catch (ObjectDisposedException ex)
+            {
+                _logger.LogWarning(ex, "BlockPreview: ObjectDisposedException in RenderViewComponentAsync for '{ContentAlias}', retrying with child scope",
+                    context.ContentAlias);
+
+                // The request scope's IViewBufferScope was disposed before rendering completed.
+                // Retry with a fresh IViewComponentHelper from a child scope we control.
+                await using var scope = _serviceScopeFactory.CreateAsyncScope();
+                var httpContext = context.ControllerContext.HttpContext;
+                var originalServices = httpContext.RequestServices;
+
+                try
+                {
+                    httpContext.RequestServices = scope.ServiceProvider;
+
+                    var freshHelper = scope.ServiceProvider.GetRequiredService<IViewComponentHelper>();
+                    IViewComponentHelperWrapper helper = freshHelper is DefaultViewComponentHelper defaultHelper
+                        ? new ViewComponentHelperWrapper<DefaultViewComponentHelper>(defaultHelper)
+                        : _viewComponentHelperWrapper;
+
+                    await using var sw = new StringWriter();
+                    var viewContext = new ViewContext(
+                        context.ControllerContext,
+                        new FakeView(),
+                        context.ViewData!,
+                        new TempDataDictionary(httpContext, _tempDataProvider),
+                        sw,
+                        new HtmlHelperOptions());
+
+                    helper.Contextualize(viewContext);
+
+                    var result = await helper.InvokeAsync(
+                        viewComponent.TypeInfo.AsType(),
+                        context.ViewData?.Model);
+
+                    result.WriteTo(sw, HtmlEncoder.Default);
+                    return sw.ToString();
+                }
+                finally
+                {
+                    httpContext.RequestServices = originalServices;
+                }
+            }
         }
 
         private sealed class FakeView : IView

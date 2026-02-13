@@ -3,8 +3,10 @@ using Umbraco.Community.BlockPreview.Interfaces;
 
 namespace Umbraco.Community.BlockPreview.TestSite.Services
 {
+    /// <inheritdoc />
     public class BlockPreviewResponseEnricher : IBlockPreviewResponseEnricher
     {
+        /// <inheritdoc />
         public Task<string> EnrichAsync(
             string markup,
             HttpContext httpContext,

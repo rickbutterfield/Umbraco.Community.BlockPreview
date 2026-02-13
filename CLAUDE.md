@@ -122,3 +122,11 @@ Uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) 
 - [Configuration Guide](/docs/configuration.md)
 - [Usage Guide](/docs/usage.md)
 - [Advanced Customization](/docs/advanced-customization.md)
+
+---
+
+## Architecture Notes
+
+**Razor view caching:** Never cache `ViewEngineResult` objects. ASP.NET Core's `RazorView` holds a single `IRazorPage` with mutable state (`ViewContext`, `Output`) that is set during `RenderAsync`. Caching the `ViewEngineResult` shares the page across concurrent requests, causing race conditions (empty renders, `ObjectDisposedException`). Cache the resolved view **path** instead and call `_razorViewEngine.GetView(path)` per request to get a fresh `RazorView`/`IRazorPage`.
+
+**Debugging approach:** When investigating rendering bugs, add diagnostic logging first before building fixes. Symptoms like empty strings, disposed object exceptions, and load-dependent failures can all stem from a single shared-state concurrency bug. Log the actual exception types and locations to avoid misdiagnosing the root cause.

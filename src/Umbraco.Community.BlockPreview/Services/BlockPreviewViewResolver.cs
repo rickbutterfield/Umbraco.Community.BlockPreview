@@ -14,7 +14,12 @@ namespace Umbraco.Community.BlockPreview.Services
     /// </summary>
     public class BlockPreviewViewResolver : IBlockPreviewViewResolver
     {
-        private static readonly ConcurrentDictionary<string, ViewEngineResult?> _viewCache = new();
+        /// <summary>
+        /// Sentinel value indicating a cache entry where no view path was found.
+        /// </summary>
+        private static readonly string NotFoundSentinel = "\0";
+
+        private static readonly ConcurrentDictionary<string, string> _pathCache = new();
 
         private readonly IRazorViewEngine _razorViewEngine;
         private readonly IWebHostEnvironment _webHostEnvironment;
@@ -43,12 +48,19 @@ namespace Umbraco.Community.BlockPreview.Services
                 return null;
 
             var cacheKey = BuildCacheKey(contentAlias, blockType);
+            var viewPath = _pathCache.GetOrAdd(cacheKey, _ => FindViewPath(contentAlias, blockType));
 
-            return _viewCache.GetOrAdd(cacheKey, _ => FindView(contentAlias, blockType));
+            if (ReferenceEquals(viewPath, NotFoundSentinel))
+                return null;
+
+            // Always create a fresh ViewEngineResult per call.
+            // GetView creates a new RazorView + IRazorPage, which is required
+            // because IRazorPage has mutable state (ViewContext) that is not thread-safe.
+            return _razorViewEngine.GetView("", viewPath, false);
         }
 
         /// <inheritdoc/>
-        public void ClearCache() => _viewCache.Clear();
+        public void ClearCache() => _pathCache.Clear();
 
         /// <inheritdoc/>
         public void ClearCacheForAlias(string contentAlias)
@@ -60,14 +72,14 @@ namespace Umbraco.Community.BlockPreview.Services
             foreach (BlockType blockType in Enum.GetValues<BlockType>())
             {
                 var cacheKey = BuildCacheKey(contentAlias, blockType);
-                _viewCache.TryRemove(cacheKey, out _);
+                _pathCache.TryRemove(cacheKey, out _);
 
                 // Also clear PascalCase variant if different
                 var pascalAlias = contentAlias.ToPascalCase();
                 if (pascalAlias != contentAlias)
                 {
                     var pascalCacheKey = BuildCacheKey(pascalAlias, blockType);
-                    _viewCache.TryRemove(pascalCacheKey, out _);
+                    _pathCache.TryRemove(pascalCacheKey, out _);
                 }
             }
         }
@@ -75,12 +87,16 @@ namespace Umbraco.Community.BlockPreview.Services
         private static string BuildCacheKey(string contentAlias, BlockType blockType)
             => $"{blockType}:{contentAlias}";
 
-        private ViewEngineResult? FindView(string contentAlias, BlockType blockType)
+        /// <summary>
+        /// Finds the view path for the given content alias and block type.
+        /// Returns the resolved path string, or <see cref="NotFoundSentinel"/> if no view exists.
+        /// </summary>
+        private string FindViewPath(string contentAlias, BlockType blockType)
         {
             var viewPaths = _options.GetViewLocations(blockType);
 
             if (viewPaths == null || viewPaths.Count == 0)
-                return null;
+                return NotFoundSentinel;
 
             string appRoot = _webHostEnvironment.ContentRootPath;
 
@@ -96,7 +112,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 {
                     var viewResult = _razorViewEngine.GetView("", pathNonPascal, false);
                     if (viewResult.Success)
-                        return viewResult;
+                        return pathNonPascal;
                 }
 
                 // Try PascalCase
@@ -108,11 +124,11 @@ namespace Umbraco.Community.BlockPreview.Services
                 {
                     var viewResult = _razorViewEngine.GetView("", pathPascal, false);
                     if (viewResult.Success)
-                        return viewResult;
+                        return pathPascal;
                 }
             }
 
-            return null;
+            return NotFoundSentinel;
         }
     }
 }
