@@ -1,0 +1,87 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build",
+      "detail": "Builds the client and solution",
+      "promptOnClose": true,
+      "group": "build",
+      "dependsOn": ["Client Build", "Dotnet build"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Client Install",
+      "detail": "Install npm packages for BlockPreview.UI",
+      "promptOnClose": true,
+      "type": "npm",
+      "script": "install",
+      "path": "src/Umbraco.Community.BlockPreview.UI/",
+      "problemMatcher": []
+    },
+    {
+      "label": "Client Build",
+      "detail": "Runs npm run build for BlockPreview.UI",
+      "promptOnClose": true,
+      "group": "build",
+      "type": "npm",
+      "script": "build",
+      "path": "src/Umbraco.Community.BlockPreview.UI/",
+      "problemMatcher": []
+    },
+    {
+      "label": "Client Watch",
+      "detail": "Runs npm run dev for BlockPreview.UI",
+      "promptOnClose": true,
+      "group": "build",
+      "type": "npm",
+      "script": "dev",
+      "path": "src/Umbraco.Community.BlockPreview.UI/",
+      "problemMatcher": []
+    },
+    {
+      "label": "Dotnet build",
+      "detail": "Dotnet build of solution",
+      "promptOnClose": true,
+      "group": "build",
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "build",
+        "${workspaceFolder}/Umbraco.Community.BlockPreview.sln",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "Dotnet watch",
+      "detail": "Dotnet run and watch of TestSite",
+      "promptOnClose": true,
+      "command": "dotnet",
+      "type": "process",
+      "args": [
+        "watch",
+        "run",
+        "--project",
+        "${workspaceFolder}/examples/Umbraco.Community.BlockPreview.TestSite/Umbraco.Community.BlockPreview.TestSite.csproj",
+        "/property:GenerateFullPaths=true",
+        "/consoleloggerparameters:NoSummary"
+      ],
+      "problemMatcher": "$msCompile"
+    },
+    {
+      "label": "kill-test-site",
+      "type": "shell",
+      "problemMatcher": [],
+      "osx": {
+        "command": "pkill -f Umbraco.Community.BlockPreview.TestSite"
+      },
+      "linux": {
+        "command": "pkill -f Umbraco.Community.BlockPreview.TestSite"
+      },
+      "windows": {
+        "command": "taskkill /IM Umbraco.Community.BlockPreview.TestSite.exe /F"
+      }
+    }
+  ]
+}

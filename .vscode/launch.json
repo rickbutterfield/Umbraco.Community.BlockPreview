@@ -1,0 +1,29 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": ".NET Core Launch (TestSite)",
+      "type": "coreclr",
+      "request": "launch",
+      "program": "dotnet",
+      "args": ["run"],
+      "cwd": "${workspaceFolder}/examples/Umbraco.Community.BlockPreview.TestSite",
+      "stopAtEntry": false,
+      "requireExactSource": false,
+      "postDebugTask": "kill-test-site",
+      "serverReadyAction": {
+        "action": "openExternally",
+        "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+      },
+      "env": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    {
+      "name": ".NET Core Attach",
+      "type": "coreclr",
+      "request": "attach",
+      "processId": "${command:pickProcess}"
+    }
+  ]
+}
