@@ -326,6 +326,12 @@ export class RichTextPreviewCustomView
             if (data != null) {
                 this._htmlMarkup = data;
                 this._isLoading = false;
+                document.body.dispatchEvent(new CustomEvent('umb-block-rte-preview-rendered', {
+                    detail: {
+                        host: this,
+                        html: this._htmlMarkup
+                    }
+                }));
             }
             else if (error) {
                 this._error = UmbApiError.isUmbApiError(error) ? error.message : 'An error occurred rendering the block preview';
