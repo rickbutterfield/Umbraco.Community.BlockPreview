@@ -398,6 +398,14 @@ export class BlockListPreviewCustomView
     _handleClick(event: PointerEvent) {
         const path = event.composedPath();
 
+        // Block clicks that originate from the overlay expose button, which is
+        // rendered as a sibling to this element when the block is not yet exposed.
+        if (path.some(x => x instanceof Element && x.tagName === 'UMB-BLOCK-OVERLAY-EXPOSE-BUTTON')) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
         // Check for clicks on action bars or resize handlers.
         const interactiveElements = ['UUI-ACTION-BAR', 'UMB-BLOCK-SCALE-HANDLER'];
         if (path.some(x => x instanceof Element && interactiveElements.includes(x.tagName))) {
