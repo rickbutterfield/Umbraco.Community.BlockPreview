@@ -80,7 +80,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## v4 (Umbraco 14-16)
+## v4 (Umbraco 16)
 
 ## [4.2.2] - 2026-02-12
 
