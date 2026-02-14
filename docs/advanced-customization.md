@@ -88,8 +88,9 @@ public class CustomBlockPreviewService : BlockPreviewService
             viewData["theme"] = theme;
         }
 
-        // Add any other custom data your views need
-        viewData["customData"] = "Your custom value";
+        // The async version lets you perform async operations like database lookups or API calls
+        var userPreferences = await _userPreferenceService.GetPreferencesAsync();
+        viewData["preferences"] = userPreferences;
 
         return viewData;
     }
@@ -251,13 +252,13 @@ builder.Services.AddUnique<IBlockPreviewResponseEnricher, BlockPreviewResponseEn
 
 ## Replaceable Services
 
-BlockPreview's internal rendering pipeline is split into three focused services that can each be replaced independently. All three are registered as scoped services.
+BlockPreview's internal rendering pipeline is split into three focused services that can each be replaced independently. All three are registered as scoped services (per-request), so you can safely inject other scoped services like `IPublishedContentQuery` or access `HttpContext`.
 
-| Interface | Default | Responsibility |
-|-----------|---------|----------------|
-| `IBlockModelFactory` | `BlockModelFactory` | Creates typed content/settings models and block item instances (BlockGridItem, BlockListItem, etc.) |
-| `IBlockViewRenderer` | `BlockViewRenderer` | Renders block previews using either ViewComponents or partial views |
-| `IBlockDataConverter` | `BlockDataConverter` | Deserializes raw block JSON and converts block item data to published elements |
+| Interface | Default | Responsibility | Lifecycle |
+|-----------|---------|----------------|-----------|
+| `IBlockModelFactory` | `BlockModelFactory` | Creates typed content/settings models and block item instances (BlockGridItem, BlockListItem, etc.) | Scoped |
+| `IBlockViewRenderer` | `BlockViewRenderer` | Renders block previews using either ViewComponents or partial views | Scoped |
+| `IBlockDataConverter` | `BlockDataConverter` | Deserializes raw block JSON and converts block item data to published elements | Scoped |
 
 ### IBlockModelFactory
 
@@ -269,9 +270,29 @@ using Umbraco.Community.BlockPreview.Enums;
 
 public class CustomBlockModelFactory : IBlockModelFactory
 {
+    private readonly IPublishedValueFallback _publishedValueFallback;
+
+    public CustomBlockModelFactory(IPublishedValueFallback publishedValueFallback)
+    {
+        _publishedValueFallback = publishedValueFallback;
+    }
+
     public object CreateModel(Type modelType, IPublishedElement element)
     {
-        // Custom model instantiation logic
+        // Models expect a constructor: (IPublishedElement, IPublishedValueFallback)
+        var ctor = modelType.GetConstructor(new[] { typeof(IPublishedElement), typeof(IPublishedValueFallback) });
+        if (ctor == null)
+            throw new InvalidOperationException($"Type {modelType.Name} missing expected constructor.");
+
+        var instance = ctor.Invoke(new object[] { element, _publishedValueFallback });
+
+        // Apply custom logic — e.g., set default values on models that support it
+        if (instance is IHasDefaults defaultModel)
+        {
+            defaultModel.ApplyDefaults();
+        }
+
+        return instance;
     }
 
     public object? CreateBlockItem(
@@ -279,7 +300,9 @@ public class CustomBlockModelFactory : IBlockModelFactory
         Type? settingsType, object? settingsInstance,
         Guid contentKey, Guid? settingsKey)
     {
-        // Custom block item creation logic
+        // Delegate to the default implementation or customise block item creation
+        // Block item constructors expect: (Udi contentUdi, TContent content, Udi? settingsUdi, TSettings? settings)
+        throw new NotImplementedException("See BlockModelFactory source for full implementation");
     }
 
     public object? CreateBlockInstance(
@@ -287,7 +310,15 @@ public class CustomBlockModelFactory : IBlockModelFactory
         Type? settingsType, IPublishedElement? settingsElement,
         Guid contentKey, Guid? settingsKey)
     {
-        // Combines CreateModel + CreateBlockItem into a single call
+        if (contentType == null || contentElement == null)
+            return null;
+
+        var contentInstance = CreateModel(contentType, contentElement);
+        var settingsInstance = settingsType != null && settingsElement != null
+            ? CreateModel(settingsType, settingsElement)
+            : null;
+
+        return CreateBlockItem(blockType, contentType, contentInstance, settingsType, settingsInstance, contentKey, settingsKey);
     }
 }
 ```
@@ -304,17 +335,28 @@ public class CustomBlockViewRenderer : IBlockViewRenderer
 {
     public async Task<string> RenderAsync(BlockPreviewContext context, ViewEngineResult? viewResult = null)
     {
-        // Custom rendering logic — try ViewComponent first, fall back to partial
+        // Try ViewComponent first, fall back to partial view
+        var vcResult = await RenderViewComponentAsync(context);
+        if (vcResult != null)
+            return vcResult;
+
+        if (viewResult?.View != null)
+            return await RenderPartialAsync(context, viewResult);
+
+        return string.Empty;
     }
 
     public async Task<string> RenderPartialAsync(BlockPreviewContext context, ViewEngineResult viewResult)
     {
-        // Custom partial view rendering
+        // Render a partial view to string using the context's ViewData and ControllerContext
+        // See BlockViewRenderer source for the full implementation
+        throw new NotImplementedException();
     }
 
     public async Task<string?> RenderViewComponentAsync(BlockPreviewContext context)
     {
-        // Custom ViewComponent rendering
+        // Return null to skip ViewComponent rendering and fall back to partial views
+        return null;
     }
 }
 ```
@@ -328,11 +370,46 @@ using Umbraco.Community.BlockPreview.Interfaces;
 
 public class CustomBlockDataConverter : IBlockDataConverter
 {
-    public BlockEditorData<BlockGridValue, BlockGridLayoutItem>? DeserializeBlockGrid(string? blockData) { /* ... */ }
-    public BlockEditorData<BlockListValue, BlockListLayoutItem>? DeserializeBlockList(string? blockData) { /* ... */ }
-    public BlockEditorData<RichTextBlockValue, RichTextBlockLayoutItem>? DeserializeRichText(string? blockData) { /* ... */ }
-    public IPublishedElement ConvertToElement(BlockItemData data, IPublishedElement owner) { /* ... */ }
-    public void FormatBlockData(List<BlockItemData>? blockData) { /* ... */ }
+    private readonly ILogger<CustomBlockDataConverter> _logger;
+
+    public CustomBlockDataConverter(ILogger<CustomBlockDataConverter> logger)
+    {
+        _logger = logger;
+    }
+
+    public BlockEditorData<BlockGridValue, BlockGridLayoutItem>? DeserializeBlockGrid(string? blockData)
+    {
+        // Deserialization methods should return null on failure rather than throwing,
+        // as the rendering pipeline treats null as "no data available"
+        if (string.IsNullOrWhiteSpace(blockData))
+            return null;
+
+        try
+        {
+            // Custom deserialization logic
+            return /* your implementation */;
+        }
+        catch (JsonException ex)
+        {
+            _logger.LogWarning(ex, "Failed to deserialize Block Grid data");
+            return null;
+        }
+    }
+
+    public BlockEditorData<BlockListValue, BlockListLayoutItem>? DeserializeBlockList(string? blockData) { /* same pattern */ }
+    public BlockEditorData<RichTextBlockValue, RichTextBlockLayoutItem>? DeserializeRichText(string? blockData) { /* same pattern */ }
+
+    public IPublishedElement ConvertToElement(BlockItemData data, IPublishedElement owner)
+    {
+        // This method should throw if the element cannot be created,
+        // as a missing element indicates a configuration problem
+        throw new NotImplementedException("See BlockDataConverter source for full implementation");
+    }
+
+    public void FormatBlockData(List<BlockItemData>? blockData)
+    {
+        // Pre-process block item data before conversion (e.g., normalise property values)
+    }
 }
 ```
 
