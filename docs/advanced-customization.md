@@ -27,11 +27,26 @@ using Umbraco.Community.BlockPreview.Enums;
 public class CustomBlockPreviewService : BlockPreviewService
 {
     private readonly IRazorViewEngine _razorViewEngine;
+    private readonly IUserPreferenceService _userPreferenceService;
 
-    public CustomBlockPreviewService(/* inject required dependencies */)
-        : base(/* pass dependencies to base */)
+    public CustomBlockPreviewService(
+        IPublishedModelFactory publishedModelFactory,
+        BlockEditorConverter blockEditorConverter,
+        IOptions<BlockPreviewOptions> options,
+        IJsonSerializer jsonSerializer,
+        IBlockModelFactory blockModelFactory,
+        IBlockViewRenderer blockViewRenderer,
+        IBlockDataConverter blockDataConverter,
+        IBlockTypeCacheService blockTypeCacheService,
+        IBlockPreviewViewResolver viewResolver,
+        IRazorViewEngine razorViewEngine,
+        IUserPreferenceService userPreferenceService)
+        : base(publishedModelFactory, blockEditorConverter, options, jsonSerializer,
+               blockModelFactory, blockViewRenderer, blockDataConverter,
+               blockTypeCacheService, viewResolver)
     {
         _razorViewEngine = razorViewEngine;
+        _userPreferenceService = userPreferenceService;
     }
 
     // Override to provide dynamic stylesheet paths
@@ -112,7 +127,7 @@ You can access custom ViewData in your Razor views:
 
 @{
     var theme = ViewData["theme"] as string;
-    var customData = ViewData["customData"] as string;
+    var preferences = ViewData["preferences"];
 }
 
 <div class="block block--@theme">
@@ -300,9 +315,16 @@ public class CustomBlockModelFactory : IBlockModelFactory
         Type? settingsType, object? settingsInstance,
         Guid contentKey, Guid? settingsKey)
     {
-        // Delegate to the default implementation or customise block item creation
         // Block item constructors expect: (Udi contentUdi, TContent content, Udi? settingsUdi, TSettings? settings)
-        throw new NotImplementedException("See BlockModelFactory source for full implementation");
+        // Convert Guid keys to Udi format as required by block item constructors
+        var contentUdi = Udi.Create(Umbraco.Cms.Core.Constants.UdiEntityType.Element, contentKey);
+        var settingsUdi = settingsKey.HasValue
+            ? Udi.Create(Umbraco.Cms.Core.Constants.UdiEntityType.Element, settingsKey.Value)
+            : null;
+
+        // Build the generic block item type (e.g., BlockGridItem<TContent, TSettings>)
+        // and invoke its constructor via reflection.
+        // See BlockModelFactory source for the complete implementation with constructor caching.
     }
 
     public object? CreateBlockInstance(
@@ -348,9 +370,13 @@ public class CustomBlockViewRenderer : IBlockViewRenderer
 
     public async Task<string> RenderPartialAsync(BlockPreviewContext context, ViewEngineResult viewResult)
     {
-        // Render a partial view to string using the context's ViewData and ControllerContext
-        // See BlockViewRenderer source for the full implementation
-        throw new NotImplementedException();
+        // Render a partial view to string using the context's ViewData and ControllerContext.
+        // Tip: Inherit from the default BlockViewRenderer and override individual methods
+        // rather than implementing the full interface from scratch.
+        await using var writer = new StringWriter();
+        var viewContext = new ViewContext(context.ControllerContext, viewResult.View!, context.ViewData, new TempDataDictionary(context.ControllerContext.HttpContext, /* ITempDataProvider */), writer, new HtmlHelperOptions());
+        await viewResult.View!.RenderAsync(viewContext);
+        return writer.ToString();
     }
 
     public async Task<string?> RenderViewComponentAsync(BlockPreviewContext context)
@@ -370,10 +396,14 @@ using Umbraco.Community.BlockPreview.Interfaces;
 
 public class CustomBlockDataConverter : IBlockDataConverter
 {
+    private readonly BlockEditorConverter _blockEditorConverter;
     private readonly ILogger<CustomBlockDataConverter> _logger;
 
-    public CustomBlockDataConverter(ILogger<CustomBlockDataConverter> logger)
+    public CustomBlockDataConverter(
+        BlockEditorConverter blockEditorConverter,
+        ILogger<CustomBlockDataConverter> logger)
     {
+        _blockEditorConverter = blockEditorConverter;
         _logger = logger;
     }
 
@@ -402,8 +432,11 @@ public class CustomBlockDataConverter : IBlockDataConverter
     public IPublishedElement ConvertToElement(BlockItemData data, IPublishedElement owner)
     {
         // This method should throw if the element cannot be created,
-        // as a missing element indicates a configuration problem
-        throw new NotImplementedException("See BlockDataConverter source for full implementation");
+        // as a missing element indicates a configuration problem.
+        // The default implementation uses BlockEditorConverter.ConvertToElement()
+        // to convert BlockItemData into IPublishedElement instances.
+        var element = _blockEditorConverter.ConvertToElement(owner, data, PropertyCacheLevel.None, preview: true);
+        return element ?? throw new InvalidOperationException($"Unable to find Element {data.ContentTypeAlias}");
     }
 
     public void FormatBlockData(List<BlockItemData>? blockData)
