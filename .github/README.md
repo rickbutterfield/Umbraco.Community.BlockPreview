@@ -126,6 +126,6 @@ This package is entirely based on the amazing work done by [Dave Woestenborghs](
 
 ## License
 
-Copyright &copy; 2022-2025 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
+Copyright &copy; 2022-2026 [Rick Butterfield](https://rickbutterfield.dev), and other contributors.
 
 Licensed under the [MIT License](https://github.com/rickbutterfield/BlockPreview/blob/v5/main/LICENSE).
