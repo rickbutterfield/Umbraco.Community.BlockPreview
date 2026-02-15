@@ -19,7 +19,7 @@ namespace Umbraco.Community.BlockPreview
     {
         public void Compose(IUmbracoBuilder builder)
         {
-            builder.AddInternal(config => config.BindConfiguration(Constants.Configuration.AppSettingsRoot));
+            builder.AddInternal();
 
             builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
 

@@ -9,6 +9,8 @@ namespace Umbraco.Community.BlockPreview.Extensions
     /// </summary>
     public static class BlockPreviewUmbracoBuilderExtensions
     {
+        private static bool _optionsRegistered;
+
         /// <summary>
         /// Adds Block Preview services to the Umbraco builder.
         /// </summary>
@@ -37,22 +39,27 @@ namespace Umbraco.Community.BlockPreview.Extensions
         {
             ArgumentNullException.ThrowIfNull(builder);
 
-            var optionsBuilder = builder.Services.AddOptions<BlockPreviewOptions>()
-                .BindConfiguration(Constants.Configuration.AppSettingsRoot)
-                .PostConfigure(x =>
-                {
-                    if (x.BlockGrid?.ViewLocations != null)
-                        x.BlockGrid.ViewLocations.Add(Constants.DefaultViewLocations.BlockGrid);
+            if (!_optionsRegistered)
+            {
+                _optionsRegistered = true;
 
-                    if (x.BlockList?.ViewLocations != null)
-                        x.BlockList.ViewLocations.Add(Constants.DefaultViewLocations.BlockList);
+                var optionsBuilder = builder.Services.AddOptions<BlockPreviewOptions>()
+                    .BindConfiguration(Constants.Configuration.AppSettingsRoot)
+                    .PostConfigure(x =>
+                    {
+                        if (x.BlockGrid?.ViewLocations != null)
+                            x.BlockGrid.ViewLocations.Add(Constants.DefaultViewLocations.BlockGrid);
 
-                    if (x.RichText?.ViewLocations != null)
-                        x.RichText.ViewLocations.Add(Constants.DefaultViewLocations.RichText);
-                })
-                .ValidateDataAnnotations();
+                        if (x.BlockList?.ViewLocations != null)
+                            x.BlockList.ViewLocations.Add(Constants.DefaultViewLocations.BlockList);
 
-            configure?.Invoke(optionsBuilder);
+                        if (x.RichText?.ViewLocations != null)
+                            x.RichText.ViewLocations.Add(Constants.DefaultViewLocations.RichText);
+                    })
+                    .ValidateDataAnnotations();
+
+                configure?.Invoke(optionsBuilder);
+            }
 
             return builder;
         }
