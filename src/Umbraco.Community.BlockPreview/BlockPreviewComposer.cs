@@ -23,8 +23,8 @@ namespace Umbraco.Community.BlockPreview
 
             builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
 
-            builder.AddNotificationHandler<DataTypeSavedNotification, DataTypeSavedNotificationHandler>();
-            builder.AddNotificationHandler<ContentTypeSavedNotification, ContentTypeSavedNotificationHandler>();
+            builder.AddNotificationAsyncHandler<DataTypeSavedNotification, DataTypeSavedNotificationHandler>();
+            builder.AddNotificationAsyncHandler<ContentTypeSavedNotification, ContentTypeSavedNotificationHandler>();
 
             builder.Services.AddScoped<IViewComponentHelperWrapper>(sp =>
             {

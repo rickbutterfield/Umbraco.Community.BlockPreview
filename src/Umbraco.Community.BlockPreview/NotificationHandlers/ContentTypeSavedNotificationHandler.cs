@@ -1,8 +1,5 @@
-﻿using Microsoft.Extensions.DependencyInjection;
 using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Events;
-using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Extensions;
@@ -12,7 +9,7 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
     /// <summary>
     /// Handles content type saved notifications to clear related caches.
     /// </summary>
-    public class ContentTypeSavedNotificationHandler : INotificationHandler<ContentTypeSavedNotification>
+    public class ContentTypeSavedNotificationHandler : INotificationAsyncHandler<ContentTypeSavedNotification>
     {
         private readonly IAppPolicyCache _runtimeCache;
         private readonly IBlockPreviewViewResolver _viewResolver;
@@ -29,23 +26,14 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ContentTypeSavedNotificationHandler"/> class.
-        /// </summary>
-        /// <param name="appCaches">The application caches.</param>
-        [Obsolete("Use the constructor that accepts IBlockPreviewViewResolver.")]
-        public ContentTypeSavedNotificationHandler(AppCaches appCaches)
-            : this(appCaches, StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewViewResolver>())
-        {
-        }
-
-        /// <summary>
         /// Handles the content type saved notification.
         /// </summary>
         /// <param name="notification">The notification.</param>
-        public void Handle(ContentTypeSavedNotification notification)
+        /// <param name="cancellationToken">The cancellation token.</param>
+        public Task HandleAsync(ContentTypeSavedNotification notification, CancellationToken cancellationToken)
         {
             if (notification.SavedEntities == null || !notification.SavedEntities.Any())
-                return;
+                return Task.CompletedTask;
 
             foreach (var savedContentType in notification.SavedEntities)
             {
@@ -63,6 +51,8 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
                 if (savedContentType.IsElement)
                     _viewResolver.ClearCacheForAlias(savedContentType.Alias);
             }
+
+            return Task.CompletedTask;
         }
     }
 }
