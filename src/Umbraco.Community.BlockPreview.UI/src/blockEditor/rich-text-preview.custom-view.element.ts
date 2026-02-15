@@ -1,57 +1,18 @@
-import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
-import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
-import { UMB_BLOCK_RTE_ENTRY_CONTEXT, UMB_BLOCK_RTE_MANAGER_CONTEXT, UmbBlockRteValueModel } from "@umbraco-cms/backoffice/block-rte";
-import { UMB_DOCUMENT_WORKSPACE_CONTEXT, UmbDocumentWorkspaceContext } from '@umbraco-cms/backoffice/document';
-import { css, customElement, html, ifDefined, property, PropertyValueMap, state, unsafeHTML } from "@umbraco-cms/backoffice/external/lit";
-import { UUIButtonElement } from '@umbraco-cms/backoffice/external/uui';
-import { UmbLitElement } from "@umbraco-cms/backoffice/lit-element";
-import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
-import { UMB_PROPERTY_DATASET_CONTEXT } from "@umbraco-cms/backoffice/property";
-import { tryExecute, UmbApiError } from "@umbraco-cms/backoffice/resources";
 import { BlockPreviewService } from "../api";
-import BlockPreviewContext from '../context/block-preview.context';
-import { BLOCK_PREVIEW_CONTEXT } from '../context/block-preview.context-token';
+import { BlockPreviewBaseElement } from './block-preview-base.element';
+import { BlockContext } from './types';
+import { customElement, property, state } from "@umbraco-cms/backoffice/external/lit";
+import { UMB_BLOCK_RTE_ENTRY_CONTEXT, UMB_BLOCK_RTE_MANAGER_CONTEXT, UmbBlockRteValueModel } from "@umbraco-cms/backoffice/block-rte";
+import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from '@umbraco-cms/backoffice/document';
+import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
+import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 const elementName = "rich-text-preview";
 
 @customElement(elementName)
-export class RichTextPreviewCustomView
-    extends UmbLitElement
-    implements UmbBlockEditorCustomViewElement {
+export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockContext> {
 
-    #blockPreviewContext?: BlockPreviewContext;
-    #documentWorkspaceContext?: UmbDocumentWorkspaceContext;
-
-    @property({ attribute: false })
-    content?: UmbBlockDataType;
-
-    @property({ attribute: false })
-    settings?: UmbBlockDataType;
-
-    @property({ attribute: false })
-    contentKey?: string;
-
-    @property({ attribute: false })
-    config?: UmbBlockEditorCustomViewConfiguration;
-
-    @state()
-    _htmlMarkup: string | undefined = "";
-
-    @state()
-    private _isLoading: boolean = false;
-
-    @state()
-    private _error: string | null = null;
-
-    private _styleElements: HTMLLinkElement[] = [];
-
-    private _previewTimeout: number | undefined;
-
-    private _requestId: number = 0;
-
-    private _isConnected: boolean = false;
-
-    private _blockContext = {
+    protected _blockContext: BlockContext = {
         unique: '',
         documentTypeUnique: '',
         contentUdi: '',
@@ -60,7 +21,8 @@ export class RichTextPreviewCustomView
         culture: '',
         workspaceEditContentPath: '',
         contentElementTypeAlias: '',
-        contentElementTypeKey: ''
+        contentElementTypeKey: '',
+        blockIndex: 0
     };
 
     @state()
@@ -84,134 +46,28 @@ export class RichTextPreviewCustomView
         return this._blockRteValue;
     }
 
-    constructor() {
-        super();
-
-        this.consumeContext(BLOCK_PREVIEW_CONTEXT, (context) => {
-            this.#blockPreviewContext = context;
-            this.#setupContextObservers();
-        });
-    }
-
-    override connectedCallback() {
-        super.connectedCallback();
-        this._isConnected = true;
-    }
-
-    override disconnectedCallback() {
-        super.disconnectedCallback();
-        this._isConnected = false;
-        if (this._previewTimeout) {
-            clearTimeout(this._previewTimeout);
-            this._previewTimeout = undefined;
-        }
-    }
-
-    protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
-        super.updated(_changedProperties);
-
-        if (_changedProperties.has('content') || _changedProperties.has('settings')) {
-            if (this._previewTimeout) {
-                clearTimeout(this._previewTimeout);
-            }
-            this._previewTimeout = window.setTimeout(() => {
-                this.#renderBlockPreview();
-            }, 500);
-        }
-    }
-
-    #setupContextObservers() {
-        this.#observePropertyDataset();
+    protected setupContextObservers() {
+        this.observePropertyDataset();
         this.#observeDocumentWorkspace();
-    }
-
-    #observePropertyDataset() {
-        this.consumeContext(UMB_PROPERTY_DATASET_CONTEXT, async (instance) => {
-            if (instance) {
-                this._blockContext.culture = instance.getVariantId().culture ?? "";
-            }
-        });
     }
 
     #observeDocumentWorkspace() {
         this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
             if (context) {
-                this.#documentWorkspaceContext = context;
+                this._workspaceContextResolved = true;
                 this.observe(
                     observeMultiple([context.unique, context.contentTypeUnique]),
                     async ([unique, documentTypeUnique]) => {
-                        // Early exit if disconnected or missing required data
-                        if (!this._isConnected || !documentTypeUnique) {
-                            return;
-                        }
-
-                        this._blockContext.unique = unique?.toString() ?? '';
-                        this.#blockPreviewContext?.setUnique(this._blockContext.unique);
-
-                        this._blockContext.documentTypeUnique = documentTypeUnique;
-                        this.#blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
-                        this.#observeBlockValue();
-
-                        const { data } = await tryExecute(this, BlockPreviewService.getRteStylesheets({
-                            query: {
-                                documentTypeUnique: this._blockContext.documentTypeUnique,
-                                nodeKey: this._blockContext.unique
-                            }
-                        }));
-                        if (data && data.length > 0) {
-                            this._styleElements = data.map(href => {
-                                const link = document.createElement('link');
-                                link.rel = 'stylesheet';
-                                link.href = href;
-                                return link;
-                            });
-                        }
+                        await this.handleWorkspaceData(unique?.toString(), documentTypeUnique);
                     }
                 );
             }
         });
 
-        if (this.#documentWorkspaceContext == null && this.#blockPreviewContext != null && this._blockContext.unique == '') {
-            this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, async (context) => {
-                if (context) {
-                    this.observe(context.content.structure.contentTypeUniques, async (contentTypeUniques) => {
-                        const documentTypeUnique = contentTypeUniques[0];
-
-                        // Early exit if disconnected or missing required data
-                        if (!this._isConnected || !documentTypeUnique) {
-                            return;
-                        }
-
-                        // Try to get unique from context, then fallback to extraction
-                        this._blockContext.unique = this.#blockPreviewContext?.getUnique() ?? '';
-                        if (!this._blockContext.unique && this._blockContext.workspaceEditContentPath) {
-                            this._blockContext.unique = this.#extractUniqueFromWorkspacePath(this._blockContext.workspaceEditContentPath);
-                        }
-
-                        this._blockContext.documentTypeUnique = documentTypeUnique;
-                        this.#observeBlockValue();
-
-                        const { data } = await tryExecute(this, BlockPreviewService.getRteStylesheets({
-                            query: {
-                                documentTypeUnique: this._blockContext.documentTypeUnique,
-                                nodeKey: this._blockContext.unique
-                            }
-                        }));
-                        if (data && data.length > 0) {
-                            this._styleElements = data.map(href => {
-                                const link = document.createElement('link');
-                                link.rel = 'stylesheet';
-                                link.href = href;
-                                return link;
-                            });
-                        }
-                    });
-                }
-            });
-        }
+        this.observeBlockWorkspaceFallback();
     }
 
-    #observeBlockValue(): void {
+    protected observeBlockValue(): void {
         this.consumeContext(UMB_BLOCK_RTE_ENTRY_CONTEXT, (context) => {
             if (context != null) {
                 this.observe(
@@ -274,203 +130,28 @@ export class RichTextPreviewCustomView
         });
     }
 
-
-    async #renderBlockPreview() {
-        if (!this._isConnected) {
-            return;
-        }
-
-        const context = this._blockContext;
-
-        // Try to get unique from context, then fallback to extraction
-        if (this.#blockPreviewContext != null && context.unique == '') {
-            context.unique = this.#blockPreviewContext.getUnique();
-            if (!context.unique && context.workspaceEditContentPath) {
-                context.unique = this.#extractUniqueFromWorkspacePath(context.workspaceEditContentPath);
+    protected callPreviewApi() {
+        return tryExecute(this, BlockPreviewService.previewRichTextMarkup({
+            body: JSON.stringify(this.blockRteValue),
+            query: {
+                blockEditorAlias: this._blockContext.blockEditorAlias,
+                nodeKey: this._blockContext.unique,
+                contentElementAlias: this._blockContext.contentElementTypeAlias,
+                documentTypeUnique: this._blockContext.documentTypeUnique,
+                culture: this._blockContext.culture
             }
-        }
-
-        if (this.#blockPreviewContext != null && context.documentTypeUnique == '') {
-            context.documentTypeUnique = this.#blockPreviewContext.getDocumentTypeUnique();
-        }
-
-        const isDataValid = this.#validatePreviewData(context);
-
-        if (!isDataValid) {
-            this._error = 'Insufficient data for block preview';
-            this._isLoading = false;
-            return;
-        }
-
-        this._isLoading = true;
-        this._error = null;
-
-        const requestId = ++this._requestId;
-
-        try {
-            const { data, error } = await this.#blockPreviewContext!.requestQueue.enqueue(() =>
-                tryExecute(this, BlockPreviewService.previewRichTextMarkup({
-                    body: JSON.stringify(this.blockRteValue),
-                    query: {
-                        blockEditorAlias: context.blockEditorAlias,
-                        nodeKey: context.unique,
-                        contentElementAlias: context.contentElementTypeAlias,
-                        documentTypeUnique: context.documentTypeUnique,
-                        culture: context.culture
-                    }
-                }))
-            );
-
-            if (this._requestId !== requestId) return;
-
-            if (data != null) {
-                this._htmlMarkup = data;
-                this._isLoading = false;
-            }
-            else if (error) {
-                this._error = UmbApiError.isUmbApiError(error) ? error.message : 'An error occurred rendering the block preview';
-                this._isLoading = false;
-            }
-            else {
-                this._isLoading = false;
-            }
-        } catch (error) {
-            if (this._requestId !== requestId) return;
-            this._error = 'Failed to render block preview';
-            this._isLoading = false;
-            console.error('Block preview error:', error);
-        }
+        }));
     }
 
-    #validatePreviewData(context: typeof this._blockContext): boolean {
-        return !!(
-            context.unique != '' &&
-            context.blockEditorAlias != '' &&
-            context.contentElementTypeAlias != ''
-        );
+    protected async fetchStylesheets() {
+        const { data } = await tryExecute(this, BlockPreviewService.getRteStylesheets({
+            query: {
+                documentTypeUnique: this._blockContext.documentTypeUnique,
+                nodeKey: this._blockContext.unique
+            }
+        }));
+        return data;
     }
-
-    #extractUniqueFromWorkspacePath(path: string): string {
-        // Extract the document unique from the workspace edit path
-        // Pattern: /workspace/document/edit/{unique}/
-        const match = path.match(/\/workspace\/document\/edit\/([a-f0-9-]{36})/i);
-        return match ? match[1] : '';
-    }
-
-    _handleClick(event: PointerEvent) {
-        const path = event.composedPath();
-
-        // Check for clicks on action bars or resize handlers.
-        const interactiveElements = ['UUI-ACTION-BAR', 'UMB-BLOCK-SCALE-HANDLER'];
-        if (path.some(x => x instanceof Element && interactiveElements.includes(x.tagName))) {
-            // Allow edit button clicks through — the <a> tag handles navigation.
-            const editButton = path.find(x => x instanceof UUIButtonElement && x.href?.includes('block/edit'));
-            if (editButton) {
-                return;
-            }
-
-            // Block all other action bar clicks (delete, copy, etc.) to prevent
-            // the parent block's <a> from navigating when interacting with
-            // child blocks inside areas.
-            event.preventDefault();
-            event.stopPropagation();
-            return;
-        }
-
-        // Handle custom links within the preview
-        const containsLink = path.filter(x => x instanceof Element && x.tagName === 'A' && x.hasAttribute('data-block-preview-link')) as Element[];
-        if (containsLink.length > 0) {
-            event.preventDefault();
-            event.stopPropagation();
-            const blockPreviewEdit = path.find(x => x instanceof Element && x.tagName === 'A' && x.classList.contains('block-preview-edit'));
-            if (blockPreviewEdit instanceof Element) {
-                window.history.pushState({}, '', blockPreviewEdit.getAttribute('href'));
-            } else {
-                window.history.pushState({}, '', this._blockContext.workspaceEditContentPath);
-            }
-            return;
-        }
-    }
-
-    override render() {
-        if (this._isLoading) {
-            return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
-        }
-
-        if (this._error) {
-            return html`
-                <div class="preview-alert preview-alert-error" role="alert">
-                    ${this._error}
-                </div>
-            `;
-        }
-
-        if (this._htmlMarkup) {
-            return html`
-                ${this._styleElements}
-                <a
-                    href=${ifDefined(this._blockContext.workspaceEditContentPath)}
-                    @click=${this._handleClick}
-                    aria-label="Edit block"
-                    class="block-preview-edit"
-                    role="button"
-                >
-                    ${unsafeHTML(this._htmlMarkup)}
-                </a>`;
-        }
-        return;
-    }
-
-    static styles = [
-        css`
-            a.block-preview-edit {
-              display: block;
-              color: inherit;
-              text-decoration: inherit;
-              border: 1px solid transparent;
-              border-radius: 2px;
-            }
-
-            a.block-preview-edit:hover {
-                border-color: var(--uui-color-interactive-emphasis, #3544b1);
-            }
-
-            .preview-alert {
-                background-color: var(--uui-color-danger, #f0ac00);
-                border: 1px solid transparent;
-                border-radius: 0;
-                margin-bottom: 20px;
-                padding: 8px 35px 8px 14px;
-                position: relative;
-
-                &, a, h4 {
-                    color: #fff;
-                }
-
-                pre {
-                    white-space: normal;
-                }
-            }
-
-            .preview-alert-warning {
-                background-color: var(--uui-color-warning, #f0ac00);
-                border-color: transparent;
-                color: #000;
-            }
-
-            .preview-alert-info {
-                background-color: var(--uui-color-default, #3544b1);
-                border-color: transparent;
-                color: #fff;
-            }
-
-            .preview-alert-danger, .preview-alert-error {
-                background-color: var(--uui-color-danger, #f0ac00);
-                border-color: transparent;
-                color: #fff;
-            }
-        `
-    ]
 }
 
 export default RichTextPreviewCustomView;
