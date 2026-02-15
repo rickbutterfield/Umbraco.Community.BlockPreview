@@ -23,22 +23,22 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private readonly IRazorViewEngine _razorViewEngine;
         private readonly IWebHostEnvironment _webHostEnvironment;
-        private readonly BlockPreviewOptions _options;
+        private readonly IOptionsMonitor<BlockPreviewOptions> _optionsMonitor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockPreviewViewResolver"/> class.
         /// </summary>
         /// <param name="razorViewEngine">The Razor view engine.</param>
         /// <param name="webHostEnvironment">The web host environment.</param>
-        /// <param name="options">The block preview options.</param>
+        /// <param name="optionsMonitor">The block preview options monitor.</param>
         public BlockPreviewViewResolver(
             IRazorViewEngine razorViewEngine,
             IWebHostEnvironment webHostEnvironment,
-            IOptions<BlockPreviewOptions> options)
+            IOptionsMonitor<BlockPreviewOptions> optionsMonitor)
         {
             _razorViewEngine = razorViewEngine;
             _webHostEnvironment = webHostEnvironment;
-            _options = options.Value;
+            _optionsMonitor = optionsMonitor;
         }
 
         /// <inheritdoc/>
@@ -93,7 +93,7 @@ namespace Umbraco.Community.BlockPreview.Services
         /// </summary>
         private string FindViewPath(string contentAlias, BlockType blockType)
         {
-            var viewPaths = _options.GetViewLocations(blockType);
+            var viewPaths = _optionsMonitor.CurrentValue.GetViewLocations(blockType);
 
             if (viewPaths == null || viewPaths.Count == 0)
                 return NotFoundSentinel;
