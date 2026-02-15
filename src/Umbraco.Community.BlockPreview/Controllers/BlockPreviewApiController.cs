@@ -318,11 +318,14 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 ShouldApplyIgnoredContentTypes(settings.BlockList) ||
                 ShouldApplyIgnoredContentTypes(settings.RichText))
             {
-                var contentTypeService = HttpContext.RequestServices.GetRequiredService<IContentTypeService>();
-                var allElementAliases = contentTypeService.GetAll()
-                    .Where(ct => ct.IsElement)
-                    .Select(ct => ct.Alias)
-                    .ToList();
+                var allElementAliases = _runtimeCache.GetCacheItem(Constants.CacheKeys.ElementAliases, () =>
+                {
+                    var contentTypeService = HttpContext.RequestServices.GetRequiredService<IContentTypeService>();
+                    return contentTypeService.GetAll()
+                        .Where(ct => ct.IsElement)
+                        .Select(ct => ct.Alias)
+                        .ToList();
+                }, CacheDuration)!;
 
                 return new BlockPreviewOptions
                 {

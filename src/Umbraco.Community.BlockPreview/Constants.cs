@@ -178,6 +178,11 @@
             /// Cache key template for data type.
             /// </summary>
             public static string DataType = "BlockPreview_DataType_{0}";
+
+            /// <summary>
+            /// Cache key for element type aliases used by the settings endpoint.
+            /// </summary>
+            public static string ElementAliases = "BlockPreview_ElementAliases";
         }
     }
 }
