@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System.Text.Encodings.Web;
-using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Helpers;
 using Umbraco.Community.BlockPreview.Interfaces;
@@ -37,7 +36,6 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="viewComponentSelector">The view component selector.</param>
         /// <param name="serviceScopeFactory">The service scope factory.</param>
         /// <param name="logger">The logger.</param>
-        [ActivatorUtilitiesConstructor]
         public BlockViewRenderer(
             ITempDataProvider tempDataProvider,
             IViewComponentHelperWrapper viewComponentHelperWrapper,
@@ -52,29 +50,6 @@ namespace Umbraco.Community.BlockPreview.Services
             _viewComponentSelector = viewComponentSelector;
             _serviceScopeFactory = serviceScopeFactory;
             _logger = logger;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlockViewRenderer"/> class.
-        /// </summary>
-        /// <param name="tempDataProvider">The temp data provider.</param>
-        /// <param name="viewComponentHelperWrapper">The view component helper wrapper.</param>
-        /// <param name="razorViewEngine">The Razor view engine.</param>
-        /// <param name="viewComponentSelector">The view component selector.</param>
-        [Obsolete("Use the constructor that accepts IServiceScopeFactory. Scheduled for removal in v6.")]
-        public BlockViewRenderer(
-            ITempDataProvider tempDataProvider,
-            IViewComponentHelperWrapper viewComponentHelperWrapper,
-            IRazorViewEngine razorViewEngine,
-            IViewComponentSelector viewComponentSelector)
-            : this(
-                tempDataProvider,
-                viewComponentHelperWrapper,
-                razorViewEngine,
-                viewComponentSelector,
-                StaticServiceProvider.Instance.GetRequiredService<IServiceScopeFactory>(),
-                StaticServiceProvider.Instance.GetRequiredService<ILogger<BlockViewRenderer>>())
-        {
         }
 
         /// <inheritdoc/>

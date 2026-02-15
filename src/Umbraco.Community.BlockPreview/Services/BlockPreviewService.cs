@@ -1,24 +1,14 @@
-﻿using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Mvc.ViewComponents;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Cache.PropertyEditors;
-using Umbraco.Cms.Core.Composing;
-using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PropertyEditors;
 using Umbraco.Cms.Core.PropertyEditors.ValueConverters;
 using Umbraco.Cms.Core.Serialization;
-using Umbraco.Cms.Core.Services;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Extensions;
@@ -53,7 +43,6 @@ namespace Umbraco.Community.BlockPreview.Services
         /// <param name="blockDataConverter">The block data converter.</param>
         /// <param name="blockTypeCacheService">The block type cache service.</param>
         /// <param name="viewResolver">The view resolver.</param>
-        [ActivatorUtilitiesConstructor]
         public BlockPreviewService(
             IPublishedModelFactory publishedModelFactory,
             BlockEditorConverter blockEditorConverter,
@@ -74,95 +63,6 @@ namespace Umbraco.Community.BlockPreview.Services
             _blockTypeCacheService = blockTypeCacheService;
             _viewResolver = viewResolver;
             _hasModelFactory = publishedModelFactory is not NoopPublishedModelFactory;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlockPreviewService"/> class.
-        /// </summary>
-        /// <param name="tempDataProvider">No longer used.</param>
-        /// <param name="viewComponentHelperWrapper">No longer used.</param>
-        /// <param name="razorViewEngine">The Razor view engine.</param>
-        /// <param name="publishedModelFactory">The published model factory.</param>
-        /// <param name="blockEditorConverter">The block editor converter.</param>
-        /// <param name="viewComponentSelector">No longer used.</param>
-        /// <param name="publishedValueFallback">No longer used.</param>
-        /// <param name="options">The block preview options.</param>
-        /// <param name="jsonSerializer">The JSON serializer.</param>
-        /// <param name="contentTypeService">No longer used.</param>
-        /// <param name="dataTypeService">No longer used.</param>
-        /// <param name="appCaches">No longer used.</param>
-        /// <param name="webHostEnvironment">The web host environment.</param>
-        /// <param name="elementTypeCache">No longer used.</param>
-        /// <param name="logger">No longer used.</param>
-        /// <param name="blockModelFactory">The block model factory.</param>
-        /// <param name="blockViewRenderer">The block view renderer.</param>
-        /// <param name="blockDataConverter">The block data converter.</param>
-        /// <param name="blockTypeCacheService">The block type cache service.</param>
-        [Obsolete("Use the constructor with fewer parameters. Several dependencies are no longer used.")]
-        public BlockPreviewService(
-            ITempDataProvider tempDataProvider,
-            IViewComponentHelperWrapper viewComponentHelperWrapper,
-            IRazorViewEngine razorViewEngine,
-            IPublishedModelFactory publishedModelFactory,
-            BlockEditorConverter blockEditorConverter,
-            IViewComponentSelector viewComponentSelector,
-            IPublishedValueFallback publishedValueFallback,
-            IOptions<BlockPreviewOptions> options,
-            IJsonSerializer jsonSerializer,
-            IContentTypeService contentTypeService,
-            IDataTypeService dataTypeService,
-            AppCaches appCaches,
-            IWebHostEnvironment webHostEnvironment,
-            IBlockEditorElementTypeCache elementTypeCache,
-            ILogger<BlockPreviewService> logger,
-            IBlockModelFactory blockModelFactory,
-            IBlockViewRenderer blockViewRenderer,
-            IBlockDataConverter blockDataConverter,
-            IBlockTypeCacheService blockTypeCacheService)
-            : this(
-                publishedModelFactory,
-                blockEditorConverter,
-                options,
-                jsonSerializer,
-                blockModelFactory,
-                blockViewRenderer,
-                blockDataConverter,
-                blockTypeCacheService,
-                StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewViewResolver>())
-        {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlockPreviewService"/> class.
-        /// </summary>
-        [Obsolete("Use the constructor that accepts IPublishedModelFactory and IBlockModelFactory instead. This constructor will be removed in a future version.")]
-        public BlockPreviewService(
-            ITempDataProvider tempDataProvider,
-            IViewComponentHelperWrapper viewComponentHelperWrapper,
-            IRazorViewEngine razorViewEngine,
-            ITypeFinder typeFinder,
-            BlockEditorConverter blockEditorConverter,
-            IViewComponentSelector viewComponentSelector,
-            IPublishedValueFallback publishedValueFallback,
-            IOptions<BlockPreviewOptions> options,
-            IJsonSerializer jsonSerializer,
-            IContentTypeService contentTypeService,
-            IDataTypeService dataTypeService,
-            AppCaches appCaches,
-            IWebHostEnvironment webHostEnvironment,
-            IBlockEditorElementTypeCache elementTypeCache,
-            ILogger<BlockPreviewService> logger)
-            : this(
-                StaticServiceProvider.Instance.GetRequiredService<IPublishedModelFactory>(),
-                blockEditorConverter,
-                options,
-                jsonSerializer,
-                StaticServiceProvider.Instance.GetRequiredService<IBlockModelFactory>(),
-                StaticServiceProvider.Instance.GetRequiredService<IBlockViewRenderer>(),
-                StaticServiceProvider.Instance.GetRequiredService<IBlockDataConverter>(),
-                StaticServiceProvider.Instance.GetRequiredService<IBlockTypeCacheService>(),
-                StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewViewResolver>())
-        {
         }
 
         #region Public

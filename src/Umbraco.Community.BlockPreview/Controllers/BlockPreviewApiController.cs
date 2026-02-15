@@ -10,7 +10,6 @@ using Microsoft.Extensions.Options;
 using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Composing;
-using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Cms.Core.Routing;
@@ -52,7 +51,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockPreviewApiController"/> class.
         /// </summary>
-        [ActivatorUtilitiesConstructor]
         public BlockPreviewApiController(
             IPublishedRouter publishedRouter,
             ILogger<BlockPreviewApiController> logger,
@@ -84,44 +82,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _scopeProvider = scopeProvider;
             _requestEnricher = requestEnricher;
             _responseEnricher = responseEnricher;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="BlockPreviewApiController"/> class.
-        /// </summary>
-        [Obsolete("Use the constructor with IBlockPreviewResponseEnricher parameter instead.")]
-        public BlockPreviewApiController(
-            IPublishedRouter publishedRouter,
-            ILogger<BlockPreviewApiController> logger,
-            IUmbracoContextAccessor umbracoContextAccessor,
-            ContextCultureService contextCultureSwitcher,
-            IBlockPreviewService blockPreviewService,
-            ILanguageService languageService,
-            IOptions<BlockPreviewOptions> blockPreviewSettings,
-            ITypeFinder typeFinder,
-            AppCaches appCaches,
-            IElementsCache elementsCache,
-            IDocumentCacheService documentCacheService,
-            IPublishedContentTypeCache contentTypeCache,
-            IScopeProvider scopeProvider,
-            IBlockPreviewRequestEnricher requestEnricher)
-            : this(
-                publishedRouter,
-                logger,
-                umbracoContextAccessor,
-                contextCultureSwitcher,
-                blockPreviewService,
-                languageService,
-                blockPreviewSettings,
-                typeFinder,
-                appCaches,
-                elementsCache,
-                documentCacheService,
-                contentTypeCache,
-                scopeProvider,
-                requestEnricher,
-                StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewResponseEnricher>())
-        {
         }
 
         #region Public

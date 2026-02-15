@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.DependencyInjection;
-using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.DependencyInjection;
+﻿using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Events;
 using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Notifications;
@@ -26,16 +24,6 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
         {
             _runtimeCache = appCaches.RuntimeCache;
             _viewResolver = viewResolver;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ContentTypeSavedNotificationHandler"/> class.
-        /// </summary>
-        /// <param name="appCaches">The application caches.</param>
-        [Obsolete("Use the constructor that accepts IBlockPreviewViewResolver.")]
-        public ContentTypeSavedNotificationHandler(AppCaches appCaches)
-            : this(appCaches, StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewViewResolver>())
-        {
         }
 
         /// <summary>
