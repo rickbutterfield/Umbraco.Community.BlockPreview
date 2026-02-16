@@ -47,6 +47,9 @@ namespace Umbraco.Community.BlockPreview.NotificationHandlers
             if (notification.SavedEntities == null || !notification.SavedEntities.Any())
                 return;
 
+            // Clear cached element aliases used by GetSettings endpoint
+            _runtimeCache.ClearByKey(Constants.CacheKeys.ElementAliases);
+
             foreach (var savedContentType in notification.SavedEntities)
             {
                 bool matchingEditor = savedContentType.PropertyTypes.Any(x => x.PropertyEditorAlias.ContainsAny(new[] {
