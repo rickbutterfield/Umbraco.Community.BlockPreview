@@ -15,20 +15,22 @@ namespace Umbraco.Community.BlockPreview.Extensions
         /// <returns>True if the request is a Block Preview request; otherwise, false.</returns>
         public static bool IsBlockPreviewRequest(this HttpRequest request)
         {
-            var routeValues = request.HttpContext.Request.RouteValues;
+            var routeValues = request.RouteValues;
 
             if (!routeValues.TryGetValue("controller", out var controllerValue) ||
-                !routeValues.TryGetValue("action", out var actionValue))
+                !routeValues.TryGetValue("action", out var actionValue) ||
+                controllerValue is not string controller ||
+                actionValue is not string action)
             {
                 return false;
             }
 
-            string requestControllerName = (string)controllerValue! + "Controller";
+            string requestControllerName = controller + "Controller";
 
             bool requestControllerMatches = requestControllerName.Equals(nameof(BlockPreviewApiController));
-            bool isBlockGridPreview = actionValue!.Equals(nameof(BlockPreviewApiController.PreviewGridBlock));
-            bool isBlockListPreview = actionValue.Equals(nameof(BlockPreviewApiController.PreviewListBlock));
-            bool isRichTextPreview = actionValue.Equals(nameof(BlockPreviewApiController.PreviewRichTextMarkup));
+            bool isBlockGridPreview = action.Equals(nameof(BlockPreviewApiController.PreviewGridBlock));
+            bool isBlockListPreview = action.Equals(nameof(BlockPreviewApiController.PreviewListBlock));
+            bool isRichTextPreview = action.Equals(nameof(BlockPreviewApiController.PreviewRichTextMarkup));
 
             return requestControllerMatches && (isBlockGridPreview || isBlockListPreview || isRichTextPreview);
         }
