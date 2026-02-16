@@ -178,6 +178,12 @@
             /// Cache key template for data type.
             /// </summary>
             public const string DataType = "BlockPreview_DataType_{0}";
+
+            /// <summary>
+            /// Cache key for element type aliases used by the settings endpoint.
+            /// Invalidated by <see cref="NotificationHandlers.ContentTypeSavedNotificationHandler"/> when any content type is saved.
+            /// </summary>
+            public const string ElementAliases = "BlockPreview_ElementAliases";
         }
     }
 }
