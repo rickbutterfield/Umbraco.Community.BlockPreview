@@ -1,6 +1,5 @@
 ﻿using Asp.Versioning;
 using HtmlAgilityPack;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -306,7 +305,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// Loads the in-memory settings from appsettings.json
         /// </summary>
         /// <returns><see cref="BlockPreviewOptions">Block Preview settings</see></returns>
-        [AllowAnonymous]
         [HttpGet("settings")]
         [ProducesResponseType(typeof(BlockPreviewOptions), 200)]
         public BlockPreviewOptions GetSettings()

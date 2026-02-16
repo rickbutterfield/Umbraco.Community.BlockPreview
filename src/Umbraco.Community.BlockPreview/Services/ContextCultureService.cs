@@ -1,5 +1,4 @@
-﻿using System.Globalization;
-using Umbraco.Cms.Core.Models.PublishedContent;
+﻿using Umbraco.Cms.Core.Models.PublishedContent;
 
 namespace Umbraco.Community.BlockPreview.Services
 {
@@ -20,16 +19,12 @@ namespace Umbraco.Community.BlockPreview.Services
         }
 
         /// <summary>
-        /// Sets the current culture.
+        /// Sets the current culture via the Umbraco variation context.
         /// </summary>
         /// <param name="culture">The culture to set.</param>
         public void SetCulture(string culture)
         {
             _variationContextAccessor.VariationContext = new VariationContext(culture);
-
-            var cultureInfo = new CultureInfo(culture);
-            Thread.CurrentThread.CurrentCulture = cultureInfo;
-            Thread.CurrentThread.CurrentUICulture = cultureInfo;
         }
     }
 }

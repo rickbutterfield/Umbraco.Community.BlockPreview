@@ -9,6 +9,7 @@
         <PackageReference Include="Umbraco.Cms" />
         <PackageReference Include="Umbraco.Cms.Core" />
         <PackageReference Include="Umbraco.Cms.StaticAssets" />
+        <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" VersionOverride="17.1.0" />
         <PackageReference Include="uSync" />
     </ItemGroup>
 
@@ -32,6 +33,11 @@
     <PropertyGroup>
         <!-- Razor files are needed for the backoffice to work correctly -->
         <CopyRazorGenerateFilesToPublishDirectory>true</CopyRazorGenerateFilesToPublishDirectory>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <RazorCompileOnBuild>false</RazorCompileOnBuild>
+        <RazorCompileOnPublish>false</RazorCompileOnPublish>
     </PropertyGroup>
 
 </Project>
