@@ -32,7 +32,7 @@ namespace Umbraco.Community.BlockPreview.Extensions
         /// <param name="builder">The Umbraco builder.</param>
         /// <param name="configure">The optional configuration action.</param>
         /// <returns>The Umbraco builder.</returns>
-        public static IUmbracoBuilder AddInternal(this IUmbracoBuilder builder,
+        internal static IUmbracoBuilder AddInternal(this IUmbracoBuilder builder,
             Action<OptionsBuilder<BlockPreviewOptions>>? configure = null)
         {
             ArgumentNullException.ThrowIfNull(builder);
