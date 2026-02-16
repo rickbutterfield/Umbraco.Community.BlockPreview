@@ -1,11 +1,12 @@
 import "@umbraco-cms/backoffice/auth";
-import { a as o, b as s, R as a, S as r, c as w, o as c } from './index-B-RnP5Ex.js?v=4.3.0-alpha';
+import { b as t, c as o, a, R as r, S as w, d as c, o as m } from './index-DaddVkl8.js?v=4.3.0-alpha';
 export {
-  o as BlockGridPreviewCustomView,
-  s as BlockListPreviewCustomView,
-  a as RichTextPreviewCustomView,
-  r as SettingsDataSource,
-  w as SettingsRepository,
-  c as onInit
+  t as BlockGridPreviewCustomView,
+  o as BlockListPreviewCustomView,
+  a as BlockPreviewBaseElement,
+  r as RichTextPreviewCustomView,
+  w as SettingsDataSource,
+  c as SettingsRepository,
+  m as onInit
 };
 //# sourceMappingURL=index.js.map
