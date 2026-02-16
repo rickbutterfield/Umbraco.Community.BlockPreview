@@ -325,7 +325,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
                         .Where(ct => ct.IsElement)
                         .Select(ct => ct.Alias)
                         .ToList();
-                }, CacheDuration)!;
+                }, CacheDuration) ?? [];
 
                 return new BlockPreviewOptions
                 {

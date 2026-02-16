@@ -181,6 +181,7 @@
 
             /// <summary>
             /// Cache key for element type aliases used by the settings endpoint.
+            /// Invalidated by <see cref="NotificationHandlers.ContentTypeSavedNotificationHandler"/> when any content type is saved.
             /// </summary>
             public static string ElementAliases = "BlockPreview_ElementAliases";
         }
