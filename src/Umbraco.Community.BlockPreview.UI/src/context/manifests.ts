@@ -1,4 +1,5 @@
-﻿import { ManifestGlobalContext } from "@umbraco-cms/backoffice/extension-registry";
+﻿// ManifestGlobalContext is only available in extension-registry, not extension-api
+import { ManifestGlobalContext } from "@umbraco-cms/backoffice/extension-registry";
 
 const contexts: Array<ManifestGlobalContext> = [
     {

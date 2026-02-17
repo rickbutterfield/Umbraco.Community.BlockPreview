@@ -1,16 +1,22 @@
-import { BlockPreviewService } from "../api";
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockContext } from './types';
+import { PreviewRepository } from '../repository';
 import { customElement, property, state } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_RTE_ENTRY_CONTEXT, UMB_BLOCK_RTE_MANAGER_CONTEXT, UmbBlockRteValueModel } from "@umbraco-cms/backoffice/block-rte";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from '@umbraco-cms/backoffice/document';
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
-import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 const elementName = "rich-text-preview";
 
 @customElement(elementName)
 export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockContext> {
+
+    #previewRepository: PreviewRepository;
+
+    constructor() {
+        super();
+        this.#previewRepository = new PreviewRepository(this);
+    }
 
     protected _blockContext: BlockContext = {
         unique: '',
@@ -118,11 +124,11 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
                         this._blockContext.blockEditorAlias = propertyAlias ?? '';
 
                         this.blockRteValue = {
-                            contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
-                            settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
-                            expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
+                            contentData: contents?.filter(x => x.key === this._blockContext.contentUdi) ?? [],
+                            settingsData: settings?.filter(x => x.key === this._blockContext.settingsUdi) ?? [],
+                            expose: exposes?.filter(x => x.contentKey === this._blockContext.contentUdi) ?? [],
                             layout: {
-                                ['Umbraco.RichText']: layouts?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? []
+                                ['Umbraco.RichText']: layouts?.filter(x => x.contentKey === this._blockContext.contentUdi) ?? []
                             }
                         };
                     });
@@ -130,26 +136,24 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
         });
     }
 
-    protected callPreviewApi() {
-        return tryExecute(this, BlockPreviewService.previewRichTextMarkup({
-            body: JSON.stringify(this.blockRteValue),
-            query: {
+    protected async callPreviewApi() {
+        return await this.#previewRepository.previewRichTextMarkup(
+            JSON.stringify(this.blockRteValue),
+            {
                 blockEditorAlias: this._blockContext.blockEditorAlias,
                 nodeKey: this._blockContext.unique,
                 contentElementAlias: this._blockContext.contentElementTypeAlias,
                 documentTypeUnique: this._blockContext.documentTypeUnique,
                 culture: this._blockContext.culture
             }
-        }));
+        );
     }
 
     protected async fetchStylesheets() {
-        const { data } = await tryExecute(this, BlockPreviewService.getRteStylesheets({
-            query: {
-                documentTypeUnique: this._blockContext.documentTypeUnique,
-                nodeKey: this._blockContext.unique
-            }
-        }));
+        const { data } = await this.#previewRepository.getRteStylesheets({
+            documentTypeUnique: this._blockContext.documentTypeUnique,
+            nodeKey: this._blockContext.unique
+        });
         return data;
     }
 }

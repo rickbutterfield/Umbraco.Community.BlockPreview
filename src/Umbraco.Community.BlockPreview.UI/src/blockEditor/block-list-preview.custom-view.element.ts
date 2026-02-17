@@ -1,16 +1,22 @@
-import { BlockPreviewService } from "../api";
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockListContext } from './types';
+import { PreviewRepository } from '../repository';
 import { css, customElement, html, property, state } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_LIST_ENTRY_CONTEXT, UMB_BLOCK_LIST_MANAGER_CONTEXT, UmbBlockListValueModel } from "@umbraco-cms/backoffice/block-list";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
-import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 const elementName = "block-list-preview";
 
 @customElement(elementName)
 export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockListContext> {
+
+    #previewRepository: PreviewRepository;
+
+    constructor() {
+        super();
+        this.#previewRepository = new PreviewRepository(this);
+    }
 
     protected _blockContext: BlockListContext = {
         unique: '',
@@ -124,11 +130,11 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
                         this._blockContext.blockEditorAlias = propertyAlias ?? '';
 
                         this.blockListValue = {
-                            contentData: contents?.filter(x => x.key == this._blockContext.contentUdi) ?? [],
-                            settingsData: settings?.filter(x => x.key == this._blockContext.settingsUdi) ?? [],
-                            expose: exposes?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? [],
+                            contentData: contents?.filter(x => x.key === this._blockContext.contentUdi) ?? [],
+                            settingsData: settings?.filter(x => x.key === this._blockContext.settingsUdi) ?? [],
+                            expose: exposes?.filter(x => x.contentKey === this._blockContext.contentUdi) ?? [],
                             layout: {
-                                ['Umbraco.BlockList']: layouts?.filter(x => x.contentKey == this._blockContext.contentUdi) ?? []
+                                ['Umbraco.BlockList']: layouts?.filter(x => x.contentKey === this._blockContext.contentUdi) ?? []
                             }
                         };
 
@@ -139,10 +145,10 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
         });
     }
 
-    protected callPreviewApi() {
-        return tryExecute(this, BlockPreviewService.previewListBlock({
-            body: JSON.stringify(this.blockListValue),
-            query: {
+    protected async callPreviewApi() {
+        return await this.#previewRepository.previewListBlock(
+            JSON.stringify(this.blockListValue),
+            {
                 blockEditorAlias: this._blockContext.blockEditorAlias,
                 nodeKey: this._blockContext.unique,
                 contentElementAlias: this._blockContext.contentElementTypeAlias,
@@ -152,16 +158,14 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
                 culture: this._blockContext.culture,
                 blockIndex: this._blockContext.blockIndex,
             }
-        }));
+        );
     }
 
     protected async fetchStylesheets() {
-        const { data } = await tryExecute(this, BlockPreviewService.getListStylesheets({
-            query: {
-                documentTypeUnique: this._blockContext.documentTypeUnique,
-                nodeKey: this._blockContext.unique
-            }
-        }));
+        const { data } = await this.#previewRepository.getListStylesheets({
+            documentTypeUnique: this._blockContext.documentTypeUnique,
+            nodeKey: this._blockContext.unique
+        });
         return data;
     }
 
