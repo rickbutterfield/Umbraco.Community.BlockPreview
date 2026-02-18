@@ -41,13 +41,15 @@ public class BlockPreviewViewResolverTests
             }
         };
 
-        var optionsMock = new Mock<IOptions<BlockPreviewOptions>>();
-        optionsMock.Setup(o => o.Value).Returns(_options);
+        var optionsMonitorMock = new Mock<IOptionsMonitor<BlockPreviewOptions>>();
+        optionsMonitorMock.Setup(o => o.CurrentValue).Returns(_options);
+        optionsMonitorMock.Setup(o => o.OnChange(It.IsAny<Action<BlockPreviewOptions, string?>>()))
+            .Returns(Mock.Of<IDisposable>());
 
         _resolver = new BlockPreviewViewResolver(
             _razorViewEngineMock.Object,
             _webHostEnvironmentMock.Object,
-            optionsMock.Object);
+            optionsMonitorMock.Object);
 
         // Clear cache before each test
         _resolver.ClearCache();

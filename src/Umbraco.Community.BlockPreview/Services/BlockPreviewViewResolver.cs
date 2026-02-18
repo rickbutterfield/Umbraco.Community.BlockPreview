@@ -39,6 +39,7 @@ namespace Umbraco.Community.BlockPreview.Services
             _razorViewEngine = razorViewEngine;
             _webHostEnvironment = webHostEnvironment;
             _optionsMonitor = optionsMonitor;
+            _optionsMonitor.OnChange(_ => ClearCache());
         }
 
         /// <inheritdoc/>
