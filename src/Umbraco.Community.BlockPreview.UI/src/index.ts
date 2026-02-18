@@ -9,6 +9,7 @@ import BlockPreviewContext from './context/block-preview.context.ts';
 import { manifests as contextManifests } from './context/manifests.ts';
 import { manifests as propertyManifests } from './property/manifests.ts';
 import { manifests as propertyActionManifests } from './propertyActions/manifests.ts';
+import { manifests as localizationManifests } from './localization/manifests.ts';
 import { SettingsRepository } from './repository';
 
 export * from './blockEditor';
@@ -72,7 +73,7 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
             }
 
             if (settings.richText.enabled) {
-                let richTextManifext: ManifestBlockEditorCustomView = {
+                let richTextManifest: ManifestBlockEditorCustomView = {
                     type: 'blockEditorCustomView',
                     alias: 'BlockPreview.RichTextCustomView',
                     name: 'BlockPreview Rich Text Custom View',
@@ -81,10 +82,10 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
                 };
 
                 if (settings.richText.contentTypes?.length !== 0) {
-                    richTextManifext.forContentTypeAlias = settings.richText.contentTypes as string[];
+                    richTextManifest.forContentTypeAlias = settings.richText.contentTypes as string[];
                 }
 
-                customViewManifests.push(richTextManifext);
+                customViewManifests.push(richTextManifest);
             }
         }
 
@@ -92,7 +93,8 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
             ...customViewManifests,
             ...contextManifests,
             ...propertyManifests,
-            ...propertyActionManifests
+            ...propertyActionManifests,
+            ...localizationManifests
         ]);
 
         host.provideContext(BLOCK_PREVIEW_CONTEXT, new BlockPreviewContext(host));

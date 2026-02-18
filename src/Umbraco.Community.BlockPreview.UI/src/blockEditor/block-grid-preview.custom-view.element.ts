@@ -1,16 +1,22 @@
-import { BlockPreviewService } from "../api";
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockGridContext } from './types';
+import { PreviewDataSource } from '../repository';
 import { css, customElement, html, property } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
-import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
 const elementName = "block-grid-preview";
 
 @customElement(elementName)
 export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGridContext> {
+
+    #previewDataSource: PreviewDataSource;
+
+    constructor() {
+        super();
+        this.#previewDataSource = new PreviewDataSource(this);
+    }
 
     protected _blockContext: BlockGridContext = {
         unique: "",
@@ -141,7 +147,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
         const areas = this._blockContext.areas.map(area => {
             const model: UmbBlockGridLayoutAreaItemModel = {
                 key: area.key,
-                items: this._blockContext.layoutAreas?.find(layout => layout.key == area.key)?.items!
+                items: this._blockContext.layoutAreas?.find(layout => layout.key === area.key)?.items ?? []
             }
             return model;
         });
@@ -160,9 +166,10 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
         return layoutModel;
     }
 
-    protected callPreviewApi() {
-        return tryExecute(this, BlockPreviewService.previewGridBlock({
-            body: JSON.stringify(this.blockGridValue), query: {
+    protected async callPreviewApi() {
+        return await this.#previewDataSource.previewGridBlock(
+            JSON.stringify(this.blockGridValue),
+            {
                 blockEditorAlias: this._blockContext.blockEditorAlias,
                 nodeKey: this._blockContext.unique,
                 contentElementAlias: this._blockContext.contentElementTypeAlias,
@@ -172,16 +179,14 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                 culture: this._blockContext.culture,
                 blockIndex: this._blockContext.blockIndex
             }
-        }));
+        );
     }
 
     protected async fetchStylesheets() {
-        const { data } = await tryExecute(this, BlockPreviewService.getGridStylesheets({
-            query: {
-                documentTypeUnique: this._blockContext.documentTypeUnique,
-                nodeKey: this._blockContext.unique
-            }
-        }));
+        const { data } = await this.#previewDataSource.getGridStylesheets({
+            documentTypeUnique: this._blockContext.documentTypeUnique,
+            nodeKey: this._blockContext.unique
+        });
         return data;
     }
 

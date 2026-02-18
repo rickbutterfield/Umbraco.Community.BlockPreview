@@ -221,7 +221,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         this.resolveUniqueFromContext();
 
         if (!this.validatePreviewData()) {
-            this._error = 'Insufficient data for block preview';
+            this._error = this.localize.term('blockPreview_insufficientData');
             this._isLoading = false;
             return;
         }
@@ -243,7 +243,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
                 this._isLoading = false;
             }
             else if (error) {
-                this._error = UmbApiError.isUmbApiError(error) ? error.message : 'An error occurred rendering the block preview';
+                this._error = UmbApiError.isUmbApiError(error) ? error.message : this.localize.term('blockPreview_renderError');
                 this._isLoading = false;
             }
             else {
@@ -251,7 +251,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
             }
         } catch (error) {
             if (this._requestId !== requestId) return;
-            this._error = 'Failed to render block preview';
+            this._error = this.localize.term('blockPreview_renderFailed');
             this._isLoading = false;
             console.error('Block preview error:', error);
         }
@@ -337,7 +337,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         }
 
         if (this._isLoading) {
-            return html`<div class="preview-alert preview-alert-info"><uui-loader style="color: #fff"></uui-loader> Loading preview...</div>`;
+            return html`<div class="preview-alert preview-alert-info"><uui-loader></uui-loader> <umb-localize key="blockPreview_loading">Loading preview...</umb-localize></div>`;
         }
 
         if (this._error) {
@@ -354,9 +354,8 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
                 <a
                     href=${ifDefined(this._blockContext.workspaceEditContentPath)}
                     @click=${this._handleClick}
-                    aria-label="Edit block"
+                    aria-label=${this.localize.term('blockPreview_editBlock')}
                     class="block-preview-edit"
-                    role="button"
                 >
                     ${unsafeHTML(this._htmlMarkup)}
                 </a>
@@ -397,6 +396,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
                 }
 
                 uui-loader {
+                    color: #fff;
                     margin-right: 16px;
                 }
             }
