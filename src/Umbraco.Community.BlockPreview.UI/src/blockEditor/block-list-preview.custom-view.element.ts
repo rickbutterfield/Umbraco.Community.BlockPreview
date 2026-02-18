@@ -1,6 +1,6 @@
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockListContext } from './types';
-import { PreviewRepository } from '../repository';
+import { PreviewDataSource } from '../repository';
 import { css, customElement, html, property, state } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_LIST_ENTRY_CONTEXT, UMB_BLOCK_LIST_MANAGER_CONTEXT, UmbBlockListValueModel } from "@umbraco-cms/backoffice/block-list";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
@@ -11,11 +11,11 @@ const elementName = "block-list-preview";
 @customElement(elementName)
 export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockListContext> {
 
-    #previewRepository: PreviewRepository;
+    #previewDataSource: PreviewDataSource;
 
     constructor() {
         super();
-        this.#previewRepository = new PreviewRepository(this);
+        this.#previewDataSource = new PreviewDataSource(this);
     }
 
     protected _blockContext: BlockListContext = {
@@ -146,7 +146,7 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
     }
 
     protected async callPreviewApi() {
-        return await this.#previewRepository.previewListBlock(
+        return await this.#previewDataSource.previewListBlock(
             JSON.stringify(this.blockListValue),
             {
                 blockEditorAlias: this._blockContext.blockEditorAlias,
@@ -162,7 +162,7 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
     }
 
     protected async fetchStylesheets() {
-        const { data } = await this.#previewRepository.getListStylesheets({
+        const { data } = await this.#previewDataSource.getListStylesheets({
             documentTypeUnique: this._blockContext.documentTypeUnique,
             nodeKey: this._blockContext.unique
         });

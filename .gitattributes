@@ -1,0 +1,4 @@
+# Mark compiled frontend assets as generated to reduce PR diff noise
+src/Umbraco.Community.BlockPreview/wwwroot/App_Plugins/**/*.js linguist-generated=true
+src/Umbraco.Community.BlockPreview/wwwroot/App_Plugins/**/*.js.map linguist-generated=true
+src/Umbraco.Community.BlockPreview/wwwroot/App_Plugins/**/*.json linguist-generated=true

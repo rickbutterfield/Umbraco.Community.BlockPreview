@@ -10,4 +10,4 @@ const contexts: Array<ManifestGlobalContext> = [
     }
 ]
 
-export const manifests = [...contexts];
+export const manifests = contexts;

@@ -12,4 +12,4 @@ const localizations: Array<ManifestLocalization> = [
     },
 ];
 
-export const manifests = [...localizations];
+export const manifests = localizations;

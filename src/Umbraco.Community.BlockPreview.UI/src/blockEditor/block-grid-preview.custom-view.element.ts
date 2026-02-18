@@ -1,6 +1,6 @@
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockGridContext } from './types';
-import { PreviewRepository } from '../repository';
+import { PreviewDataSource } from '../repository';
 import { css, customElement, html, property } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
@@ -11,11 +11,11 @@ const elementName = "block-grid-preview";
 @customElement(elementName)
 export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGridContext> {
 
-    #previewRepository: PreviewRepository;
+    #previewDataSource: PreviewDataSource;
 
     constructor() {
         super();
-        this.#previewRepository = new PreviewRepository(this);
+        this.#previewDataSource = new PreviewDataSource(this);
     }
 
     protected _blockContext: BlockGridContext = {
@@ -167,7 +167,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
     }
 
     protected async callPreviewApi() {
-        return await this.#previewRepository.previewGridBlock(
+        return await this.#previewDataSource.previewGridBlock(
             JSON.stringify(this.blockGridValue),
             {
                 blockEditorAlias: this._blockContext.blockEditorAlias,
@@ -183,7 +183,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
     }
 
     protected async fetchStylesheets() {
-        const { data } = await this.#previewRepository.getGridStylesheets({
+        const { data } = await this.#previewDataSource.getGridStylesheets({
             documentTypeUnique: this._blockContext.documentTypeUnique,
             nodeKey: this._blockContext.unique
         });
