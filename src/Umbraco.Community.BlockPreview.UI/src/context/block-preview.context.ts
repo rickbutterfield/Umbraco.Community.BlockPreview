@@ -45,7 +45,7 @@ export class BlockPreviewContext extends UmbControllerBase {
     }
 
     async setUnique(unique: string) {
-        if (unique != '') {
+        if (unique !== '') {
             this.#unique.setValue(unique);
         }
     }
@@ -55,7 +55,7 @@ export class BlockPreviewContext extends UmbControllerBase {
     }
 
     async setDocumentTypeUnique(documentTypeUnique: string) {
-        if (documentTypeUnique != '') {
+        if (documentTypeUnique !== '') {
             this.#documentTypeUnique.setValue(documentTypeUnique);
         }
     }
