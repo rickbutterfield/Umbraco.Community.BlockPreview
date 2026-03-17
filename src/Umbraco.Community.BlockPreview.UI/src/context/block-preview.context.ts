@@ -1,7 +1,7 @@
 ﻿import { UmbControllerBase } from "@umbraco-cms/backoffice/class-api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { SettingsRepository } from "..";
-import { UmbBooleanState, UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
+import { UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
 import { BlockPreviewOptions } from "../api";
 import { BlockPreviewRequestQueue } from "./block-preview-request-queue";
 
@@ -9,6 +9,7 @@ export class BlockPreviewContext extends UmbControllerBase {
 
     #settingsRepository: SettingsRepository;
     #requestQueue = new BlockPreviewRequestQueue(3);
+    #stylesheetCache = new Map<string, CSSStyleSheet>();
 
     /** Shared concurrency-limited queue for preview API requests. */
     get requestQueue(): BlockPreviewRequestQueue {
@@ -24,15 +25,11 @@ export class BlockPreviewContext extends UmbControllerBase {
     #documentTypeUnique = new UmbStringState('');
     public readonly documentTypeUnique = this.#documentTypeUnique.asObservable();
 
-    #sortModeActive = new UmbBooleanState(false);
-    public readonly sortModeActive = this.#sortModeActive.asObservable();
-
     constructor(host: UmbControllerHost) {
         super(host);
         this.#settingsRepository = new SettingsRepository(host);
 
         this.getSettings();
-        this.setSortMode(false);
     }
 
     async getSettings() {
@@ -60,13 +57,18 @@ export class BlockPreviewContext extends UmbControllerBase {
         }
     }
 
-    getSortMode(): boolean {
-        return this.#sortModeActive.getValue();
+    async getOrCreateStylesheet(href: string): Promise<CSSStyleSheet> {
+        const cached = this.#stylesheetCache.get(href);
+        if (cached) return cached;
+
+        const response = await fetch(href);
+        const css = await response.text();
+        const sheet = new CSSStyleSheet();
+        sheet.replaceSync(css);
+        this.#stylesheetCache.set(href, sheet);
+        return sheet;
     }
 
-    async setSortMode(sortMode: boolean) {
-        this.#sortModeActive.setValue(sortMode);
-    }
 }
 
 export default BlockPreviewContext;

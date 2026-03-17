@@ -22,10 +22,10 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     protected _blockPreviewContext?: BlockPreviewContext;
     protected _workspaceContextResolved: boolean = false;
 
-    @property({ attribute: false })
+    @property({ attribute: false, hasChanged: (val: any, old: any) => JSON.stringify(val) !== JSON.stringify(old) })
     content?: UmbBlockDataType;
 
-    @property({ attribute: false })
+    @property({ attribute: false, hasChanged: (val: any, old: any) => JSON.stringify(val) !== JSON.stringify(old) })
     settings?: UmbBlockDataType;
 
     @property({ attribute: false })
@@ -52,12 +52,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     @state()
     protected _error: string | null = null;
 
-    @state()
-    protected _sortModeActive: boolean = false;
-
-    protected _styleElements: HTMLLinkElement[] = [];
-
-    protected _previewTimeout: number | undefined;
+    protected _stylesheetsAdopted: boolean = false;
 
     protected _requestId: number = 0;
 
@@ -94,33 +89,16 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     override disconnectedCallback() {
         super.disconnectedCallback();
         this._isConnected = false;
-        if (this._previewTimeout) {
-            clearTimeout(this._previewTimeout);
-            this._previewTimeout = undefined;
-        }
     }
 
     protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
         super.updated(_changedProperties);
         if (_changedProperties.has('content') || _changedProperties.has('settings')) {
-            if (this._previewTimeout) {
-                clearTimeout(this._previewTimeout);
-            }
-            this._previewTimeout = window.setTimeout(() => {
-                this.renderBlockPreview();
-            }, 500);
+            this.renderBlockPreview();
         }
     }
 
     // region Shared context observers
-
-    protected observeSortMode() {
-        this.observe(this._blockPreviewContext?.sortModeActive, (isActive) => {
-            if (isActive !== undefined) {
-                this._sortModeActive = isActive;
-            }
-        });
-    }
 
     protected observePropertyDataset() {
         this.consumeContext(UMB_PROPERTY_DATASET_CONTEXT, (instance) => {
@@ -186,14 +164,15 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     }
 
     protected async fetchAndLoadStylesheets() {
+        if (this._stylesheetsAdopted || !this._blockPreviewContext) return;
         const data = await this.fetchStylesheets();
         if (data && data.length > 0) {
-            this._styleElements = data.map(href => {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = href;
-                return link;
-            });
+            const sheets = await Promise.all(
+                data.map(href => this._blockPreviewContext!.getOrCreateStylesheet(href))
+            );
+            const shadowRoot = this.renderRoot as ShadowRoot;
+            shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, ...sheets];
+            this._stylesheetsAdopted = true;
         }
     }
 
@@ -221,8 +200,6 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         this.resolveUniqueFromContext();
 
         if (!this.validatePreviewData()) {
-            this._error = this.localize.term('blockPreview_insufficientData');
-            this._isLoading = false;
             return;
         }
 
@@ -323,44 +300,21 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
 
     // region Rendering
 
-    /**
-     * Override in subclasses that support sort mode (grid, list) to provide a
-     * fallback element when sort mode is active.
-     */
-    protected renderSortModeFallback(): TemplateResult | undefined {
-        return undefined;
-    }
-
     override render() {
-        if (this._sortModeActive) {
-            return this.renderSortModeFallback();
-        }
-
-        if (this._isLoading) {
-            return html`<div class="preview-alert preview-alert-info"><uui-loader></uui-loader> <umb-localize key="blockPreview_loading">Loading preview...</umb-localize></div>`;
-        }
-
-        if (this._error) {
-            return html`
-                <div class="preview-alert preview-alert-error" role="alert">
-                    ${this._error}
-                </div>
-            `;
-        }
-
-        if (this._htmlMarkup) {
-            return html`
-                ${this._styleElements}
-                <a
-                    href=${ifDefined(this._blockContext.workspaceEditContentPath)}
-                    @click=${this._handleClick}
-                    aria-label=${this.localize.term('blockPreview_editBlock')}
-                    class="block-preview-edit"
-                >
-                    ${unsafeHTML(this._htmlMarkup)}
-                </a>
-            `;
-        }
+        return html`
+            ${this._isLoading
+                ? html`<div class="preview-alert preview-alert-info"><uui-loader></uui-loader> <umb-localize key="blockPreview_loading">Loading preview...</umb-localize></div>`
+                : this._error
+                    ? html`<div class="preview-alert preview-alert-error" role="alert">${this._error}</div>`
+                    : this._htmlMarkup
+                        ? html`<a
+                            href=${ifDefined(this._blockContext.workspaceEditContentPath)}
+                            @click=${this._handleClick}
+                            aria-label=${this.localize.term('blockPreview_editBlock')}
+                            class="block-preview-edit"
+                        >${unsafeHTML(this._htmlMarkup)}</a>`
+                        : nothing}
+        `;
     }
 
     // endregion

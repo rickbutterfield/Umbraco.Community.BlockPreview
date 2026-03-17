@@ -131,6 +131,9 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
                                 ['Umbraco.RichText']: layouts?.filter(x => x.contentKey === this._blockContext.contentUdi) ?? []
                             }
                         };
+                        if (!this._htmlMarkup && !this._isLoading) {
+                            this.renderBlockPreview();
+                        }
                     });
             }
         });

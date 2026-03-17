@@ -54,7 +54,6 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
     }
 
     protected async setupContextObservers() {
-        this.observeSortMode();
         this.observePropertyDataset();
         await this.#observeContentWorkspace();
     }
@@ -139,6 +138,9 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
                         };
 
                         this._blockContext.blockIndex = contents?.indexOf(this.blockListValue.contentData[0]);
+                        if (!this._htmlMarkup && !this._isLoading) {
+                            this.renderBlockPreview();
+                        }
                     }
                 );
             }
@@ -171,19 +173,6 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
 
     protected override validatePreviewData(): boolean {
         return super.validatePreviewData() && this._blockContext.contentUdi !== '';
-    }
-
-    protected override renderSortModeFallback() {
-        return html`<umb-ref-list-block
-            class="umb-block-grid__block--view"
-            .label=${this.label}
-            .icon=${this.icon}
-            .unpublished=${this.unpublished}
-            .config=${this.config}
-            .content=${this.content}
-            .settings=${this.settings}>
-            </umb-ref-list-block>
-        `;
     }
 
     static override styles = [
