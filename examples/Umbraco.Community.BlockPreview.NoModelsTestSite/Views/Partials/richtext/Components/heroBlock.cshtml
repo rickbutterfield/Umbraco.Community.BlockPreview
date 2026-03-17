@@ -1,0 +1,23 @@
+@inherits UmbracoViewPage<RichTextBlockItem>
+@{
+    var backgroundColor = Model.Content?.Value<ColorPickerValueConverter.PickedColor>("backgroundColor")?.Color;
+    var image = Model.Content?.Value<MediaWithCrops>("image");
+    var hasBrightContrast = Model.Content?.Value<ColorPickerValueConverter.PickedColor>("contrast")?.Color == "#ffffff";
+}
+
+
+<div
+    class="hero"
+    style="background-color:@backgroundColor"
+@(hasBrightContrast ? "bright-contrast" : null)>
+
+    @if (image is not null) {
+        <div class="hero-background" style="background-image: url(@image.GetCropUrl(width:3840))">
+        </div>
+    }
+
+
+    <div class="hero-content">
+        <h1>@(Model.Content?.Value<string>("headline"))</h1>
+    </div>
+</div>

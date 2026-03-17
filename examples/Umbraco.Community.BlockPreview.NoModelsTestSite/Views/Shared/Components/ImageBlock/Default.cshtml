@@ -1,0 +1,12 @@
+@inherits UmbracoViewPage<BlockGridItem>
+@{
+    var image = Model.Content.Value<MediaWithCrops>("image");
+    if (image is not null)
+    {
+        <img class="image" src="@image.GetCropUrl(width:1920)" title="@image.Name" alt="@image.Name" />
+    }
+    else
+    {
+        <p>Missing image</p>
+    }
+}

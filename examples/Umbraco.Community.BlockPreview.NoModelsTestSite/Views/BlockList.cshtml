@@ -1,0 +1,6 @@
+﻿@inherits Umbraco.Cms.Web.Common.Views.UmbracoViewPage
+@{
+	Layout = "Layout.cshtml";
+}
+
+@await Html.GetBlockListHtmlAsync(Model.Value<BlockListModel>("content"))

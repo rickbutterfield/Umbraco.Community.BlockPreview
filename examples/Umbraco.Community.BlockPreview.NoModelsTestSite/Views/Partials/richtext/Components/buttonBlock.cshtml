@@ -1,0 +1,8 @@
+@inherits UmbracoViewPage<RichTextBlockItem>
+@{
+    var button = Model.Content.Value<Link>("button");
+}
+
+<a href="@button?.Url" class="btn">
+    @button?.Name
+</a>

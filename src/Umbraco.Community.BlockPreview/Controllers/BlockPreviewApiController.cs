@@ -6,10 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Umbraco.Cms.Api.Management.Routing;
 using Umbraco.Cms.Core.Cache;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
+using Umbraco.Cms.Core.Models;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.PublishedCache;
 using Umbraco.Cms.Core.Routing;
@@ -39,12 +39,12 @@ namespace Umbraco.Community.BlockPreview.Controllers
         private readonly ILanguageService _languageService;
         private readonly IOptions<BlockPreviewOptions> _blockPreviewSettings;
         private readonly IAppPolicyCache _runtimeCache;
-        private readonly ITypeFinder _typeFinder;
         private readonly IDocumentCacheService _documentCacheService;
         private readonly IPublishedContentTypeCache _contentTypeCache;
         private readonly IScopeProvider _scopeProvider;
         private readonly IBlockPreviewRequestEnricher _requestEnricher;
         private readonly IBlockPreviewResponseEnricher _responseEnricher;
+        private readonly IContentService _contentService;
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
@@ -60,14 +60,14 @@ namespace Umbraco.Community.BlockPreview.Controllers
             IBlockPreviewService blockPreviewService,
             ILanguageService languageService,
             IOptions<BlockPreviewOptions> blockPreviewSettings,
-            ITypeFinder typeFinder,
             AppCaches appCaches,
             IElementsCache elementsCache,
             IDocumentCacheService documentCacheService,
             IPublishedContentTypeCache contentTypeCache,
             IScopeProvider scopeProvider,
             IBlockPreviewRequestEnricher requestEnricher,
-            IBlockPreviewResponseEnricher responseEnricher)
+            IBlockPreviewResponseEnricher responseEnricher,
+            IContentService contentService)
         {
             _publishedRouter = publishedRouter;
             _logger = logger;
@@ -76,13 +76,13 @@ namespace Umbraco.Community.BlockPreview.Controllers
             _blockPreviewService = blockPreviewService;
             _languageService = languageService;
             _blockPreviewSettings = blockPreviewSettings;
-            _typeFinder = typeFinder;
             _runtimeCache = appCaches.RuntimeCache;
             _documentCacheService = documentCacheService;
             _contentTypeCache = contentTypeCache;
             _scopeProvider = scopeProvider;
             _requestEnricher = requestEnricher;
             _responseEnricher = responseEnricher;
+            _contentService = contentService;
         }
 
         /// <summary>
@@ -112,14 +112,14 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 blockPreviewService,
                 languageService,
                 blockPreviewSettings,
-                typeFinder,
                 appCaches,
                 elementsCache,
                 documentCacheService,
                 contentTypeCache,
                 scopeProvider,
                 requestEnricher,
-                StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewResponseEnricher>())
+                StaticServiceProvider.Instance.GetRequiredService<IBlockPreviewResponseEnricher>(),
+                StaticServiceProvider.Instance.GetRequiredService<IContentService>())
         {
         }
 
@@ -153,32 +153,24 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (CheckGeneratedModelsExist())
+            try
             {
-                try
-                {
-                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+                IPublishedContent? content = await GetPublishedContent(nodeKey, documentTypeUnique);
 
-                    string? currentCulture = await GetCurrentCulture(culture, content);
+                string? currentCulture = await GetCurrentCulture(culture, content);
 
-                    await SetupPublishedRequest(currentCulture, content);
+                await SetupPublishedRequest(currentCulture, content);
 
-                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
+                await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
 
-                    markup = await _blockPreviewService.RenderGridBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi, blockIndex);
+                markup = await _blockPreviewService.RenderGridBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi, blockIndex);
 
-                    markup = await _responseEnricher.EnrichAsync(markup, HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
-                }
-                catch (Exception ex)
-                {
-                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
-                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
-                }
+                markup = await _responseEnricher.EnrichAsync(markup, HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
             }
-
-            else
+            catch (Exception ex)
             {
-                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
+                markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -214,32 +206,24 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (CheckGeneratedModelsExist())
+            try
             {
-                try
-                {
-                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+                IPublishedContent? content = await GetPublishedContent(nodeKey, documentTypeUnique);
 
-                    string? currentCulture = await GetCurrentCulture(culture, content);
+                string? currentCulture = await GetCurrentCulture(culture, content);
 
-                    await SetupPublishedRequest(currentCulture, content);
+                await SetupPublishedRequest(currentCulture, content);
 
-                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
+                await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
 
-                    markup = await _blockPreviewService.RenderListBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi, blockIndex);
+                markup = await _blockPreviewService.RenderListBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi, blockIndex);
 
-                    markup = await _responseEnricher.EnrichAsync(markup, HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
-                }
-                catch (Exception ex)
-                {
-                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
-                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
-                }
+                markup = await _responseEnricher.EnrichAsync(markup, HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
             }
-
-            else
+            catch (Exception ex)
             {
-                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
+                markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -269,32 +253,24 @@ namespace Umbraco.Community.BlockPreview.Controllers
         {
             string markup;
 
-            if (CheckGeneratedModelsExist())
+            try
             {
-                try
-                {
-                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+                IPublishedContent? content = await GetPublishedContent(nodeKey, documentTypeUnique);
 
-                    string? currentCulture = await GetCurrentCulture(culture, content);
+                string? currentCulture = await GetCurrentCulture(culture, content);
 
-                    await SetupPublishedRequest(currentCulture, content);
+                await SetupPublishedRequest(currentCulture, content);
 
-                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias);
+                await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias);
 
-                    markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext);
+                markup = await _blockPreviewService.RenderRichTextBlock(blockData, content!, ControllerContext);
 
-                    markup = await _responseEnricher.EnrichAsync(markup, HttpContext, content, blockEditorAlias, contentElementAlias);
-                }
-                catch (Exception ex)
-                {
-                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
-                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
-                }
+                markup = await _responseEnricher.EnrichAsync(markup, HttpContext, content, blockEditorAlias, contentElementAlias);
             }
-
-            else
+            catch (Exception ex)
             {
-                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
+                markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
             }
 
             string? cleanMarkup = CleanUpMarkup(markup);
@@ -377,7 +353,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
         {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+            IPublishedContent? content = await GetPublishedContent(nodeKey, documentTypeUnique);
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
@@ -404,7 +380,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
         {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+            IPublishedContent? content = await GetPublishedContent(nodeKey, documentTypeUnique);
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
@@ -426,7 +402,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
         {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+            IPublishedContent? content = await GetPublishedContent(nodeKey, documentTypeUnique);
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
@@ -453,7 +429,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
         {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+            IPublishedContent? content = await GetPublishedContent(nodeKey, documentTypeUnique);
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
@@ -475,7 +451,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
         {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+            IPublishedContent? content = await GetPublishedContent(nodeKey, documentTypeUnique);
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
@@ -502,7 +478,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
         {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+            IPublishedContent? content = await GetPublishedContent(nodeKey, documentTypeUnique);
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
 
@@ -513,14 +489,6 @@ namespace Umbraco.Community.BlockPreview.Controllers
         #endregion
 
         #region Private
-        private bool CheckGeneratedModelsExist()
-        {
-            return _runtimeCache.GetCacheItem(Constants.CacheKeys.GeneratedModels, () =>
-            {
-                return _typeFinder.FindClassesWithAttribute<PublishedModelAttribute>().Any();
-            }, CacheDuration);
-        }
-
         private async Task<string?> GetCurrentCulture(string? culture, IPublishedContent? content = null)
         {
             var currentCulture = string.IsNullOrWhiteSpace(culture) || culture == "undefined"
@@ -559,7 +527,7 @@ namespace Umbraco.Community.BlockPreview.Controllers
             context.PublishedRequest = requestBuilder.Build();
         }
 
-        private IPublishedContent? GetPublishedContent(Guid? nodeKey = default, Guid? documentTypeUnique = default)
+        private async Task<IPublishedContent?> GetPublishedContent(Guid? nodeKey = default, Guid? documentTypeUnique = default)
         {
             if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext? context))
                 return null;
@@ -568,12 +536,30 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             if (nodeKey.HasValue)
             {
-                content = context.Content?.GetById(preview: true, nodeKey.GetValueOrDefault());                
+                content = context.Content?.GetById(preview: true, nodeKey.GetValueOrDefault());
             }
 
             var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
             if (content != null)
                 return content;
+
+            // Check if the nodeKey belongs to a Document Blueprint (Template).
+            // Blueprints are not in the published content cache, so we seed them
+            // into the document cache to make them available as IPublishedContent.
+            if (nodeKey.HasValue && nodeKey.Value != Guid.Empty)
+            {
+                IContent? blueprint = _contentService.GetBlueprintById(nodeKey.Value);
+                if (blueprint != null)
+                {
+                    await _documentCacheService.RefreshContentAsync(blueprint);
+                    content = await _documentCacheService.GetByKeyAsync(nodeKey.Value, preview: true);
+                    if (content != null)
+                    {
+                        _logger.LogDebug("Resolved Document Blueprint {NodeKey} as published content for block preview", nodeKey.Value);
+                        return content;
+                    }
+                }
+            }
 
             var publishedContentType = _contentTypeCache.Get(PublishedItemType.Content, documentTypeUnique.GetValueOrDefault());
 

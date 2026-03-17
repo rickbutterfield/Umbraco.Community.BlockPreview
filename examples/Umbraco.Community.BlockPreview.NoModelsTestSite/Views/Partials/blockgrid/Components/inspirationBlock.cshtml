@@ -1,0 +1,22 @@
+@inherits UmbracoViewPage<BlockGridItem>
+@{
+    var backgroundColor = Model.Settings?.Value<ColorPickerValueConverter.PickedColor>("backgroundColor");
+    var hasBrightContrast = Model.Settings?.Value<ColorPickerValueConverter.PickedColor>("contrast")?.Color == "#ffffff";
+}
+
+<section
+    class="inspiration"
+    style="background-color:@backgroundColor"
+    @(hasBrightContrast ? "bright-contrast" : null)>
+    <div class="area-container">
+        <div class="left-area">
+            @await Html.GetPreviewBlockGridItemAreaHtmlAsync(Model, "leftArea")
+        </div>
+        <div class="right-area">
+            @await Html.GetPreviewBlockGridItemAreaHtmlAsync(Model, "rightArea")
+        </div>
+        <div class="content-area">
+            @await Html.GetPreviewBlockGridItemAreaHtmlAsync(Model, "contentArea")
+        </div>
+    </div>
+</section>

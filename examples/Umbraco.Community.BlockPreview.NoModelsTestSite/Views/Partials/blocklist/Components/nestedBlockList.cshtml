@@ -1,0 +1,7 @@
+@inherits UmbracoViewPage<BlockListItem>
+
+@if (Context.Request.IsBlockPreviewRequest())
+{
+    @* <pre>Dropdown: @Model.Settings?.Value<string>("dropdown")</pre> *@
+}
+@await Html.GetBlockListHtmlAsync(Model.Content.Value<BlockListModel>("blockList"))

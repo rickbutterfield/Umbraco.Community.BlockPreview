@@ -69,8 +69,14 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentType == null || contentElement == null)
                 return null;
 
+            // No typed models available — use base block item types directly
+            if (contentType == typeof(IPublishedElement))
+            {
+                return CreateUntypedBlockItem(blockType, contentKey, contentElement, settingsKey, settingsElement);
+            }
+
             var contentInstance = CreateModel(contentType, contentElement);
-            var settingsInstance = settingsType != null && settingsElement != null
+            var settingsInstance = settingsType != null && settingsType != typeof(IPublishedElement) && settingsElement != null
                 ? CreateModel(settingsType, settingsElement)
                 : null;
 
@@ -78,10 +84,26 @@ namespace Umbraco.Community.BlockPreview.Services
                 blockType,
                 contentType,
                 contentInstance,
-                settingsType,
+                settingsType != typeof(IPublishedElement) ? settingsType : null,
                 settingsInstance,
                 contentKey,
                 settingsKey);
+        }
+
+        private static object CreateUntypedBlockItem(
+            BlockType blockType,
+            Guid contentKey,
+            IPublishedElement content,
+            Guid? settingsKey,
+            IPublishedElement? settings)
+        {
+            return blockType switch
+            {
+                BlockType.BlockGrid => new BlockGridItem(contentKey, content, settingsKey, settings),
+                BlockType.BlockList => new BlockListItem(contentKey, content, settingsKey, settings),
+                BlockType.RichText => new RichTextBlockItem(contentKey, content, settingsKey, settings),
+                _ => throw new ArgumentOutOfRangeException(nameof(blockType), blockType, "Unknown block type")
+            };
         }
 
         private static Type CreateBlockItemType(BlockType blockType, Type contentType, Type? settingsType)

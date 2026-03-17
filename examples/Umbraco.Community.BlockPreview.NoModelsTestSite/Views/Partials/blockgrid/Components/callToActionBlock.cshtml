@@ -1,0 +1,10 @@
+@inherits UmbracoViewPage<BlockGridItem>
+@{
+    var link = Model.Content.Value<Link>("link");
+    if (link is null)
+    {
+        return;
+    }
+}
+
+<a class="call-to-action" href="@link.Url" target="@link.Target">@link.Name</a>

@@ -70,6 +70,7 @@
             /// <summary>
             /// Error message for missing ModelsBuilder models.
             /// </summary>
+            [Obsolete("No longer used. BlockPreview now works without generated models on disk.")]
             public const string ModelsBuilderError = "Strongly typed models must be generated and exist on disk for BlockPreview to work.";
 
             /// <summary>
@@ -90,7 +91,7 @@
             /// <summary>
             /// Error message when ModelsBuilder is not configured to generate models.
             /// </summary>
-            public const string ModelsNotConfigured = "BlockPreview requires strongly-typed models. Please configure ModelsBuilder with SourceCodeAuto or SourceCodeManual mode.";
+            public const string ModelsNotConfigured = "The content type could not be resolved. Ensure the element type is correctly configured.";
 
             /// <summary>
             /// Error message for invalid block data.
@@ -161,8 +162,9 @@
             /// <summary>
             /// Cache key for generated models.
             /// </summary>
+            [Obsolete("No longer used. BlockPreview now works without generated models on disk.")]
             public const string GeneratedModels = "BlockPreview_GeneratedModels";
-            
+
             /// <summary>
             /// Cache key template for block type.
             /// </summary>

@@ -485,10 +485,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentType == null)
                 return null;
 
-            var type = _blockEditorConverter.GetModelType(contentType.Key);
-
-            // GetModelType returns typeof(IPublishedElement) when no model exists
-            return type == typeof(IPublishedElement) ? null : type;
+            return _blockEditorConverter.GetModelType(contentType.Key);
         }
 
         private string GetNoModelsErrorMessage()

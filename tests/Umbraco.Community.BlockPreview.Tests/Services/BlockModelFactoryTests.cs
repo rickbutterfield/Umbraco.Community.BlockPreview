@@ -218,6 +218,70 @@ public class BlockModelFactoryTests
 
     #endregion
 
+    #region CreateBlockInstance Untyped Fallback Tests
+
+    [TestCase(BlockType.BlockList)]
+    [TestCase(BlockType.BlockGrid)]
+    [TestCase(BlockType.RichText)]
+    public void CreateBlockInstance_WithIPublishedElementType_ReturnsBaseBlockItem(BlockType blockType)
+    {
+        // Arrange
+        var elementMock = CreateMockElement("testAlias");
+        var contentKey = Guid.NewGuid();
+
+        // Act
+        var result = _factory.CreateBlockInstance(
+            blockType,
+            contentType: typeof(IPublishedElement),
+            contentElement: elementMock.Object,
+            settingsType: null,
+            settingsElement: null,
+            contentKey: contentKey,
+            settingsKey: null);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+
+        var expectedType = blockType switch
+        {
+            BlockType.BlockGrid => typeof(BlockGridItem),
+            BlockType.BlockList => typeof(BlockListItem),
+            BlockType.RichText => typeof(RichTextBlockItem),
+            _ => throw new ArgumentOutOfRangeException()
+        };
+
+        Assert.That(result!.GetType(), Is.EqualTo(expectedType));
+    }
+
+    [Test]
+    public void CreateBlockInstance_WithIPublishedElementType_PassesContentAndSettings()
+    {
+        // Arrange
+        var contentElementMock = CreateMockElement("contentAlias");
+        var settingsElementMock = CreateMockElement("settingsAlias");
+        var contentKey = Guid.NewGuid();
+        var settingsKey = Guid.NewGuid();
+
+        // Act
+        var result = _factory.CreateBlockInstance(
+            BlockType.BlockList,
+            contentType: typeof(IPublishedElement),
+            contentElement: contentElementMock.Object,
+            settingsType: typeof(IPublishedElement),
+            settingsElement: settingsElementMock.Object,
+            contentKey: contentKey,
+            settingsKey: settingsKey) as BlockListItem;
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Content, Is.SameAs(contentElementMock.Object));
+        Assert.That(result.Settings, Is.SameAs(settingsElementMock.Object));
+        Assert.That(result.ContentKey, Is.EqualTo(contentKey));
+        Assert.That(result.SettingsKey, Is.EqualTo(settingsKey));
+    }
+
+    #endregion
+
     #region CreateBlockItem Type Selection Tests
 
     [TestCase(BlockType.BlockGrid)]

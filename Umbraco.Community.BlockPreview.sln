@@ -58,6 +58,8 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "Umbraco.Community.BlockPrev
 		StartServerOnDebug = "false"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Umbraco.Community.BlockPreview.NoModelsTestSite", "examples\Umbraco.Community.BlockPreview.NoModelsTestSite\Umbraco.Community.BlockPreview.NoModelsTestSite.csproj", "{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -138,6 +140,18 @@ Global
 		{A3B2C1D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D}.Release|x64.Build.0 = Debug|Any CPU
 		{A3B2C1D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D}.Release|x86.ActiveCfg = Debug|Any CPU
 		{A3B2C1D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D}.Release|x86.Build.0 = Debug|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Debug|x64.Build.0 = Debug|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Debug|x86.Build.0 = Debug|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Release|x64.ActiveCfg = Release|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Release|x64.Build.0 = Release|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Release|x86.ActiveCfg = Release|Any CPU
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -147,6 +161,7 @@ Global
 		{47D9BB7E-4277-5897-0EBD-86E52D4D05B9} = {1A595552-C0FD-4EBF-A6DE-DC86DBCAD409}
 		{55EA1950-D456-0B8B-3D02-C1B73A189812} = {638E215F-7A20-459C-A0F4-12ACB4A263F5}
 		{A3B2C1D4-E5F6-4A7B-8C9D-0E1F2A3B4C5D} = {638E215F-7A20-459C-A0F4-12ACB4A263F5}
+		{C61EF575-DFC2-3EC9-7EC6-0CA703E7DEC9} = {E5573C68-5A30-49D8-B235-1A5477F4083F}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {7FED6BA7-2D2C-452A-A791-36F6519BC64C}

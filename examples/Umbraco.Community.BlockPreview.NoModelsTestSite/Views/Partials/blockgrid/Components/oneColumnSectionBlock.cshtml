@@ -1,0 +1,15 @@
+@inherits UmbracoViewPage<BlockGridItem>
+@{
+    var backgroundColor = Model.Settings?.Value<ColorPickerValueConverter.PickedColor>("backgroundColor")?.Color;
+    var noBackgroundColor = string.IsNullOrEmpty(backgroundColor);
+    var hasBrightContrast = Model.Settings?.Value<ColorPickerValueConverter.PickedColor>("contrast")?.Color == "ffffff";
+}
+
+<section
+    style="background-color:#@backgroundColor"
+    @(noBackgroundColor ? "nobackgroundcolor" : null)
+    @(hasBrightContrast ? "bright-contrast" : null)>
+    @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)
+</section>
+
+@await Html.GetBlockGridHtmlAsync(Model.Content.Value<BlockGridModel>("nestedBlockGrid"))

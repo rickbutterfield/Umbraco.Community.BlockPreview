@@ -1,0 +1,354 @@
+@inherits UmbracoViewPage<BlockGridItem>
+@{
+    var content = Model.Content;
+}
+
+<div class="all-data-types" style="padding: 2rem;">
+    <h2 style="margin-top: 0;">All Data Types Block</h2>
+
+    @* --- Text --- *@
+    <section>
+        <h3>Text</h3>
+        <div>
+            <strong>Textstring:</strong> @(content.Value<string>("textstring"))
+        </div>
+        <div>
+            <strong>Textarea:</strong>
+            <pre style="white-space: pre-wrap; background: #f5f5f5; padding: 0.5rem;">@(content.Value<string>("textarea"))</pre>
+        </div>
+        <div>
+            <strong>Rich Text Editor:</strong>
+            <div>@(content.Value<IHtmlEncodedString>("richTextEditor"))</div>
+        </div>
+        <div>
+            <strong>Multiple Textstring:</strong>
+            @{ var multipleTextstring = content.Value<IEnumerable<string>>("multipleTextstring"); }
+            @if (multipleTextstring?.Any() == true)
+            {
+                <ul>
+                    @foreach (var line in multipleTextstring)
+                    {
+                        <li>@line</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            <strong>Code Editor:</strong>
+            <pre style="white-space: pre-wrap; background: #1e1e1e; color: #d4d4d4; padding: 0.5rem; border-radius: 3px; overflow-x: auto;">@(content.Value<string>("codeEditor"))</pre>
+        </div>
+        <div>
+            @{ var emailAddress = content.Value<string>("emailAddress"); }
+            <strong>Email Address:</strong> @(string.IsNullOrEmpty(emailAddress) ? "None" : emailAddress)
+        </div>
+        <div>
+            <strong>Markdown Editor:</strong>
+            <div>@(content.Value<IHtmlEncodedString>("markdownEditor"))</div>
+        </div>
+    </section>
+
+    @* --- Dates --- *@
+    <section>
+        <h3>Dates</h3>
+        <div>
+            <strong>Date Picker:</strong> @(content.Value<DateTime>("datePicker").ToString("yyyy-MM-dd"))
+        </div>
+        <div>
+            <strong>Date Picker With Time:</strong> @(content.Value<DateTime>("datePickerWithTime").ToString("yyyy-MM-dd HH:mm"))
+        </div>
+        <div>
+            <strong>Date Time Picker With Time Zone:</strong> @(content.Value<DateTimeOffset?>("dateTimePickerWithTimeZone")?.ToString("yyyy-MM-dd HH:mm zzz"))
+        </div>
+    </section>
+
+    @* --- Numbers --- *@
+    <section>
+        <h3>Numbers</h3>
+        <div>
+            <strong>Numeric:</strong> @(content.Value<int>("numeric"))
+        </div>
+        <div>
+            <strong>Decimal:</strong> @(content.Value<decimal>("decimal"))
+        </div>
+        <div>
+            <strong>Percentage (Slider):</strong> @(content.Value<decimal>("percentage"))%
+        </div>
+    </section>
+
+    @* --- Selection --- *@
+    <section>
+        <h3>Selection</h3>
+        <div>
+            <strong>True/False:</strong> @(content.Value<bool>("trueFalse") ? "Yes" : "No")
+        </div>
+        <div>
+            <strong>Checkbox List:</strong>
+            @{ var checkboxList = content.Value<IEnumerable<string>>("checkboxList"); }
+            @if (checkboxList?.Any() == true)
+            {
+                @string.Join(", ", checkboxList)
+            }
+            else
+            {
+                <em>None selected</em>
+            }
+        </div>
+        <div>
+            @{ var radiobox = content.Value<string>("radiobox"); }
+            <strong>Radiobox:</strong> @(string.IsNullOrEmpty(radiobox) ? "None selected" : radiobox)
+        </div>
+        <div>
+            @{ var dropdown = content.Value<string>("dropdown"); }
+            <strong>Dropdown:</strong> @(string.IsNullOrEmpty(dropdown) ? "None selected" : dropdown)
+        </div>
+        <div>
+            <strong>Dropdown Multiple:</strong>
+            @{ var dropdownMultiple = content.Value<IEnumerable<string>>("dropdownMultiple"); }
+            @if (dropdownMultiple?.Any() == true)
+            {
+                @string.Join(", ", dropdownMultiple)
+            }
+            else
+            {
+                <em>None selected</em>
+            }
+        </div>
+        <div>
+            <strong>Approved Color:</strong>
+            @{ var approvedColor = content.Value<ColorPickerValueConverter.PickedColor>("approvedColor"); }
+            @if (approvedColor != null)
+            {
+                <span style="display: inline-block; width: 1em; height: 1em; background-color: #@approvedColor.Color; border: 1px solid #999; vertical-align: middle;"></span>
+                <span>@approvedColor.Label (#@approvedColor.Color)</span>
+            }
+            else
+            {
+                <em>None selected</em>
+            }
+        </div>
+        <div>
+            <strong>Color Picker Eye Dropper:</strong>
+            @{ var colorPickerEyeDropper = content.Value<string>("colorPickerEyeDropper"); }
+            @if (!string.IsNullOrEmpty(colorPickerEyeDropper))
+            {
+                <span style="display: inline-block; width: 1em; height: 1em; background-color: @colorPickerEyeDropper; border: 1px solid #999; vertical-align: middle;"></span>
+                <span>@colorPickerEyeDropper</span>
+            }
+            else
+            {
+                <em>None selected</em>
+            }
+        </div>
+    </section>
+
+    @* --- Pickers --- *@
+    <section>
+        <h3>Pickers</h3>
+        <div>
+            <strong>Content Picker:</strong>
+            @{ var contentPicker = content.Value<IPublishedContent>("contentPicker"); }
+            @if (contentPicker != null)
+            {
+                <span>@contentPicker.Name</span>
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            <strong>Media Picker:</strong><br/>
+            @{ var mediaPicker = content.Value<MediaWithCrops>("mediaPicker"); }
+            @if (mediaPicker != null)
+            {
+                <img src="@mediaPicker.GetCropUrl(width: 200)" alt="@mediaPicker.Name" style="max-width: 200px;" />
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            <strong>Image Media Picker:</strong><br/>
+            @{ var imageMediaPicker = content.Value<MediaWithCrops>("imageMediaPicker"); }
+            @if (imageMediaPicker != null)
+            {
+                <img src="@imageMediaPicker.GetCropUrl(width: 200)" alt="@imageMediaPicker.Name" style="max-width: 200px;" />
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            <strong>Multiple Media Picker:</strong><br/>
+            @{ var multipleMediaPicker = content.Value<IEnumerable<MediaWithCrops>>("multipleMediaPicker"); }
+            @if (multipleMediaPicker?.Any() == true)
+            {
+                foreach (var media in multipleMediaPicker)
+                {
+                    <img src="@media.GetCropUrl(width: 150)" alt="@media.Name" style="max-width: 150px; margin-right: 0.5rem;" />
+                }
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            <strong>Multiple Image Media Picker:</strong><br/>
+            @{ var multipleImageMediaPicker = content.Value<IEnumerable<MediaWithCrops>>("multipleImageMediaPicker"); }
+            @if (multipleImageMediaPicker?.Any() == true)
+            {
+                foreach (var media in multipleImageMediaPicker)
+                {
+                    <img src="@media.GetCropUrl(width: 150)" alt="@media.Name" style="max-width: 150px; margin-right: 0.5rem;" />
+                }
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            <strong>Multi Node Tree Picker:</strong>
+            @{ var multiNodeTreePicker = content.Value<IEnumerable<IPublishedContent>>("multiNodeTreePicker"); }
+            @if (multiNodeTreePicker?.Any() == true)
+            {
+                <ul>
+                    @foreach (var node in multiNodeTreePicker)
+                    {
+                        <li>@node.Name</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            <strong>Member Picker:</strong>
+            @{ var memberPicker = content.Value<IPublishedContent>("memberPicker"); }
+            @if (memberPicker != null)
+            {
+                <span>@memberPicker.Name</span>
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            @{ var memberGroupPicker = content.Value<string>("memberGroupPicker"); }
+            <strong>Member Group Picker:</strong> @(string.IsNullOrEmpty(memberGroupPicker) ? "None" : memberGroupPicker)
+        </div>
+        <div>
+            @{ var userPicker = content.Value<int>("userPicker"); }
+            <strong>User Picker:</strong> @(userPicker > 0 ? userPicker.ToString() : "None")
+        </div>
+    </section>
+
+    @* --- Links --- *@
+    <section>
+        <h3>Links</h3>
+        <div>
+            <strong>Multi URL Picker:</strong>
+            @{ var multiUrlPicker = content.Value<IEnumerable<Link>>("multiUrlPicker"); }
+            @if (multiUrlPicker?.Any() == true)
+            {
+                <ul>
+                    @foreach (var link in multiUrlPicker)
+                    {
+                        <li><a href="@link.Url" target="@link.Target">@link.Name</a> (@link.Type)</li>
+                    }
+                </ul>
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            <strong>Single URL Picker:</strong>
+            @{ var singleUrlPicker = content.Value<Link>("singleUrlPicker"); }
+            @if (singleUrlPicker != null)
+            {
+                <a href="@singleUrlPicker.Url" target="@singleUrlPicker.Target">@singleUrlPicker.Name</a>
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+    </section>
+
+    @* --- Other --- *@
+    <section>
+        <h3>Other</h3>
+        <div>
+            <strong>Tags:</strong>
+            @{ var tags = content.Value<IEnumerable<string>>("tags"); }
+            @if (tags?.Any() == true)
+            {
+                foreach (var tag in tags)
+                {
+                    <span style="display: inline-block; background: #e0e0e0; padding: 0.2em 0.6em; border-radius: 3px; margin: 0.1em;">@tag</span>
+                }
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            <strong>Image Cropper:</strong>
+            @{ var imageCropper = content.Value<ImageCropperValue>("imageCropper"); }
+            @if (imageCropper != null)
+            {
+                <span>@imageCropper.Src</span>
+            }
+            else
+            {
+                <em>None</em>
+            }
+        </div>
+        <div>
+            @{ var uploadFile = content.Value<string>("uploadFile"); }
+            <strong>Upload File:</strong> @(string.IsNullOrEmpty(uploadFile) ? "None" : uploadFile)
+        </div>
+        <div>
+            @{ var uploadArticle = content.Value<string>("uploadArticle"); }
+            <strong>Upload Article:</strong> @(string.IsNullOrEmpty(uploadArticle) ? "None" : uploadArticle)
+        </div>
+        <div>
+            @{ var uploadAudio = content.Value<string>("uploadAudio"); }
+            <strong>Upload Audio:</strong> @(string.IsNullOrEmpty(uploadAudio) ? "None" : uploadAudio)
+        </div>
+        <div>
+            @{ var uploadVectorGraphics = content.Value<string>("uploadVectorGraphics"); }
+            <strong>Upload Vector Graphics:</strong> @(string.IsNullOrEmpty(uploadVectorGraphics) ? "None" : uploadVectorGraphics)
+        </div>
+        <div>
+            @{ var uploadVideo = content.Value<string>("uploadVideo"); }
+            <strong>Upload Video:</strong> @(string.IsNullOrEmpty(uploadVideo) ? "None" : uploadVideo)
+        </div>
+    </section>
+
+    @* --- Labels --- *@
+    <section>
+        <h3>Labels</h3>
+        <div><strong>Label (string):</strong> @(content.Value<string>("labelString"))</div>
+        <div><strong>Label (integer):</strong> @(content.Value<int>("labelInteger"))</div>
+        <div><strong>Label (datetime):</strong> @(content.Value<DateTime>("labelDatetime").ToString("yyyy-MM-dd HH:mm"))</div>
+        <div><strong>Label (decimal):</strong> @(content.Value<decimal>("labelDecimal"))</div>
+        <div><strong>Label (bigint):</strong> @(content.Value<long>("labelBigint"))</div>
+        <div><strong>Label (time):</strong> @(content.Value<TimeSpan>("labelTime"))</div>
+        <div><strong>Label (bytes):</strong> @(content.Value<long>("labelBytes"))</div>
+        <div><strong>Label (pixels):</strong> @(content.Value<int>("labelPixels"))</div>
+    </section>
+</div>
