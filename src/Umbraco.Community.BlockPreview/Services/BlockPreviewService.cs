@@ -509,8 +509,8 @@ namespace Umbraco.Community.BlockPreview.Services
             {
                 if (layoutItem.ContentKey == blockInstance.ContentKey)
                 {
-                    blockInstance.RowSpan = layoutItem.RowSpan!.Value;
-                    blockInstance.ColumnSpan = layoutItem.ColumnSpan!.Value;
+                    blockInstance.RowSpan = layoutItem.RowSpan ?? 1;
+                    blockInstance.ColumnSpan = layoutItem.ColumnSpan ?? 12;
                     return layoutItem;
                 }
                 else
@@ -520,8 +520,8 @@ namespace Umbraco.Community.BlockPreview.Services
                         foreach (var item in area.Items)
                         {
                             if (item.ContentKey != blockInstance.ContentKey) continue;
-                            blockInstance.RowSpan = item.RowSpan!.Value;
-                            blockInstance.ColumnSpan = item.ColumnSpan!.Value;
+                            blockInstance.RowSpan = item.RowSpan ?? 1;
+                            blockInstance.ColumnSpan = item.ColumnSpan ?? layoutItem.ColumnSpan ?? 12;
                             return layoutItem;
                         }
                     }
@@ -623,10 +623,13 @@ namespace Umbraco.Community.BlockPreview.Services
                     BlockItemData? areaSettingsData = blockValue.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == item.ContentKey);
                     IPublishedElement? areaSettingsElement = areaSettingsData != null ? _blockDataConverter.ConvertToElement(areaSettingsData, content) : default;
 
-                    return new BlockGridItem(item.ContentKey, areaContentElement!, item.SettingsKey, areaSettingsElement!);
+                    var gridItem = new BlockGridItem(item.ContentKey, areaContentElement!, item.SettingsKey, areaSettingsElement!);
+                    gridItem.RowSpan = item.RowSpan ?? 1;
+                    gridItem.ColumnSpan = item.ColumnSpan ?? areaConfig.ColumnSpan ?? 12;
+                    return gridItem;
                 }).WhereNotNull().ToList();
 
-                return new BlockGridArea(new List<BlockGridItem>(area.Items.Count()), areaConfig.Alias!, areaConfig.RowSpan!.Value, areaConfig.ColumnSpan!.Value);
+                return new BlockGridArea(items, areaConfig.Alias!, areaConfig.RowSpan ?? 1, areaConfig.ColumnSpan ?? 12);
             }).WhereNotNull().ToArray();
         }
 
