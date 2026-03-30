@@ -186,8 +186,6 @@ namespace Umbraco.Community.BlockPreview.Services
                         var blockValue = _blockListEditorValues.DeserializeAndClean(propertyData.Value);
                         if (blockValue != null)
                         {
-                            FormatBlockData(blockValue.BlockValue.ContentData);
-                            FormatBlockData(blockValue.BlockValue.SettingsData);
                             propertyData.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                         }
                     }
