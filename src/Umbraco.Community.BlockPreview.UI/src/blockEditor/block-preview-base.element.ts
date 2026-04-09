@@ -356,7 +356,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
                     @click=${this._handleClick}
                     aria-label=${this.localize.term('blockPreview_editBlock')}
                     class="block-preview-edit"
-                    data-description=${ifDefined(this._blockContext.contentElementTypeAlias)}
+                    title=${ifDefined(this._blockContext.contentElementTypeAlias)}
                 >
                     ${unsafeHTML(this._htmlMarkup)}
                 </a>
