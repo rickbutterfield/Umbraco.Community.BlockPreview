@@ -58,19 +58,21 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
     }
 
     #observeDocumentWorkspace() {
-        this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
-            if (context) {
-                this._workspaceContextResolved = true;
-                this.observe(
-                    observeMultiple([context.unique, context.contentTypeUnique]),
-                    async ([unique, documentTypeUnique]) => {
-                        await this.handleWorkspaceData(unique?.toString(), documentTypeUnique);
-                    }
-                );
-            }
-        });
-
-        this.observeBlockWorkspaceFallback();
+        try {
+            this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
+                if (context) {
+                    this._workspaceContextResolved = true;
+                    this.observe(
+                        observeMultiple([context.unique, context.contentTypeUnique]),
+                        async ([unique, documentTypeUnique]) => {
+                            await this.handleWorkspaceData(unique?.toString(), documentTypeUnique);
+                        }
+                    );
+                }
+            });
+        } catch {
+            this.observeBlockWorkspaceFallback();
+        }
     }
 
     protected observeBlockValue(): void {
@@ -97,11 +99,16 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
 
-                        await this.#observeBlockPropertyValue();
+                        if (!this.#managerObserved) {
+                            this.#managerObserved = true;
+                            await this.#observeBlockPropertyValue();
+                        }
                     });
             }
         });
     }
+
+    #managerObserved = false;
 
     #observeBlockPropertyValue(): void {
         this.consumeContext(UMB_BLOCK_RTE_MANAGER_CONTEXT, (context) => {
@@ -131,6 +138,9 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
                                 ['Umbraco.RichText']: layouts?.filter(x => x.contentKey === this._blockContext.contentUdi) ?? []
                             }
                         };
+                        if (!this._htmlMarkup && !this._isLoading) {
+                            this.renderBlockPreview();
+                        }
                     });
             }
         });
