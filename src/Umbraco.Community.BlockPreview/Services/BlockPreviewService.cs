@@ -203,7 +203,6 @@ namespace Umbraco.Community.BlockPreview.Services
 
             Guid.TryParse(settingsKey!, out Guid settingsGuidParsed);
 
-            _blockDataConverter.FormatBlockData(blockValue?.BlockValue.ContentData);
             BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault(x => x.Key == contentGuidParsed);
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
@@ -212,7 +211,6 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement contentElement = _blockDataConverter.ConvertToElement(contentData, content);
 
-            _blockDataConverter.FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
@@ -314,14 +312,12 @@ namespace Umbraco.Community.BlockPreview.Services
 
             Guid.TryParse(settingsKey!, out Guid settingsGuidParsed);
 
-            _blockDataConverter.FormatBlockData(blockValue?.BlockValue.ContentData);
             BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault(x => x.Key == contentGuidParsed);
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement contentElement = _blockDataConverter.ConvertToElement(contentData, content);
 
-            _blockDataConverter.FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
@@ -377,14 +373,12 @@ namespace Umbraco.Community.BlockPreview.Services
                 converter.TryDeserialize(blockData, out blockValue);
             }
 
-            _blockDataConverter.FormatBlockData(blockValue?.BlockValue.ContentData);
             BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault();
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
 
-            _blockDataConverter.FormatBlockData(blockValue?.BlockValue.SettingsData);
             BlockItemData? settingsData = blockValue?.BlockValue.SettingsData.FirstOrDefault();
             IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
 

@@ -114,7 +114,7 @@ namespace Umbraco.Community.BlockPreview.Services
                             }
                         }
                     }
-                    if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
+                    else if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
                     {
                         var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
                         if (blockValue != null)
@@ -124,7 +124,7 @@ namespace Umbraco.Community.BlockPreview.Services
                             property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                         }
                     }
-                    if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
+                    else if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
                     {
                         var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
                         if (blockValue != null)
@@ -133,6 +133,10 @@ namespace Umbraco.Community.BlockPreview.Services
                             FormatBlockData(blockValue.BlockValue.SettingsData);
                             property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                         }
+                    }
+                    else
+                    {
+                        ConvertPropertyValue(property);
                     }
                 }
             }

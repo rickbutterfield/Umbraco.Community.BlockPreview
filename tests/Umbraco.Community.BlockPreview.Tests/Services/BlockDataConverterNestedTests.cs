@@ -396,4 +396,106 @@ public class BlockDataConverterNestedTests
     }
 
     #endregion
+
+    #region Issue #284 - Double conversion bug
+
+    [Test]
+    public void ConvertToElement_NestedBlockList_DoesNotDoubleConvert()
+    {
+        // Regression test for issue #284.
+        //
+        // Simulates the BlockPreviewService calling pattern:
+        //   1. FormatBlockData(allContentData)   ← removed by fix
+        //   2. ConvertToElement(targetBlock)
+        //
+        // Previously both steps processed nested blocks, causing FromEditor to be
+        // called twice. Editors like MNTP return null on the second call (expects
+        // JsonArray, gets already-converted String).
+        //
+        // The fix removed step 1 and made ConvertToElement handle leaf properties
+        // directly, so each nested property is converted exactly once.
+        // Uncomment the FormatBlockData call below to see the bug return.
+
+        var innerContentKey = Guid.NewGuid();
+        var innerHeadlineProp = new BlockPropertyValue { Alias = "headline", Value = "Original" };
+
+        var innerBlockListValue = CreateBlockListValue(
+            (innerContentKey, HeroTypeKey, new[] { innerHeadlineProp }));
+
+        _jsonSerializerMock
+            .Setup(s => s.Deserialize<BlockListValue>(It.IsAny<string>()))
+            .Returns(innerBlockListValue);
+
+        SetupElementTypeCache(
+            CreateMockContentType(HeroTypeKey, "hero",
+                ("headline", LeafEditorAlias)));
+
+        // Simulate MNTP-like FromEditor: first call converts, subsequent calls return null
+        var fromEditorCallCount = 0;
+        _valueEditorMock
+            .Setup(v => v.FromEditor(It.IsAny<ContentPropertyData>(), null))
+            .Returns(() =>
+            {
+                fromEditorCallCount++;
+                return fromEditorCallCount == 1 ? "converted-udi" : null;
+            });
+
+        var outerBlock = CreateBlockItemData(
+            NestedBlockListWrapperTypeKey, "nestedBlockListWrapper",
+            CreatePropertyValueWithType("blockList", "nested-blocklist-json",
+                Umbraco.Cms.Core.Constants.PropertyEditors.Aliases.BlockList));
+
+        // BUG TRIGGER: Uncomment the next line to reproduce issue #284.
+        // BlockPreviewService previously called FormatBlockData before ConvertToElement,
+        // which recursed into nested blocks and called FromEditor a first time.
+        // ConvertToElement then called FormatBlockData again → double conversion → null values.
+        // _converter.FormatBlockData(new List<BlockItemData> { outerBlock });
+
+        try
+        {
+            _converter.ConvertToElement(outerBlock, null!);
+        }
+        catch (NullReferenceException)
+        {
+            // Expected: _blockEditorConverter is null in test setup.
+            // All property processing completes before this point.
+        }
+
+        Assert.That(fromEditorCallCount, Is.EqualTo(1),
+            "FromEditor should only be called once per leaf property - no double conversion");
+        Assert.That(innerHeadlineProp.Value, Is.EqualTo("converted-udi"),
+            "Inner property value should be correctly converted, not corrupted by a second pass");
+    }
+
+    [Test]
+    public void ConvertToElement_LeafProperties_AreConverted()
+    {
+        // Verifies the else clause in ConvertToElement that converts non-block-editor
+        // properties via ConvertPropertyValue. Previously this was handled by a separate
+        // FormatBlockData call in BlockPreviewService which was removed to fix issue #284.
+
+        _valueEditorMock
+            .Setup(v => v.FromEditor(It.IsAny<ContentPropertyData>(), null))
+            .Returns("converted");
+
+        var leafProp = CreatePropertyValueWithType("headline", "Original", LeafEditorAlias);
+        var block = CreateBlockItemData(HeroTypeKey, "hero", leafProp);
+
+        try
+        {
+            _converter.ConvertToElement(block, null!);
+        }
+        catch (NullReferenceException)
+        {
+            // Expected: _blockEditorConverter is null in test setup.
+        }
+
+        Assert.That(leafProp.Value, Is.EqualTo("converted"),
+            "ConvertToElement should convert leaf properties via FromEditor");
+        _valueEditorMock.Verify(
+            v => v.FromEditor(It.IsAny<ContentPropertyData>(), null),
+            Times.Once);
+    }
+
+    #endregion
 }
