@@ -8,6 +8,7 @@ export type BlockPreviewOptions = {
     blockGrid: BlockTypeSettings;
     blockList: BlockTypeSettings;
     richText: BlockTypeSettings;
+    singleBlock: BlockTypeSettings;
 };
 
 export type BlockTypeSettings = {
@@ -20,20 +21,6 @@ export type BlockTypeSettings = {
      */
     stylesheet?: string | null;
     stylesheets?: Array<string> | null;
-};
-
-export enum EventMessageTypeModel {
-    DEFAULT = 'Default',
-    INFO = 'Info',
-    ERROR = 'Error',
-    SUCCESS = 'Success',
-    WARNING = 'Warning'
-}
-
-export type NotificationHeaderModel = {
-    message: string;
-    category: string;
-    type: EventMessageTypeModel;
 };
 
 export type PreviewGridBlockData = {
@@ -221,6 +208,50 @@ export type GetRteStylesheetsResponses = {
 };
 
 export type GetRteStylesheetsResponse = GetRteStylesheetsResponses[keyof GetRteStylesheetsResponses];
+
+export type PreviewSingleBlockData = {
+    body?: string;
+    path?: never;
+    query?: {
+        nodeKey?: string;
+        blockEditorAlias?: string;
+        contentElementAlias?: string;
+        culture?: string;
+        documentTypeUnique?: string;
+        contentUdi?: string;
+        settingsUdi?: string;
+        blockIndex?: number;
+    };
+    url: '/umbraco/block-preview/api/v1/preview/single';
+};
+
+export type PreviewSingleBlockResponses = {
+    /**
+     * OK
+     */
+    200: string;
+};
+
+export type PreviewSingleBlockResponse = PreviewSingleBlockResponses[keyof PreviewSingleBlockResponses];
+
+export type GetSingleBlockStylesheetsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        nodeKey?: string;
+        documentTypeUnique?: string;
+    };
+    url: '/umbraco/block-preview/api/v1/preview/single/stylesheets';
+};
+
+export type GetSingleBlockStylesheetsResponses = {
+    /**
+     * OK
+     */
+    200: Array<string>;
+};
+
+export type GetSingleBlockStylesheetsResponse = GetSingleBlockStylesheetsResponses[keyof GetSingleBlockStylesheetsResponses];
 
 export type GetSettingsData = {
     body?: never;

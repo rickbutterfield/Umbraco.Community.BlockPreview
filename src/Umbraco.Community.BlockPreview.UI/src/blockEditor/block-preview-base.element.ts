@@ -1,7 +1,7 @@
 import BlockPreviewContext from '../context/block-preview.context';
 import { BLOCK_PREVIEW_CONTEXT } from '../context/block-preview.context-token';
 import { BlockContext } from './types';
-import { css, html, ifDefined, property, PropertyValueMap, state, unsafeHTML, type TemplateResult } from '@umbraco-cms/backoffice/external/lit';
+import { css, html, ifDefined, nothing, property, PropertyValueMap, state, unsafeHTML } from '@umbraco-cms/backoffice/external/lit';
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
@@ -22,10 +22,10 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     protected _blockPreviewContext?: BlockPreviewContext;
     protected _workspaceContextResolved: boolean = false;
 
-    @property({ attribute: false })
+    @property({ attribute: false, hasChanged: (val: any, old: any) => JSON.stringify(val) !== JSON.stringify(old) })
     content?: UmbBlockDataType;
 
-    @property({ attribute: false })
+    @property({ attribute: false, hasChanged: (val: any, old: any) => JSON.stringify(val) !== JSON.stringify(old) })
     settings?: UmbBlockDataType;
 
     @property({ attribute: false })
@@ -52,16 +52,14 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     @state()
     protected _error: string | null = null;
 
-    @state()
-    protected _sortModeActive: boolean = false;
-
-    protected _styleElements: HTMLLinkElement[] = [];
-
-    protected _previewTimeout: number | undefined;
+    protected _stylesheetsAdopted: boolean = false;
 
     protected _requestId: number = 0;
 
     protected _isConnected: boolean = false;
+
+    /** Tracks pointerdown position on the <a> tag to distinguish clicks from drags. */
+    private _pointerStartPos: { x: number; y: number } | null = null;
 
     /** Subclass provides a concrete block context object with block-type-specific fields. */
     protected abstract _blockContext: TContext;
@@ -94,33 +92,16 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     override disconnectedCallback() {
         super.disconnectedCallback();
         this._isConnected = false;
-        if (this._previewTimeout) {
-            clearTimeout(this._previewTimeout);
-            this._previewTimeout = undefined;
-        }
     }
 
     protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
         super.updated(_changedProperties);
         if (_changedProperties.has('content') || _changedProperties.has('settings')) {
-            if (this._previewTimeout) {
-                clearTimeout(this._previewTimeout);
-            }
-            this._previewTimeout = window.setTimeout(() => {
-                this.renderBlockPreview();
-            }, 500);
+            this.renderBlockPreview();
         }
     }
 
     // region Shared context observers
-
-    protected observeSortMode() {
-        this.observe(this._blockPreviewContext?.sortModeActive, (isActive) => {
-            if (isActive !== undefined) {
-                this._sortModeActive = isActive;
-            }
-        });
-    }
 
     protected observePropertyDataset() {
         this.consumeContext(UMB_PROPERTY_DATASET_CONTEXT, (instance) => {
@@ -186,14 +167,15 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     }
 
     protected async fetchAndLoadStylesheets() {
+        if (this._stylesheetsAdopted || !this._blockPreviewContext) return;
         const data = await this.fetchStylesheets();
         if (data && data.length > 0) {
-            this._styleElements = data.map(href => {
-                const link = document.createElement('link');
-                link.rel = 'stylesheet';
-                link.href = href;
-                return link;
-            });
+            const sheets = await Promise.all(
+                data.map(href => this._blockPreviewContext!.getOrCreateStylesheet(href))
+            );
+            const shadowRoot = this.renderRoot as ShadowRoot;
+            shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, ...sheets];
+            this._stylesheetsAdopted = true;
         }
     }
 
@@ -221,8 +203,6 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         this.resolveUniqueFromContext();
 
         if (!this.validatePreviewData()) {
-            this._error = this.localize.term('blockPreview_insufficientData');
-            this._isLoading = false;
             return;
         }
 
@@ -281,7 +261,34 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         return match ? match[1] : '';
     }
 
+    protected _handlePointerDown(event: PointerEvent) {
+        this._pointerStartPos = { x: event.clientX, y: event.clientY };
+    }
+
     protected _handleClick(event: PointerEvent) {
+        // Detect drag/resize interactions: if the pointer moved significantly between
+        // pointerdown and click, suppress the navigation. This prevents the edit modal
+        // from opening when the user finishes resizing a grid block.
+        const pointerType = 'pointerType' in event ? (event as PointerEvent).pointerType : '';
+        if (pointerType !== '') {
+            if (!this._pointerStartPos) {
+                // Pointer click with no corresponding pointerdown on this element —
+                // likely a resize/drag that ended over our <a> tag.
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            const dx = Math.abs(event.clientX - this._pointerStartPos.x);
+            const dy = Math.abs(event.clientY - this._pointerStartPos.y);
+            this._pointerStartPos = null;
+            if (dx > 5 || dy > 5) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+        }
+        this._pointerStartPos = null;
+
         const path = event.composedPath();
 
         // Check for clicks on action bars or resize handlers.
@@ -323,45 +330,22 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
 
     // region Rendering
 
-    /**
-     * Override in subclasses that support sort mode (grid, list) to provide a
-     * fallback element when sort mode is active.
-     */
-    protected renderSortModeFallback(): TemplateResult | undefined {
-        return undefined;
-    }
-
     override render() {
-        if (this._sortModeActive) {
-            return this.renderSortModeFallback();
-        }
-
-        if (this._isLoading) {
-            return html`<div class="preview-alert preview-alert-info"><uui-loader></uui-loader> <umb-localize key="blockPreview_loading">Loading preview...</umb-localize></div>`;
-        }
-
-        if (this._error) {
-            return html`
-                <div class="preview-alert preview-alert-error" role="alert">
-                    ${this._error}
-                </div>
-            `;
-        }
-
-        if (this._htmlMarkup) {
-            return html`
-                ${this._styleElements}
-                <a
-                    href=${ifDefined(this._blockContext.workspaceEditContentPath)}
-                    @click=${this._handleClick}
-                    aria-label=${this.localize.term('blockPreview_editBlock')}
-                    class="block-preview-edit"
-                    title=${ifDefined(this._blockContext.contentElementTypeAlias)}
-                >
-                    ${unsafeHTML(this._htmlMarkup)}
-                </a>
-            `;
-        }
+        return html`
+            ${this._isLoading
+                ? html`<div class="preview-alert preview-alert-info"><uui-loader></uui-loader> <umb-localize key="blockPreview_loading">Loading preview...</umb-localize></div>`
+                : this._error
+                    ? html`<div class="preview-alert preview-alert-error" role="alert">${this._error}</div>`
+                    : this._htmlMarkup
+                        ? html`<a
+                            href=${ifDefined(this._blockContext.workspaceEditContentPath)}
+                            @pointerdown=${this._handlePointerDown}
+                            @click=${this._handleClick}
+                            aria-label=${this.localize.term('blockPreview_editBlock')}
+                            class="block-preview-edit"
+                        >${unsafeHTML(this._htmlMarkup)}</a>`
+                        : nothing}
+        `;
     }
 
     // endregion

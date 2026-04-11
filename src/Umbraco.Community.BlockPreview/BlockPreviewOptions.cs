@@ -23,6 +23,11 @@ namespace Umbraco.Community.BlockPreview
         public BlockTypeSettings RichText { get; set; }
 
         /// <summary>
+        /// Gets or sets the settings for Single Block editors.
+        /// </summary>
+        public BlockTypeSettings SingleBlock { get; set; }
+
+        /// <summary>
         /// Gets the view locations for a specific block type.
         /// </summary>
         /// <param name="blockType">The type of block.</param>
@@ -55,6 +60,14 @@ namespace Umbraco.Community.BlockPreview
                 locations.Add(Constants.DefaultViewLocations.RichText);
             }
 
+            if (blockType == BlockType.SingleBlock)
+            {
+                if (SingleBlock?.ViewLocations?.Any() == true)
+                    locations.AddRange(SingleBlock.ViewLocations);
+
+                locations.Add(Constants.DefaultViewLocations.SingleBlock);
+            }
+
             locations = locations.Distinct().ToList();
 
             return locations;
@@ -80,6 +93,10 @@ namespace Umbraco.Community.BlockPreview
             if (richTextLocations?.Any() == true)
                 locations.AddRange(richTextLocations);
 
+            var singleBlockLocations = GetViewLocations(BlockType.SingleBlock);
+            if (singleBlockLocations?.Any() == true)
+                locations.AddRange(singleBlockLocations);
+
             return locations;
         }
 
@@ -91,6 +108,7 @@ namespace Umbraco.Community.BlockPreview
             BlockGrid = new();
             BlockList = new();
             RichText = new();
+            SingleBlock = new();
         }
     }
 

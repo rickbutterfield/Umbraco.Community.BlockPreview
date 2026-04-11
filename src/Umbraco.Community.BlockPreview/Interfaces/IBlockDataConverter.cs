@@ -30,6 +30,13 @@ namespace Umbraco.Community.BlockPreview.Interfaces
         BlockEditorData<RichTextBlockValue, RichTextBlockLayoutItem>? DeserializeRichText(string? blockData);
 
         /// <summary>
+        /// Deserializes single block data.
+        /// </summary>
+        /// <param name="blockData">The raw block data string.</param>
+        /// <returns>The deserialized block editor data, or null if deserialization failed.</returns>
+        BlockEditorData<SingleBlockValue, SingleBlockLayoutItem>? DeserializeSingleBlock(string? blockData);
+
+        /// <summary>
         /// Converts block item data to a published element.
         /// </summary>
         /// <param name="data">The block item data.</param>

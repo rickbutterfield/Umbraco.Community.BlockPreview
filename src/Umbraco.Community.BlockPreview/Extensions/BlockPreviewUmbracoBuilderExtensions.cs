@@ -49,6 +49,9 @@ namespace Umbraco.Community.BlockPreview.Extensions
 
                     if (x.RichText?.ViewLocations != null)
                         x.RichText.ViewLocations.Add(Constants.DefaultViewLocations.RichText);
+
+                    if (x.SingleBlock?.ViewLocations != null)
+                        x.SingleBlock.ViewLocations.Add(Constants.DefaultViewLocations.SingleBlock);
                 })
                 .ValidateDataAnnotations();
 

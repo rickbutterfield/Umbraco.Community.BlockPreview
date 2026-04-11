@@ -29,6 +29,7 @@ namespace Umbraco.Community.BlockPreview.Services
         private readonly BlockEditorValues<BlockGridValue, BlockGridLayoutItem> _blockGridEditorValues;
         private readonly BlockEditorValues<BlockListValue, BlockListLayoutItem> _blockListEditorValues;
         private readonly BlockEditorValues<RichTextBlockValue, RichTextBlockLayoutItem> _richTextBlockEditorValues;
+        private readonly BlockEditorValues<SingleBlockValue, SingleBlockLayoutItem> _singleBlockEditorValues;
         private readonly JsonSerializerOptions _jsonSerializerOptions;
 
         /// <summary>
@@ -60,6 +61,8 @@ namespace Umbraco.Community.BlockPreview.Services
                 new BlockListEditorDataConverter(jsonSerializer), elementTypeCache, logger);
             _richTextBlockEditorValues = new BlockEditorValues<RichTextBlockValue, RichTextBlockLayoutItem>(
                 new RichTextEditorBlockDataConverter(jsonSerializer), elementTypeCache, logger);
+            _singleBlockEditorValues = new BlockEditorValues<SingleBlockValue, SingleBlockLayoutItem>(
+                new SingleBlockEditorDataConverter(jsonSerializer), elementTypeCache, logger);
 
             _jsonSerializerOptions = new JsonSerializerOptions
             {
@@ -88,6 +91,10 @@ namespace Umbraco.Community.BlockPreview.Services
             => _richTextBlockEditorValues.DeserializeAndClean(blockData);
 
         /// <inheritdoc/>
+        public BlockEditorData<SingleBlockValue, SingleBlockLayoutItem>? DeserializeSingleBlock(string? blockData)
+            => _singleBlockEditorValues.DeserializeAndClean(blockData);
+
+        /// <inheritdoc/>
         public IPublishedElement ConvertToElement(BlockItemData data, IPublishedElement owner)
         {
             if (data != null)
@@ -114,7 +121,7 @@ namespace Umbraco.Community.BlockPreview.Services
                             }
                         }
                     }
-                    if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
+                    else if (property.EditorAlias == PropertyEditors.Aliases.BlockGrid)
                     {
                         var blockValue = _blockGridEditorValues.DeserializeAndClean(propertyAsString);
                         if (blockValue != null)
@@ -124,7 +131,7 @@ namespace Umbraco.Community.BlockPreview.Services
                             property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                         }
                     }
-                    if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
+                    else if (property.EditorAlias == PropertyEditors.Aliases.BlockList)
                     {
                         var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
                         if (blockValue != null)
@@ -133,6 +140,20 @@ namespace Umbraco.Community.BlockPreview.Services
                             FormatBlockData(blockValue.BlockValue.SettingsData);
                             property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
                         }
+                    }
+                    else if (property.EditorAlias == PropertyEditors.Aliases.SingleBlock)
+                    {
+                        var blockValue = _singleBlockEditorValues.DeserializeAndClean(propertyAsString);
+                        if (blockValue != null)
+                        {
+                            FormatBlockData(blockValue.BlockValue.ContentData);
+                            FormatBlockData(blockValue.BlockValue.SettingsData);
+                            property.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+                        }
+                    }
+                    else
+                    {
+                        ConvertPropertyValue(property);
                     }
                 }
             }
@@ -189,6 +210,18 @@ namespace Umbraco.Community.BlockPreview.Services
                     {
                         string? propertyAsString = propertyData.Value?.ToString();
                         var blockValue = _blockListEditorValues.DeserializeAndClean(propertyAsString);
+                        if (blockValue != null)
+                        {
+                            FormatBlockData(blockValue.BlockValue.ContentData);
+                            FormatBlockData(blockValue.BlockValue.SettingsData);
+                            propertyData.Value = JsonSerializer.Serialize(blockValue.BlockValue, _jsonSerializerOptions);
+                        }
+                    }
+
+                    else if (propertyData.EditorAlias == PropertyEditors.Aliases.SingleBlock)
+                    {
+                        string? propertyAsString = propertyData.Value?.ToString();
+                        var blockValue = _singleBlockEditorValues.DeserializeAndClean(propertyAsString);
                         if (blockValue != null)
                         {
                             FormatBlockData(blockValue.BlockValue.ContentData);

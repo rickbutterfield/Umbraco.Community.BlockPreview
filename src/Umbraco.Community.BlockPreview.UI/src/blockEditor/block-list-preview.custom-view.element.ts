@@ -1,7 +1,7 @@
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockListContext } from './types';
 import { PreviewDataSource } from '../repository';
-import { css, customElement, html, property, state } from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, property, state } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_LIST_ENTRY_CONTEXT, UMB_BLOCK_LIST_MANAGER_CONTEXT, UmbBlockListValueModel } from "@umbraco-cms/backoffice/block-list";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
@@ -54,7 +54,6 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
     }
 
     protected async setupContextObservers() {
-        this.observeSortMode();
         this.observePropertyDataset();
         await this.#observeContentWorkspace();
     }
@@ -102,12 +101,17 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
 
-                        await this.#observeBlockPropertyValue();
+                        if (!this.#managerObserved) {
+                            this.#managerObserved = true;
+                            await this.#observeBlockPropertyValue();
+                        }
                     }
                 );
             }
         });
     }
+
+    #managerObserved = false;
 
     #observeBlockPropertyValue() {
         this.consumeContext(UMB_BLOCK_LIST_MANAGER_CONTEXT, (context) => {
@@ -139,6 +143,9 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
                         };
 
                         this._blockContext.blockIndex = contents?.indexOf(this.blockListValue.contentData[0]);
+                        if (!this._htmlMarkup && !this._isLoading) {
+                            this.renderBlockPreview();
+                        }
                     }
                 );
             }
@@ -171,19 +178,6 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
 
     protected override validatePreviewData(): boolean {
         return super.validatePreviewData() && this._blockContext.contentUdi !== '';
-    }
-
-    protected override renderSortModeFallback() {
-        return html`<umb-ref-list-block
-            class="umb-block-grid__block--view"
-            .label=${this.label}
-            .icon=${this.icon}
-            .unpublished=${this.unpublished}
-            .config=${this.config}
-            .content=${this.content}
-            .settings=${this.settings}>
-            </umb-ref-list-block>
-        `;
     }
 
     static override styles = [

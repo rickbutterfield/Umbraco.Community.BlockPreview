@@ -31,9 +31,11 @@ export interface StylesheetQuery {
 export interface IPreviewDataSource {
     previewGridBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>>;
     previewListBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>>;
+    previewSingleBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>>;
     previewRichTextMarkup(body: string, query: RtePreviewQuery): Promise<UmbDataSourceResponse<string>>;
     getGridStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
     getListStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
+    getSingleBlockStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
     getRteStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
 }
 
@@ -52,6 +54,10 @@ export class PreviewDataSource implements IPreviewDataSource {
         return await tryExecute(this.#host, BlockPreviewService.previewListBlock({ body, query }));
     }
 
+    async previewSingleBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>> {
+        return await tryExecute(this.#host, BlockPreviewService.previewSingleBlock({ body, query }));
+    }
+
     async previewRichTextMarkup(body: string, query: RtePreviewQuery): Promise<UmbDataSourceResponse<string>> {
         return await tryExecute(this.#host, BlockPreviewService.previewRichTextMarkup({ body, query }));
     }
@@ -62,6 +68,10 @@ export class PreviewDataSource implements IPreviewDataSource {
 
     async getListStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {
         return await tryExecute(this.#host, BlockPreviewService.getListStylesheets({ query }));
+    }
+
+    async getSingleBlockStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {
+        return await tryExecute(this.#host, BlockPreviewService.getSingleBlockStylesheets({ query }));
     }
 
     async getRteStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {

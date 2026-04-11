@@ -51,14 +51,12 @@
     </PropertyGroup>
 
     <!-- Generate JSON schema on build (and before copying to project) -->
-    <Target Name="GenerateAppsettingsSchema" BeforeTargets="Build;CopyUmbracoJsonSchemaFiles" Condition="!Exists('$(_BlockPreviewJsonSchemaReference)')">
-      <Message Text="Generating $(_BlockPreviewJsonSchemaReference) because it doesn't exist" Importance="high" />
-      <Exec WorkingDirectory="$(MSBuildThisFileDirectory)..\..\tools\Umbraco.Community.BlockPreview.SchemaGenerator" Command="dotnet run --configuration $(Configuration) -- --outputFile &quot;$(MSBuildThisFileDirectory)$(_BlockPreviewJsonSchemaReference)&quot;" />
-    </Target>
-
-    <!-- Remove generated JSON schema on clean -->
-    <Target Name="RemoveAppsettingsSchema" AfterTargets="Clean" Condition="Exists('$(_BlockPreviewJsonSchemaReference)')">
-      <Delete Files="$(_BlockPreviewJsonSchemaReference)" />
+    <Target Name="GenerateAppsettingsSchema" BeforeTargets="Build;CopyUmbracoJsonSchemaFiles" Inputs="$(TargetPath)" Outputs="$(_BlockPreviewJsonSchemaReference)">
+      <Message Text="Generating $(_BlockPreviewJsonSchemaReference)" Importance="high" />
+      <JsonSchemaGenerate AssemblyPath="$(TargetPath)" TypeName="Umbraco.Community.BlockPreview.BlockPreviewSchema" OutputPath="$(_BlockPreviewJsonSchemaReference)" IncludeObsoleteProperties="false" />
+      <ItemGroup>
+        <FileWrites Include="$(_BlockPreviewJsonSchemaReference)" />
+      </ItemGroup>
     </Target>
 
     <!-- Update umbraco-package.json files with current build version -->

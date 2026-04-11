@@ -38,6 +38,21 @@ namespace Umbraco.Community.BlockPreview.Interfaces
         Task<string> RenderListBlock(string blockData, IPublishedContent content, ControllerContext controllerContext, string blockEditorAlias = "", Guid documentTypeUnique = default, string contentKey = "", string? settingsKey = default, int? blockIndex = 0);
 
         /// <summary>
+        /// Renders a single block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <param name="contentKey">The content key.</param>
+        /// <param name="settingsKey">The settings key.</param>
+        /// <param name="blockIndex">The block index.</param>
+        /// <returns>The rendered HTML.</returns>
+        Task<string> RenderSingleBlock(string blockData, IPublishedContent content, ControllerContext controllerContext, string blockEditorAlias = "", Guid documentTypeUnique = default, string contentKey = "", string? settingsKey = default, int? blockIndex = 0)
+            => RenderListBlock(blockData, content, controllerContext, blockEditorAlias, documentTypeUnique, contentKey, settingsKey, blockIndex);
+
+        /// <summary>
         /// Renders a rich text block.
         /// </summary>
         /// <param name="blockData">The block data.</param>
