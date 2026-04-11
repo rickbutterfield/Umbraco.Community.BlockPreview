@@ -101,6 +101,9 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                         layout,
                         layoutAreas
                     ]) => {
+                        const prevColumnSpan = this._blockContext.layout?.columnSpan;
+                        const prevRowSpan = this._blockContext.layout?.rowSpan;
+
                         this._blockContext.contentUdi = contentUdi ?? '';
                         this._blockContext.settingsUdi = settingsUdi ?? '';
                         this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
@@ -114,6 +117,21 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                             this.#managerObserved = true;
                             await this.#observeBlockPropertyValue();
                         }
+
+                        // Re-render when layout dimensions change (resize)
+                        if (this._htmlMarkup && layout && (
+                            layout.columnSpan !== prevColumnSpan ||
+                            layout.rowSpan !== prevRowSpan
+                        )) {
+                            this.blockGridValue = {
+                                ...this._blockGridValue,
+                                layout: { ['Umbraco.BlockGrid']: this.#filterLayouts() }
+                            };
+                            clearTimeout(this.#layoutResizeTimer);
+                            this.#layoutResizeTimer = setTimeout(() => {
+                                this.renderBlockPreview();
+                            }, 300);
+                        }
                     }
                 );
             }
@@ -121,6 +139,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
     }
 
     #managerObserved = false;
+    #layoutResizeTimer?: ReturnType<typeof setTimeout>;
 
     async #observeBlockPropertyValue() {
         this.consumeContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, (context) => {

@@ -58,6 +58,9 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
 
     protected _isConnected: boolean = false;
 
+    /** Tracks pointerdown position on the <a> tag to distinguish clicks from drags. */
+    private _pointerStartPos: { x: number; y: number } | null = null;
+
     /** Subclass provides a concrete block context object with block-type-specific fields. */
     protected abstract _blockContext: TContext;
 
@@ -258,7 +261,34 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         return match ? match[1] : '';
     }
 
+    protected _handlePointerDown(event: PointerEvent) {
+        this._pointerStartPos = { x: event.clientX, y: event.clientY };
+    }
+
     protected _handleClick(event: PointerEvent) {
+        // Detect drag/resize interactions: if the pointer moved significantly between
+        // pointerdown and click, suppress the navigation. This prevents the edit modal
+        // from opening when the user finishes resizing a grid block.
+        const pointerType = 'pointerType' in event ? (event as PointerEvent).pointerType : '';
+        if (pointerType !== '') {
+            if (!this._pointerStartPos) {
+                // Pointer click with no corresponding pointerdown on this element —
+                // likely a resize/drag that ended over our <a> tag.
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+            const dx = Math.abs(event.clientX - this._pointerStartPos.x);
+            const dy = Math.abs(event.clientY - this._pointerStartPos.y);
+            this._pointerStartPos = null;
+            if (dx > 5 || dy > 5) {
+                event.preventDefault();
+                event.stopPropagation();
+                return;
+            }
+        }
+        this._pointerStartPos = null;
+
         const path = event.composedPath();
 
         // Check for clicks on action bars or resize handlers.
@@ -309,6 +339,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
                     : this._htmlMarkup
                         ? html`<a
                             href=${ifDefined(this._blockContext.workspaceEditContentPath)}
+                            @pointerdown=${this._handlePointerDown}
                             @click=${this._handleClick}
                             aria-label=${this.localize.term('blockPreview_editBlock')}
                             class="block-preview-edit"
