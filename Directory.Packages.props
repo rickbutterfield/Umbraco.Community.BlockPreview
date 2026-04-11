@@ -10,7 +10,7 @@
   </ItemGroup>
   <!-- Umbraco packages -->
   <PropertyGroup>
-    <UmbracoCmsPackageVersion>[17.3.0-rc, 18.0.0)</UmbracoCmsPackageVersion>
+    <UmbracoCmsPackageVersion>[17.3.0, 18.0.0)</UmbracoCmsPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Umbraco.Cms" Version="$(UmbracoCmsPackageVersion)" />

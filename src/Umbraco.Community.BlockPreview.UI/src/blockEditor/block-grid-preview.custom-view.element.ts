@@ -110,12 +110,17 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                         this._blockContext.layout = layout!;
                         this._blockContext.layoutAreas = layoutAreas;
 
-                        await this.#observeBlockPropertyValue();
+                        if (!this.#managerObserved) {
+                            this.#managerObserved = true;
+                            await this.#observeBlockPropertyValue();
+                        }
                     }
                 );
             }
         });
     }
+
+    #managerObserved = false;
 
     async #observeBlockPropertyValue() {
         this.consumeContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, (context) => {
@@ -135,7 +140,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                             expose: exposes ?? [],
                             layout: { ['Umbraco.BlockGrid']: this.#filterLayouts() }
                         };
-                        this._blockContext.blockIndex = contents.indexOf(this.blockGridValue.contentData[0]);
+                        this._blockContext.blockIndex = contents.findIndex(x => x.key === this._blockContext.contentUdi);
                         if (!this._htmlMarkup && !this._isLoading) {
                             this.renderBlockPreview();
                         }

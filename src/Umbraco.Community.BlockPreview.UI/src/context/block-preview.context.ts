@@ -9,7 +9,7 @@ export class BlockPreviewContext extends UmbControllerBase {
 
     #settingsRepository: SettingsRepository;
     #requestQueue = new BlockPreviewRequestQueue(3);
-    #stylesheetCache = new Map<string, CSSStyleSheet>();
+    #stylesheetCache = new Map<string, Promise<CSSStyleSheet>>();
 
     /** Shared concurrency-limited queue for preview API requests. */
     get requestQueue(): BlockPreviewRequestQueue {
@@ -57,16 +57,19 @@ export class BlockPreviewContext extends UmbControllerBase {
         }
     }
 
-    async getOrCreateStylesheet(href: string): Promise<CSSStyleSheet> {
+    getOrCreateStylesheet(href: string): Promise<CSSStyleSheet> {
         const cached = this.#stylesheetCache.get(href);
         if (cached) return cached;
 
-        const response = await fetch(href);
-        const css = await response.text();
-        const sheet = new CSSStyleSheet();
-        sheet.replaceSync(css);
-        this.#stylesheetCache.set(href, sheet);
-        return sheet;
+        const promise = fetch(href)
+            .then(response => response.text())
+            .then(css => {
+                const sheet = new CSSStyleSheet();
+                sheet.replaceSync(css);
+                return sheet;
+            });
+        this.#stylesheetCache.set(href, promise);
+        return promise;
     }
 
 }

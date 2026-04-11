@@ -101,12 +101,17 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
 
-                        await this.#observeBlockPropertyValue();
+                        if (!this.#managerObserved) {
+                            this.#managerObserved = true;
+                            await this.#observeBlockPropertyValue();
+                        }
                     }
                 );
             }
         });
     }
+
+    #managerObserved = false;
 
     #observeBlockPropertyValue() {
         this.consumeContext(UMB_BLOCK_LIST_MANAGER_CONTEXT, (context) => {
