@@ -352,6 +352,82 @@ namespace Umbraco.Community.BlockPreview.Services
         }
 
         /// <summary>
+        /// Renders a single block.
+        /// </summary>
+        /// <param name="blockData">The block data.</param>
+        /// <param name="content">The published content.</param>
+        /// <param name="controllerContext">The controller context.</param>
+        /// <param name="blockEditorAlias">The block editor alias.</param>
+        /// <param name="documentTypeUnique">The document type unique identifier.</param>
+        /// <param name="contentKey">The content key.</param>
+        /// <param name="settingsKey">The settings key.</param>
+        /// <param name="blockIndex">The block index.</param>
+        /// <returns>The rendered HTML.</returns>
+        public async Task<string> RenderSingleBlock(
+            string blockData,
+            IPublishedContent content,
+            ControllerContext controllerContext,
+            string blockEditorAlias = "",
+            Guid documentTypeUnique = default,
+            string contentKey = "",
+            string? settingsKey = default,
+            int? blockIndex = 0)
+        {
+            var blockValue = _blockDataConverter.DeserializeSingleBlock(blockData);
+            if (blockValue == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockData);
+
+            if (!blockValue.BlockValue.ContentData.Any())
+            {
+                SingleBlockEditorDataConverter converter = new SingleBlockEditorDataConverter(_jsonSerializer);
+                converter.TryDeserialize(blockData, out blockValue);
+            }
+
+            if (!Guid.TryParse(contentKey, out Guid contentGuidParsed))
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentKey);
+
+            Guid.TryParse(settingsKey!, out Guid settingsGuidParsed);
+
+            BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault(x => x.Key == contentGuidParsed);
+            if (contentData == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
+
+            IPublishedElement contentElement = _blockDataConverter.ConvertToElement(contentData, content);
+
+            BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
+                ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
+                : null;
+
+            IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
+
+            Type? contentBlockType = FindBlockType(contentElement?.ContentType);
+            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
+
+            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
+                return GetNoModelsErrorMessage();
+
+            BlockListItem? blockInstance = _blockModelFactory.CreateBlockInstance(
+                BlockType.SingleBlock,
+                contentBlockType, contentElement,
+                settingsBlockType, settingsElement,
+                contentData.Key, settingsData?.Key
+            ) as BlockListItem;
+
+            if (blockInstance == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
+
+            BlockPreviewContext previewContext = new BlockPreviewContext(
+               controllerContext,
+               content,
+               contentElement.ContentType.Alias,
+               BlockType.SingleBlock,
+               blockIndex);
+
+            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext);
+            return await GetMarkup(previewContext);
+        }
+
+        /// <summary>
         /// Renders a rich text block.
         /// </summary>
         /// <param name="blockData">The block data.</param>
@@ -450,6 +526,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 BlockType.BlockGrid => _options.BlockGrid,
                 BlockType.BlockList => _options.BlockList,
                 BlockType.RichText => _options.RichText,
+                BlockType.SingleBlock => _options.SingleBlock,
                 _ => null
             };
 

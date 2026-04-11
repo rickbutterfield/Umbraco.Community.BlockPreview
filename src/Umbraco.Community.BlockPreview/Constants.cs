@@ -24,6 +24,11 @@
             /// Default view location for Rich Text components.
             /// </summary>
             public const string RichText = "/Views/Partials/richtext/Components/{0}.cshtml";
+
+            /// <summary>
+            /// Default view location for Single Block components.
+            /// </summary>
+            public const string SingleBlock = "/Views/Partials/blocklist/Components/{0}.cshtml";
         }
 
         /// <summary>

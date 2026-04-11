@@ -1,7 +1,7 @@
 import BlockPreviewContext from '../context/block-preview.context';
 import { BLOCK_PREVIEW_CONTEXT } from '../context/block-preview.context-token';
 import { BlockContext } from './types';
-import { css, html, ifDefined, nothing, property, PropertyValueMap, state, unsafeHTML, type TemplateResult } from '@umbraco-cms/backoffice/external/lit';
+import { css, html, ifDefined, nothing, property, PropertyValueMap, state, unsafeHTML } from '@umbraco-cms/backoffice/external/lit';
 import { UMB_BLOCK_WORKSPACE_CONTEXT, UmbBlockDataType } from '@umbraco-cms/backoffice/block';
 import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewElement } from '@umbraco-cms/backoffice/block-custom-view';
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';

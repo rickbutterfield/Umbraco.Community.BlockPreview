@@ -1,15 +1,15 @@
 import { BlockPreviewBaseElement } from './block-preview-base.element';
-import { BlockGridContext } from './types';
+import { BlockContext } from './types';
 import { PreviewDataSource } from '../repository';
-import { css, customElement, property } from "@umbraco-cms/backoffice/external/lit";
-import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
+import { css, customElement, property, state } from "@umbraco-cms/backoffice/external/lit";
+import { UMB_BLOCK_SINGLE_ENTRY_CONTEXT, UMB_BLOCK_SINGLE_MANAGER_CONTEXT, UmbBlockSingleValueModel } from "@umbraco-cms/backoffice/block-single";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
 
-const elementName = "block-grid-preview";
+const elementName = "block-single-preview";
 
 @customElement(elementName)
-export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGridContext> {
+export class BlockSinglePreviewCustomView extends BlockPreviewBaseElement<BlockContext> {
 
     #previewDataSource: PreviewDataSource;
 
@@ -18,40 +18,39 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
         this.#previewDataSource = new PreviewDataSource(this);
     }
 
-    protected _blockContext: BlockGridContext = {
-        unique: "",
-        documentTypeUnique: "",
-        contentUdi: "",
-        settingsUdi: "",
-        blockEditorAlias: "",
-        culture: "",
-        workspaceEditContentPath: "",
-        contentElementTypeAlias: "",
-        contentElementTypeKey: "",
-        areas: [],
-        layout: undefined,
-        layoutAreas: undefined,
+    protected _blockContext: BlockContext = {
+        unique: '',
+        documentTypeUnique: '',
+        contentUdi: '',
+        settingsUdi: '',
+        blockEditorAlias: '',
+        culture: '',
+        workspaceEditContentPath: '',
+        contentElementTypeAlias: '',
+        contentElementTypeKey: '',
         blockIndex: 0
     };
 
-    private _blockGridValue: UmbBlockGridValueModel = {
+    @state()
+    private _blockSingleValue: UmbBlockSingleValueModel = {
         layout: {},
         expose: [],
         contentData: [],
         settingsData: []
-    }
+    };
 
     @property({ attribute: false })
-    public set blockGridValue(value: UmbBlockGridValueModel | undefined) {
-        const buildUpValue: Partial<UmbBlockGridValueModel> = value ? { ...value } : {};
+    public set blockSingleValue(value: UmbBlockSingleValueModel | undefined) {
+        const buildUpValue: Partial<UmbBlockSingleValueModel> = value ? { ...value } : {};
         buildUpValue.layout ??= {};
         buildUpValue.contentData ??= [];
         buildUpValue.settingsData ??= [];
         buildUpValue.expose ??= [];
-        this._blockGridValue = buildUpValue as UmbBlockGridValueModel;
+        this._blockSingleValue = buildUpValue as UmbBlockSingleValueModel;
     }
-    public get blockGridValue(): UmbBlockGridValueModel {
-        return this._blockGridValue;
+
+    public get blockSingleValue(): UmbBlockSingleValueModel {
+        return this._blockSingleValue;
     }
 
     protected async setupContextObservers() {
@@ -62,6 +61,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
     async #observeContentWorkspace() {
         try {
             await this.getContext(UMB_CONTENT_WORKSPACE_CONTEXT);
+
             this.consumeContext(UMB_CONTENT_WORKSPACE_CONTEXT, (context) => {
                 if (!context) return;
 
@@ -78,7 +78,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
     }
 
     protected observeBlockValue() {
-        this.consumeContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, async (context) => {
+        this.consumeContext(UMB_BLOCK_SINGLE_ENTRY_CONTEXT, (context) => {
             if (context) {
                 this.observe(
                     observeMultiple([
@@ -86,29 +86,20 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                         context.settingsKey,
                         context.workspaceEditContentPath,
                         context.contentElementTypeAlias,
-                        context.contentElementTypeKey,
-                        context.areas,
-                        context.layout,
-                        context.layoutAreas
+                        context.contentElementTypeKey
                     ]),
                     async ([
                         contentUdi,
                         settingsUdi,
                         workspaceEditContentPath,
                         contentElementTypeAlias,
-                        contentElementTypeKey,
-                        areas,
-                        layout,
-                        layoutAreas
+                        contentElementTypeKey
                     ]) => {
                         this._blockContext.contentUdi = contentUdi ?? '';
                         this._blockContext.settingsUdi = settingsUdi ?? '';
                         this._blockContext.workspaceEditContentPath = workspaceEditContentPath ?? '';
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
-                        this._blockContext.areas = areas;
-                        this._blockContext.layout = layout!;
-                        this._blockContext.layoutAreas = layoutAreas;
 
                         if (!this.#managerObserved) {
                             this.#managerObserved = true;
@@ -122,25 +113,36 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
 
     #managerObserved = false;
 
-    async #observeBlockPropertyValue() {
-        this.consumeContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, (context) => {
+    #observeBlockPropertyValue() {
+        this.consumeContext(UMB_BLOCK_SINGLE_MANAGER_CONTEXT, (context) => {
             if (context) {
                 this.observe(
                     observeMultiple([
                         context.contents,
                         context.settings,
+                        context.layouts,
                         context.exposes,
                         context.propertyAlias
                     ]),
-                    async ([contents, settings, exposes, propertyAlias]) => {
+                    async ([
+                        contents,
+                        settings,
+                        layouts,
+                        exposes,
+                        propertyAlias
+                    ]) => {
                         this._blockContext.blockEditorAlias = propertyAlias ?? '';
-                        this.blockGridValue = {
-                            contentData: contents ?? [],
-                            settingsData: settings ?? [],
-                            expose: exposes ?? [],
-                            layout: { ['Umbraco.BlockGrid']: this.#filterLayouts() }
+
+                        this.blockSingleValue = {
+                            contentData: contents?.filter(x => x.key === this._blockContext.contentUdi) ?? [],
+                            settingsData: settings?.filter(x => x.key === this._blockContext.settingsUdi) ?? [],
+                            expose: exposes?.filter(x => x.contentKey === this._blockContext.contentUdi) ?? [],
+                            layout: {
+                                ['Umbraco.SingleBlock']: layouts?.filter(x => x.contentKey === this._blockContext.contentUdi) ?? []
+                            }
                         };
-                        this._blockContext.blockIndex = contents.findIndex(x => x.key === this._blockContext.contentUdi);
+
+                        this._blockContext.blockIndex = contents?.indexOf(this.blockSingleValue.contentData[0]);
                         if (!this._htmlMarkup && !this._isLoading) {
                             this.renderBlockPreview();
                         }
@@ -150,32 +152,9 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
         });
     }
 
-    #filterLayouts(): UmbBlockGridLayoutModel[] {
-        const areas = this._blockContext.areas.map(area => {
-            const model: UmbBlockGridLayoutAreaItemModel = {
-                key: area.key,
-                items: this._blockContext.layoutAreas?.find(layout => layout.key === area.key)?.items ?? []
-            }
-            return model;
-        });
-
-        const layoutModel: UmbBlockGridLayoutModel[] =
-            [
-                {
-                    areas: areas,
-                    columnSpan: this._blockContext.layout?.columnSpan ?? 0,
-                    rowSpan: this._blockContext.layout?.rowSpan ?? 0,
-                    contentKey: this._blockContext.layout?.contentKey ?? '',
-                    settingsKey: this._blockContext.layout?.settingsKey
-                }
-            ];
-
-        return layoutModel;
-    }
-
     protected async callPreviewApi() {
-        return await this.#previewDataSource.previewGridBlock(
-            JSON.stringify(this.blockGridValue),
+        return await this.#previewDataSource.previewSingleBlock(
+            JSON.stringify(this.blockSingleValue),
             {
                 blockEditorAlias: this._blockContext.blockEditorAlias,
                 nodeKey: this._blockContext.unique,
@@ -184,13 +163,13 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                 contentUdi: this._blockContext.contentUdi,
                 settingsUdi: this._blockContext.settingsUdi,
                 culture: this._blockContext.culture,
-                blockIndex: this._blockContext.blockIndex
+                blockIndex: this._blockContext.blockIndex,
             }
         );
     }
 
     protected async fetchStylesheets() {
-        const { data } = await this.#previewDataSource.getGridStylesheets({
+        const { data } = await this.#previewDataSource.getSingleBlockStylesheets({
             documentTypeUnique: this._blockContext.documentTypeUnique,
             nodeKey: this._blockContext.unique
         });
@@ -216,10 +195,10 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
     ]
 }
 
-export default BlockGridPreviewCustomView;
+export default BlockSinglePreviewCustomView;
 
 declare global {
     interface HTMLElementTagNameMap {
-        [elementName]: BlockGridPreviewCustomView;
+        [elementName]: BlockSinglePreviewCustomView;
     }
 }

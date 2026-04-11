@@ -3,7 +3,7 @@ import { ManifestBlockEditorCustomView } from '@umbraco-cms/backoffice/block-cus
 import { UmbEntryPointOnInit } from '@umbraco-cms/backoffice/extension-api';
 
 import { client } from './api/index.ts';
-import { BlockGridPreviewCustomView, BlockListPreviewCustomView, RichTextPreviewCustomView } from './blockEditor';
+import { BlockGridPreviewCustomView, BlockListPreviewCustomView, BlockSinglePreviewCustomView, RichTextPreviewCustomView } from './blockEditor';
 import { BLOCK_PREVIEW_CONTEXT } from './context/block-preview.context-token.ts';
 import BlockPreviewContext from './context/block-preview.context.ts';
 import { manifests as contextManifests } from './context/manifests.ts';
@@ -68,6 +68,22 @@ export const onInit: UmbEntryPointOnInit = async (host, extensionRegistry) => {
                 }
 
                 customViewManifests.push(blockListManifest);
+            }
+
+            if (settings.singleBlock.enabled) {
+                let singleBlockManifest: ManifestBlockEditorCustomView = {
+                    type: 'blockEditorCustomView',
+                    alias: 'BlockPreview.SingleBlockCustomView',
+                    name: 'BlockPreview Single Block Custom View',
+                    element: BlockSinglePreviewCustomView,
+                    forBlockEditor: 'block-single'
+                };
+
+                if (settings.singleBlock.contentTypes?.length !== 0) {
+                    singleBlockManifest.forContentTypeAlias = settings.singleBlock.contentTypes as string[];
+                }
+
+                customViewManifests.push(singleBlockManifest);
             }
 
             if (settings.richText.enabled) {

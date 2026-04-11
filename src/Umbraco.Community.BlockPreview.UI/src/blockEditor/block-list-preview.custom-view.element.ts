@@ -1,7 +1,7 @@
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockListContext } from './types';
 import { PreviewDataSource } from '../repository';
-import { css, customElement, html, property, state } from "@umbraco-cms/backoffice/external/lit";
+import { css, customElement, property, state } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_LIST_ENTRY_CONTEXT, UMB_BLOCK_LIST_MANAGER_CONTEXT, UmbBlockListValueModel } from "@umbraco-cms/backoffice/block-list";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";

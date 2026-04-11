@@ -14,5 +14,7 @@ internal sealed class BlockPreviewSchema
         public required BlockTypeSettings BlockList { get; set; }
 
         public required BlockTypeSettings RichText { get; set; }
+
+        public required BlockTypeSettings SingleBlock { get; set; }
     }
 }

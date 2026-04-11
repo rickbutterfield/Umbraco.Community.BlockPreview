@@ -302,6 +302,88 @@ namespace Umbraco.Community.BlockPreview.Controllers
         }
 
         /// <summary>
+        /// Renders a preview for a single block using the associated Razor view or ViewComponent.
+        /// </summary>
+        /// <param name="blockData">The JSON content data of the block.</param>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="blockEditorAlias">The alias of the block editor</param>
+        /// <param name="contentElementAlias">The alias of the content being rendered</param>
+        /// <param name="culture">The current culture</param>
+        /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node</param>
+        /// <param name="contentUdi">The <see cref="Cms.Core.Udi"/> that represents the content element</param>
+        /// <param name="settingsUdi">The <see cref="Cms.Core.Udi"/> that represents the settings element</param>
+        /// <param name="blockIndex">The <see cref="int"/> that represents the block index</param>
+        /// <returns>The markup to render in the preview.</returns>
+        [HttpPost("preview/single")]
+        [MapToApiVersion("1.0")]
+        [ProducesResponseType(typeof(string), 200)]
+        public async Task<IActionResult> PreviewSingleBlock(
+            [FromBody] string blockData,
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] string blockEditorAlias = "",
+            [FromQuery] string contentElementAlias = "",
+            [FromQuery] string culture = "",
+            [FromQuery] Guid documentTypeUnique = default,
+            [FromQuery] string contentUdi = "",
+            [FromQuery] string? settingsUdi = default,
+            [FromQuery] int? blockIndex = 0)
+        {
+            string markup;
+
+            if (CheckGeneratedModelsExist())
+            {
+                try
+                {
+                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique, out bool isActualContent);
+
+                    string? currentCulture = await GetCurrentCulture(culture, content);
+
+                    await SetupPublishedRequest(currentCulture, isActualContent ? content : null);
+
+                    await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
+
+                    markup = await _blockPreviewService.RenderSingleBlock(blockData, content!, ControllerContext, blockEditorAlias, documentTypeUnique, contentUdi, settingsUdi, blockIndex);
+
+                    markup = await _responseEnricher.EnrichAsync(markup, HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
+                }
+                catch (Exception ex)
+                {
+                    markup = string.Format(Constants.ErrorMessages.ErrorTemplate, string.Format(Constants.ErrorMessages.RenderError, ex.Message));
+                    _logger.LogError(ex, string.Format(Constants.ErrorMessages.LoggerError, contentElementAlias));
+                }
+            }
+
+            else
+            {
+                markup = string.Format(Constants.ErrorMessages.WarningTemplate, Constants.ErrorMessages.ModelsBuilderError);
+            }
+
+            string? cleanMarkup = CleanUpMarkup(markup);
+            return Ok(cleanMarkup);
+        }
+
+        /// <summary>
+        /// Retrieves the stylesheet paths for a single block preview.
+        /// </summary>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
+        /// <returns>A list of stylesheet paths if configured; otherwise, an empty list.</returns>
+        [HttpGet("preview/single/stylesheets")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
+        public async Task<IActionResult> GetSingleBlockStylesheets(
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+            var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.SingleBlock, content!, ControllerContext);
+
+            return Ok(stylesheetPaths);
+        }
+
+        /// <summary>
         /// Loads the in-memory settings from appsettings.json
         /// </summary>
         /// <returns><see cref="BlockPreviewOptions">Block Preview settings</see></returns>
@@ -314,7 +396,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
             // If any block type has IgnoredContentTypes configured (and ContentTypes is not set), compute ContentTypes dynamically
             if (ShouldApplyIgnoredContentTypes(settings.BlockGrid) ||
                 ShouldApplyIgnoredContentTypes(settings.BlockList) ||
-                ShouldApplyIgnoredContentTypes(settings.RichText))
+                ShouldApplyIgnoredContentTypes(settings.RichText) ||
+                ShouldApplyIgnoredContentTypes(settings.SingleBlock))
             {
                 var allElementAliases = _runtimeCache.GetCacheItem(Constants.CacheKeys.ElementAliases, () =>
                 {
@@ -329,7 +412,8 @@ namespace Umbraco.Community.BlockPreview.Controllers
                 {
                     BlockGrid = ApplyIgnoredContentTypes(settings.BlockGrid, allElementAliases),
                     BlockList = ApplyIgnoredContentTypes(settings.BlockList, allElementAliases),
-                    RichText = ApplyIgnoredContentTypes(settings.RichText, allElementAliases)
+                    RichText = ApplyIgnoredContentTypes(settings.RichText, allElementAliases),
+                    SingleBlock = ApplyIgnoredContentTypes(settings.SingleBlock, allElementAliases)
                 };
             }
 

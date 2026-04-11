@@ -18,6 +18,11 @@
         /// <summary>
         /// Rich Text editor with blocks.
         /// </summary>
-        RichText
+        RichText,
+
+        /// <summary>
+        /// Single Block editor.
+        /// </summary>
+        SingleBlock
     }
 }

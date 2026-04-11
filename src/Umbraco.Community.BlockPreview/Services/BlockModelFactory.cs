@@ -94,6 +94,8 @@ namespace Umbraco.Community.BlockPreview.Services
                 (BlockType.BlockList, null) => typeof(BlockListItem<>).MakeGenericType(contentType),
                 (BlockType.RichText, not null) => typeof(RichTextBlockItem<,>).MakeGenericType(contentType, settingsType),
                 (BlockType.RichText, null) => typeof(RichTextBlockItem<>).MakeGenericType(contentType),
+                (BlockType.SingleBlock, not null) => typeof(BlockListItem<,>).MakeGenericType(contentType, settingsType),
+                (BlockType.SingleBlock, null) => typeof(BlockListItem<>).MakeGenericType(contentType),
                 _ => throw new ArgumentOutOfRangeException(nameof(blockType), blockType, "Unknown block type")
             };
         }
