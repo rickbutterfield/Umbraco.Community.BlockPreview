@@ -157,11 +157,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
             {
                 try
                 {
-                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique, out bool isActualContent);
 
                     string? currentCulture = await GetCurrentCulture(culture, content);
 
-                    await SetupPublishedRequest(currentCulture, content);
+                    await SetupPublishedRequest(currentCulture, isActualContent ? content : null);
 
                     await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
 
@@ -218,11 +218,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
             {
                 try
                 {
-                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique, out bool isActualContent);
 
                     string? currentCulture = await GetCurrentCulture(culture, content);
 
-                    await SetupPublishedRequest(currentCulture, content);
+                    await SetupPublishedRequest(currentCulture, isActualContent ? content : null);
 
                     await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias, contentUdi, settingsUdi, blockIndex);
 
@@ -273,11 +273,11 @@ namespace Umbraco.Community.BlockPreview.Controllers
             {
                 try
                 {
-                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+                    IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique, out bool isActualContent);
 
                     string? currentCulture = await GetCurrentCulture(culture, content);
 
-                    await SetupPublishedRequest(currentCulture, content);
+                    await SetupPublishedRequest(currentCulture, isActualContent ? content : null);
 
                     await _requestEnricher.EnrichAsync(HttpContext, content, blockEditorAlias, contentElementAlias);
 
@@ -561,6 +561,13 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
         private IPublishedContent? GetPublishedContent(Guid? nodeKey = default, Guid? documentTypeUnique = default)
         {
+            return GetPublishedContent(nodeKey, documentTypeUnique, out _);
+        }
+
+        private IPublishedContent? GetPublishedContent(Guid? nodeKey, Guid? documentTypeUnique, out bool isActualContent)
+        {
+            isActualContent = false;
+
             if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext? context))
                 return null;
 
@@ -568,18 +575,21 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
             if (nodeKey.HasValue)
             {
-                content = context.Content?.GetById(preview: true, nodeKey.GetValueOrDefault());                
+                content = context.Content?.GetById(preview: true, nodeKey.GetValueOrDefault());
             }
 
-            var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
             if (content != null)
+            {
+                isActualContent = true;
                 return content;
+            }
 
             var publishedContentType = _contentTypeCache.Get(PublishedItemType.Content, documentTypeUnique.GetValueOrDefault());
 
             if (publishedContentType == null)
                 return null;
 
+            var contentCacheKey = string.Format(Constants.CacheKeys.Content, nodeKey);
             using var scope = _scopeProvider.CreateScope();
             var cacheItem = _runtimeCache.GetCacheItem(contentCacheKey, () =>
             {
