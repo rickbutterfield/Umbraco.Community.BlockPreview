@@ -50,7 +50,7 @@ public class CustomBlockPreviewService : BlockPreviewService
     }
 
     // Override to provide dynamic stylesheet paths
-    public override Task<IEnumerable<string>?> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
+    public override Task<IReadOnlyList<string>> GetStylesheetPaths(BlockType blockType, IPublishedContent content, ControllerContext controllerContext)
     {
         // Check if a theme is set in the request context
         if (controllerContext.HttpContext.Items.TryGetValue("theme", out var themeObj) && themeObj is string theme)
@@ -61,7 +61,7 @@ public class CustomBlockPreviewService : BlockPreviewService
                 "/css/block-base.css",
                 $"/css/themes/{theme}.css"
             };
-            return Task.FromResult<IEnumerable<string>?>(stylesheets);
+            return Task.FromResult<IReadOnlyList<string>>(stylesheets);
         }
 
         // Fall back to the default configured stylesheets
