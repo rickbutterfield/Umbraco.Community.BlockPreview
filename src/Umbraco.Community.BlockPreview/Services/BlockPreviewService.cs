@@ -209,7 +209,9 @@ namespace Umbraco.Community.BlockPreview.Services
 
             bool hasNestedBlockGrid = contentData.Values.Any(x => x.EditorAlias == PropertyEditors.Aliases.BlockGrid);
 
-            IPublishedElement contentElement = _blockDataConverter.ConvertToElement(contentData, content);
+            IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
+            if (contentElement == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
@@ -217,7 +219,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType);
+            Type? contentBlockType = FindBlockType(contentElement.ContentType);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
@@ -316,7 +318,9 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
-            IPublishedElement contentElement = _blockDataConverter.ConvertToElement(contentData, content);
+            IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
+            if (contentElement == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
@@ -324,7 +328,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType);
+            Type? contentBlockType = FindBlockType(contentElement.ContentType);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
@@ -392,7 +396,9 @@ namespace Umbraco.Community.BlockPreview.Services
             if (contentData == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
-            IPublishedElement contentElement = _blockDataConverter.ConvertToElement(contentData, content);
+            IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
+            if (contentElement == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
@@ -400,7 +406,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
             IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType);
+            Type? contentBlockType = FindBlockType(contentElement.ContentType);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
@@ -454,11 +460,13 @@ namespace Umbraco.Community.BlockPreview.Services
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
+            if (contentElement == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
 
             BlockItemData? settingsData = blockValue?.BlockValue.SettingsData.FirstOrDefault();
             IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement?.ContentType);
+            Type? contentBlockType = FindBlockType(contentElement.ContentType);
             Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
 
             if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
