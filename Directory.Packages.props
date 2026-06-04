@@ -10,7 +10,7 @@
   </ItemGroup>
   <!-- Umbraco packages -->
   <PropertyGroup>
-    <UmbracoCmsPackageVersion>[17.3.0, 18.0.0)</UmbracoCmsPackageVersion>
+    <UmbracoCmsPackageVersion>[18.0.0-rc1, 19.0.0)</UmbracoCmsPackageVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageVersion Include="Umbraco.Cms" Version="$(UmbracoCmsPackageVersion)" />
@@ -24,7 +24,7 @@
   </ItemGroup>
   <!-- Third-party packages -->
   <ItemGroup>
-    <PackageVersion Include="uSync" Version="17.0.0" />
+    <PackageVersion Include="uSync" Version="18.0.0-rc1" />
   </ItemGroup>
   <!-- Test packages -->
   <ItemGroup>

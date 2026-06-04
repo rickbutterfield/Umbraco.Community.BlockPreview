@@ -4,7 +4,7 @@ import type { Client, Options as Options2, TDataShape } from './client';
 import { client } from './client.gen';
 import type { GetGridStylesheetData, GetGridStylesheetResponses, GetGridStylesheetsData, GetGridStylesheetsResponses, GetListStylesheetData, GetListStylesheetResponses, GetListStylesheetsData, GetListStylesheetsResponses, GetRteStylesheetData, GetRteStylesheetResponses, GetRteStylesheetsData, GetRteStylesheetsResponses, GetSettingsData, GetSettingsResponses, GetSingleBlockStylesheetsData, GetSingleBlockStylesheetsResponses, PreviewGridBlockData, PreviewGridBlockResponses, PreviewListBlockData, PreviewListBlockResponses, PreviewRichTextMarkupData, PreviewRichTextMarkupResponses, PreviewSingleBlockData, PreviewSingleBlockResponses } from './types.gen';
 
-export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
+export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean, TResponse = unknown> = Options2<TData, ThrowOnError, TResponse> & {
     /**
      * You can provide a client instance returned by `createClient()` instead of
      * individual options. This might be also useful if you want to implement a
@@ -19,13 +19,13 @@ export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends 
 };
 
 export class BlockPreviewService {
-    public static previewGridBlock<ThrowOnError extends boolean = true>(options?: Options<PreviewGridBlockData, ThrowOnError>) {
-        return (options?.client ?? client).post<PreviewGridBlockResponses, unknown, ThrowOnError>({
+    public static previewGridBlock<ThrowOnError extends boolean = true>(options: Options<PreviewGridBlockData, ThrowOnError>) {
+        return (options.client ?? client).post<PreviewGridBlockResponses, unknown, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/grid',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
-                ...options?.headers
+                ...options.headers
             }
         });
     }
@@ -34,26 +34,20 @@ export class BlockPreviewService {
      * @deprecated
      */
     public static getGridStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetGridStylesheetData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetGridStylesheetResponses, unknown, ThrowOnError>({
-            url: '/umbraco/block-preview/api/v1/preview/grid/stylesheet',
-            ...options
-        });
+        return (options?.client ?? client).get<GetGridStylesheetResponses, unknown, ThrowOnError>({ url: '/umbraco/block-preview/api/v1/preview/grid/stylesheet', ...options });
     }
     
     public static getGridStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetGridStylesheetsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetGridStylesheetsResponses, unknown, ThrowOnError>({
-            url: '/umbraco/block-preview/api/v1/preview/grid/stylesheets',
-            ...options
-        });
+        return (options?.client ?? client).get<GetGridStylesheetsResponses, unknown, ThrowOnError>({ url: '/umbraco/block-preview/api/v1/preview/grid/stylesheets', ...options });
     }
     
-    public static previewListBlock<ThrowOnError extends boolean = true>(options?: Options<PreviewListBlockData, ThrowOnError>) {
-        return (options?.client ?? client).post<PreviewListBlockResponses, unknown, ThrowOnError>({
+    public static previewListBlock<ThrowOnError extends boolean = true>(options: Options<PreviewListBlockData, ThrowOnError>) {
+        return (options.client ?? client).post<PreviewListBlockResponses, unknown, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/list',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
-                ...options?.headers
+                ...options.headers
             }
         });
     }
@@ -62,26 +56,20 @@ export class BlockPreviewService {
      * @deprecated
      */
     public static getListStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetListStylesheetData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetListStylesheetResponses, unknown, ThrowOnError>({
-            url: '/umbraco/block-preview/api/v1/preview/list/stylesheet',
-            ...options
-        });
+        return (options?.client ?? client).get<GetListStylesheetResponses, unknown, ThrowOnError>({ url: '/umbraco/block-preview/api/v1/preview/list/stylesheet', ...options });
     }
     
     public static getListStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetListStylesheetsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetListStylesheetsResponses, unknown, ThrowOnError>({
-            url: '/umbraco/block-preview/api/v1/preview/list/stylesheets',
-            ...options
-        });
+        return (options?.client ?? client).get<GetListStylesheetsResponses, unknown, ThrowOnError>({ url: '/umbraco/block-preview/api/v1/preview/list/stylesheets', ...options });
     }
     
-    public static previewRichTextMarkup<ThrowOnError extends boolean = true>(options?: Options<PreviewRichTextMarkupData, ThrowOnError>) {
-        return (options?.client ?? client).post<PreviewRichTextMarkupResponses, unknown, ThrowOnError>({
+    public static previewRichTextMarkup<ThrowOnError extends boolean = true>(options: Options<PreviewRichTextMarkupData, ThrowOnError>) {
+        return (options.client ?? client).post<PreviewRichTextMarkupResponses, unknown, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/rte',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
-                ...options?.headers
+                ...options.headers
             }
         });
     }
@@ -90,41 +78,29 @@ export class BlockPreviewService {
      * @deprecated
      */
     public static getRteStylesheet<ThrowOnError extends boolean = true>(options?: Options<GetRteStylesheetData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetRteStylesheetResponses, unknown, ThrowOnError>({
-            url: '/umbraco/block-preview/api/v1/preview/rte/stylesheet',
-            ...options
-        });
+        return (options?.client ?? client).get<GetRteStylesheetResponses, unknown, ThrowOnError>({ url: '/umbraco/block-preview/api/v1/preview/rte/stylesheet', ...options });
     }
     
     public static getRteStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetRteStylesheetsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetRteStylesheetsResponses, unknown, ThrowOnError>({
-            url: '/umbraco/block-preview/api/v1/preview/rte/stylesheets',
-            ...options
-        });
+        return (options?.client ?? client).get<GetRteStylesheetsResponses, unknown, ThrowOnError>({ url: '/umbraco/block-preview/api/v1/preview/rte/stylesheets', ...options });
     }
     
-    public static previewSingleBlock<ThrowOnError extends boolean = true>(options?: Options<PreviewSingleBlockData, ThrowOnError>) {
-        return (options?.client ?? client).post<PreviewSingleBlockResponses, unknown, ThrowOnError>({
+    public static previewSingleBlock<ThrowOnError extends boolean = true>(options: Options<PreviewSingleBlockData, ThrowOnError>) {
+        return (options.client ?? client).post<PreviewSingleBlockResponses, unknown, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/single',
             ...options,
             headers: {
                 'Content-Type': 'application/json',
-                ...options?.headers
+                ...options.headers
             }
         });
     }
     
     public static getSingleBlockStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetSingleBlockStylesheetsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetSingleBlockStylesheetsResponses, unknown, ThrowOnError>({
-            url: '/umbraco/block-preview/api/v1/preview/single/stylesheets',
-            ...options
-        });
+        return (options?.client ?? client).get<GetSingleBlockStylesheetsResponses, unknown, ThrowOnError>({ url: '/umbraco/block-preview/api/v1/preview/single/stylesheets', ...options });
     }
     
     public static getSettings<ThrowOnError extends boolean = true>(options?: Options<GetSettingsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetSettingsResponses, unknown, ThrowOnError>({
-            url: '/umbraco/block-preview/api/v1/settings',
-            ...options
-        });
+        return (options?.client ?? client).get<GetSettingsResponses, unknown, ThrowOnError>({ url: '/umbraco/block-preview/api/v1/settings', ...options });
     }
 }

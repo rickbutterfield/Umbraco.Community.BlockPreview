@@ -5,7 +5,6 @@ using Umbraco.Cms.Api.Common.OpenApi;
 using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.DependencyInjection;
 using Umbraco.Cms.Core.Notifications;
-using Umbraco.Community.BlockPreview.Configuration;
 using Umbraco.Community.BlockPreview.Extensions;
 using Umbraco.Community.BlockPreview.Helpers;
 using Umbraco.Community.BlockPreview.Interfaces;
@@ -21,7 +20,23 @@ namespace Umbraco.Community.BlockPreview
         {
             builder.AddInternal(config => config.BindConfiguration(Constants.Configuration.AppSettingsRoot));
 
-            builder.Services.ConfigureOptions<ConfigureSwaggerGenOptions>();
+            builder.AddBackOfficeOpenApiDocument(
+                Constants.Configuration.ApiName,
+                document => document
+                    .WithTitle("BlockPreview Management API")
+                    .ConfigureOpenApiOptions(options =>
+                        options.AddOperationTransformer((operation, context, _) =>
+                        {
+                            operation.OperationId = $"{context.Description.ActionDescriptor.RouteValues["action"]}";
+
+                            // Microsoft.AspNetCore.OpenApi does not map [Obsolete] to the deprecated flag like Swashbuckle did
+                            if (context.Description.ActionDescriptor.EndpointMetadata.OfType<ObsoleteAttribute>().Any())
+                            {
+                                operation.Deprecated = true;
+                            }
+
+                            return Task.CompletedTask;
+                        })));
 
             builder.AddNotificationHandler<DataTypeSavedNotification, DataTypeSavedNotificationHandler>();
             builder.AddNotificationHandler<ContentTypeSavedNotification, ContentTypeSavedNotificationHandler>();
@@ -35,8 +50,6 @@ namespace Umbraco.Community.BlockPreview
 
                 throw new InvalidOperationException($"Expected {nameof(DefaultViewComponentHelper)} when resolving {nameof(IViewComponentHelperWrapper)}");
             });
-
-            builder.Services.AddSingleton<IOperationIdHandler, CustomOperationIdHandler>();
 
             builder.Services.AddScoped<IBlockModelFactory, BlockModelFactory>();
             builder.Services.AddScoped<IBlockViewRenderer>(sp =>

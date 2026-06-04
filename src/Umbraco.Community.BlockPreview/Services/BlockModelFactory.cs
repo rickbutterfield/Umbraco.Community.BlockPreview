@@ -1,6 +1,5 @@
 using System.Collections.Concurrent;
 using System.Reflection;
-using Umbraco.Cms.Core;
 using Umbraco.Cms.Core.Models.Blocks;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Community.BlockPreview.Enums;
@@ -47,13 +46,7 @@ namespace Umbraco.Community.BlockPreview.Services
             var blockItemType = CreateBlockItemType(blockType, contentType, settingsType);
             var ctor = _blockItemConstructorCache.GetOrAdd(blockItemType, GetBlockItemConstructor);
 
-            // Block item constructors expect Udi, not Guid
-            var contentUdi = Udi.Create(Umbraco.Cms.Core.Constants.UdiEntityType.Element, contentKey);
-            var settingsUdi = settingsKey.HasValue
-                ? Udi.Create(Umbraco.Cms.Core.Constants.UdiEntityType.Element, settingsKey.Value)
-                : null;
-
-            return ctor.Invoke(new object?[] { contentUdi, contentInstance, settingsUdi, settingsInstance });
+            return ctor.Invoke(new object?[] { contentKey, contentInstance, settingsKey, settingsInstance });
         }
 
         /// <inheritdoc/>
@@ -109,7 +102,7 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private static ConstructorInfo GetBlockItemConstructor(Type type)
         {
-            // Block items have constructor: (Udi contentUdi, TContent content, Udi? settingsUdi, TSettings? settings)
+            // Block items have constructor: (Guid contentKey, TContent content, Guid? settingsKey, TSettings? settings)
             var ctor = type.GetConstructors().FirstOrDefault(c => c.GetParameters().Length == 4);
             return ctor ?? throw new InvalidOperationException(
                 $"Type {type.Name} does not have the expected 4-parameter constructor.");

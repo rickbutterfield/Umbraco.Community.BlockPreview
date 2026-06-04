@@ -2,7 +2,7 @@
 
 export default defineConfig({
     debug: true,
-    input: 'http://localhost:26293/umbraco/swagger/block-preview/swagger.json',
+    input: 'http://localhost:26293/umbraco/openapi/block-preview.json',
     output: {
         path: 'src/api',
     },
@@ -18,9 +18,12 @@ export default defineConfig({
         },
         {
             name: '@hey-api/sdk',
-            asClass: true,
-            classNameBuilder: (name) => `${name}Service`,
             responseStyle: 'fields',
+            operations: {
+                strategy: 'byTags',
+                container: 'class',
+                containerName: { name: '{{name}}Service' },
+            },
         }
     ]
 });
