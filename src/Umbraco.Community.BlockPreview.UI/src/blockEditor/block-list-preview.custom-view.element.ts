@@ -101,7 +101,10 @@ export class BlockListPreviewCustomView extends BlockPreviewBaseElement<BlockLis
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
 
-                        if (!this.#managerObserved) {
+                        // Only subscribe to manager context once contentUdi is known; subscribing with
+                        // an empty key causes the manager to filter contentData to [] on its first emit,
+                        // and the #managerObserved guard then blocks a corrective re-subscription.
+                        if (!this.#managerObserved && this._blockContext.contentUdi) {
                             this.#managerObserved = true;
                             await this.#observeBlockPropertyValue();
                         }
