@@ -8,7 +8,9 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "watch": "vite build --watch",
-    "generate": "openapi-ts --file openapi-ts.config.ts"
+    "generate": "openapi-ts --file openapi-ts.config.ts",
+    "test": "web-test-runner",
+    "test:watch": "web-test-runner --watch"
   },
   "dependencies": {
     "lit": "^3.1.0"
@@ -19,7 +21,11 @@
   "devDependencies": {
     "@hey-api/client-fetch": "^0.13.1",
     "@hey-api/openapi-ts": "^0.85.0",
+    "@open-wc/testing": "^4.0.0",
     "@umbraco-cms/backoffice": "^17.3.0",
+    "@web/dev-server-esbuild": "^1.0.0",
+    "@web/test-runner": "^0.20.0",
+    "@web/test-runner-playwright": "^0.11.0",
     "glob": "^10.3.10",
     "typescript": "^5.8.3",
     "vite": "^6.3.5"
