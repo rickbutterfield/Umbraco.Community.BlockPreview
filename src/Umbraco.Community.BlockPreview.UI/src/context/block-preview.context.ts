@@ -14,7 +14,9 @@ export class BlockPreviewContext extends UmbControllerBase {
     }
 
     // Node key cache used as a fallback when a preview cannot reach its content
-    // workspace directly (e.g. when rendered inside a portaled block-edit modal).
+    // workspace directly (e.g. when nested inside another block, whose workspace
+    // context shadows the document workspace under the shared 'UmbWorkspaceContext'
+    // alias).
     #unique = new UmbStringState('');
     #documentTypeUnique = new UmbStringState('');
 
