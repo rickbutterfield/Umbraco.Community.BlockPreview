@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Umbraco.Cms" VersionOverride="18.0.0-rc1" />
-        <PackageReference Include="Umbraco.Cms.Core" VersionOverride="18.0.0-rc1" />
-        <PackageReference Include="Umbraco.Cms.StaticAssets" VersionOverride="18.0.0-rc1" />
-        <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" VersionOverride="18.0.0-rc1" />
+        <PackageReference Include="Umbraco.Cms" VersionOverride="18.0.0" />
+        <PackageReference Include="Umbraco.Cms.Core" VersionOverride="18.0.0" />
+        <PackageReference Include="Umbraco.Cms.StaticAssets" VersionOverride="18.0.0" />
+        <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" VersionOverride="18.0.0" />
         <PackageReference Include="uSync" />
     </ItemGroup>
 
