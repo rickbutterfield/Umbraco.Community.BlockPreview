@@ -103,6 +103,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                     ]) => {
                         const prevColumnSpan = this._blockContext.layout?.columnSpan;
                         const prevRowSpan = this._blockContext.layout?.rowSpan;
+                        const prevLayoutAreas = this._blockContext.layoutAreas;
 
                         this._blockContext.contentUdi = contentUdi ?? '';
                         this._blockContext.settingsUdi = settingsUdi ?? '';
@@ -113,9 +114,21 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                         this._blockContext.layout = layout!;
                         this._blockContext.layoutAreas = layoutAreas;
 
-                        if (!this.#managerObserved) {
+                        if (!this.#managerObserved && this._blockContext.contentUdi) {
                             this.#managerObserved = true;
                             await this.#observeBlockPropertyValue();
+                        }
+
+                        // Re-render when layoutAreas first arrive for a block with areas.
+                        // Covers both the deferred case (_htmlMarkup empty) and the early-render
+                        // case (_htmlMarkup set from an incomplete render). blockGridValue.layout
+                        // must be rebuilt here so callPreviewApi() sends the updated area data.
+                        if (!prevLayoutAreas && layoutAreas && (areas?.length ?? 0) > 0 && this.#managerObserved && !this._isLoading) {
+                            this.blockGridValue = {
+                                ...this._blockGridValue,
+                                layout: { ['Umbraco.BlockGrid']: this.#filterLayouts() }
+                            };
+                            this.renderBlockPreview();
                         }
 
                         // Re-render when layout dimensions change (resize)
@@ -159,8 +172,13 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                             expose: exposes ?? [],
                             layout: { ['Umbraco.BlockGrid']: this.#filterLayouts() }
                         };
-                        this._blockContext.blockIndex = contents.findIndex(x => x.key === this._blockContext.contentUdi);
+                        this._blockContext.blockIndex = (contents ?? []).findIndex(x => x.key === this._blockContext.contentUdi);
                         if (!this._htmlMarkup && !this._isLoading) {
+                            // Defer render if areas are expected but layoutAreas haven't arrived yet;
+                            // observeBlockValue will trigger the render once layoutAreas are available.
+                            if ((this._blockContext.areas?.length ?? 0) > 0 && !this._blockContext.layoutAreas) {
+                                return;
+                            }
                             this.renderBlockPreview();
                         }
                     }
