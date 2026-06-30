@@ -60,7 +60,10 @@ export class BlockSinglePreviewCustomView extends BlockPreviewBaseElement<BlockC
 
     async #observeContentWorkspace() {
         try {
-            await this.getContext(UMB_CONTENT_WORKSPACE_CONTEXT);
+            // The content workspace shares its context alias with the block workspace,
+            // so when this preview is nested inside another block we must pass beyond
+            // the nearer block workspace match to reach the document content workspace.
+            await this.getContext(UMB_CONTENT_WORKSPACE_CONTEXT, { passContextAliasMatches: true });
 
             this.consumeContext(UMB_CONTENT_WORKSPACE_CONTEXT, (context) => {
                 if (!context) return;
@@ -71,7 +74,7 @@ export class BlockSinglePreviewCustomView extends BlockPreviewBaseElement<BlockC
                         await this.handleWorkspaceData(unique?.toString(), contentTypeUniques?.[0]);
                     }
                 );
-            });
+            }).passContextAliasMatches();
         } catch {
             this.observeBlockWorkspaceFallback();
         }
