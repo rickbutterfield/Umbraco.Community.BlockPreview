@@ -1,6 +1,6 @@
 import { Page } from "@playwright/test"
 import { umbracoConfig } from "../../umbraco.config";
-import { ApiHelpers as UmbracoApiHelpers } from "@umbraco/playwright-testhelpers";
+import { ApiHelpers as UmbracoApiHelpers } from "@umbraco-cms/acceptance-test-helpers";
 
 export class ApiHelpers {
   baseUrl: string = umbracoConfig.environment.baseUrl;

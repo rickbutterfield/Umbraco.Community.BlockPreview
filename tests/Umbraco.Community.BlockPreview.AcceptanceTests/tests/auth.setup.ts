@@ -1,6 +1,6 @@
 import {test as setup} from '@playwright/test';
 import {STORAGE_STATE} from '../playwright.config';
-import {ConstantHelper, UiHelpers} from "@umbraco/playwright-testhelpers";
+import {ConstantHelper, UiHelpers} from "@umbraco-cms/acceptance-test-helpers";
 
 setup('authenticate', async ({page}) => {
   const umbracoUi = new UiHelpers(page);
@@ -8,8 +8,8 @@ setup('authenticate', async ({page}) => {
   await umbracoUi.goToBackOffice();
   // Wait for login form to be ready
   await page.locator('[name="username"]').waitFor({state: 'visible', timeout: 30000});
-  await umbracoUi.login.enterEmail(process.env.UMBRACO_USER_LOGIN);
-  await umbracoUi.login.enterPassword(process.env.UMBRACO_USER_PASSWORD);
+  await umbracoUi.login.enterEmail(process.env.UMBRACO_USER_LOGIN!);
+  await umbracoUi.login.enterPassword(process.env.UMBRACO_USER_PASSWORD!);
   await umbracoUi.login.clickLoginButton();
   // Wait for backoffice to load after login
   await page.getByTestId('section-links').waitFor({state: 'visible', timeout: 30000});
