@@ -1,5 +1,5 @@
 import { expect } from "@playwright/test";
-import { ConstantHelper } from "@umbraco/playwright-testhelpers";
+import { ConstantHelper } from "@umbraco-cms/acceptance-test-helpers";
 import { test } from "../../../lib/index";
 
 /**
