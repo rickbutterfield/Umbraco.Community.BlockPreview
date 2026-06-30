@@ -37,7 +37,23 @@ jobs:
 
     - name: Setup .NET
       uses: actions/setup-dotnet@v5
-  
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22.12.0'
+        cache: 'npm'
+        cache-dependency-path: src/Umbraco.Community.BlockPreview.UI/package-lock.json
+
+    # Build the backoffice (Lit/Vite) assets into wwwroot before packing.
+    # The .csproj assumes the client assets are already built, so this must run first;
+    # otherwise the package ships a stale frontend bundle.
+    - name: Build frontend assets
+      working-directory: src/Umbraco.Community.BlockPreview.UI
+      run: |
+        npm ci
+        npm run build
+
     - name: Build project
       run: dotnet build src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj --configuration Release
 

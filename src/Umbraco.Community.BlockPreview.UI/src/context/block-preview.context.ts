@@ -1,13 +1,10 @@
-﻿import { UmbControllerBase } from "@umbraco-cms/backoffice/class-api";
+import { UmbControllerBase } from "@umbraco-cms/backoffice/class-api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
-import { SettingsRepository } from "..";
-import { UmbObjectState, UmbStringState } from "@umbraco-cms/backoffice/observable-api";
-import { BlockPreviewOptions } from "../api";
+import { UmbStringState } from "@umbraco-cms/backoffice/observable-api";
 import { BlockPreviewRequestQueue } from "./block-preview-request-queue";
 
 export class BlockPreviewContext extends UmbControllerBase {
 
-    #settingsRepository: SettingsRepository;
     #requestQueue = new BlockPreviewRequestQueue(3);
     #stylesheetCache = new Map<string, Promise<CSSStyleSheet>>();
 
@@ -16,25 +13,15 @@ export class BlockPreviewContext extends UmbControllerBase {
         return this.#requestQueue;
     }
 
-    #settings = new UmbObjectState<BlockPreviewOptions | undefined>(undefined);
-    public readonly settings = this.#settings.asObservable();
-
+    // Node key cache used as a fallback when a preview cannot reach its content
+    // workspace directly (e.g. when nested inside another block, whose workspace
+    // context shadows the document workspace under the shared 'UmbWorkspaceContext'
+    // alias).
     #unique = new UmbStringState('');
-    public readonly unique = this.#unique.asObservable();
-
     #documentTypeUnique = new UmbStringState('');
-    public readonly documentTypeUnique = this.#documentTypeUnique.asObservable();
 
     constructor(host: UmbControllerHost) {
         super(host);
-        this.#settingsRepository = new SettingsRepository(host);
-
-        this.getSettings();
-    }
-
-    async getSettings() {
-        const settings = await this.#settingsRepository.getSettings();
-        this.#settings.setValue(settings);
     }
 
     getUnique(): string {
