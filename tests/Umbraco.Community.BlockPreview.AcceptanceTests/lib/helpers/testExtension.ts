@@ -1,5 +1,5 @@
-import { test as base } from "@umbraco/playwright-testhelpers";
-import { UiHelpers } from "@umbraco/playwright-testhelpers";
+import { test as base } from "@umbraco-cms/acceptance-test-helpers";
+import { UiHelpers } from "@umbraco-cms/acceptance-test-helpers";
 import { ApiHelpers as BlockPreviewApiHelpers, UiHelpers as BlockPreviewUiHelpers } from ".";
 
 const test = base.extend<{ blockPreviewApi: BlockPreviewApiHelpers } & { blockPreviewUi: BlockPreviewUiHelpers }>({
