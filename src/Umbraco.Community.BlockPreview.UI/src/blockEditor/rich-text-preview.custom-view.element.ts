@@ -54,11 +54,20 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
 
     protected setupContextObservers() {
         this.observePropertyDataset();
+        // Observe the block entry/manager contexts independently of the workspace.
+        // These RTE-specific contexts are always available to the block view, whereas
+        // UMB_DOCUMENT_WORKSPACE_CONTEXT is absent when the host block is edited inside a
+        // side-panel modal (e.g. an RTE field on a block nested in a Block Grid/List).
+        // Gating this behind the document workspace meant the preview never rendered there.
+        this.observeBlockValue();
         this.#observeDocumentWorkspace();
     }
 
     #observeDocumentWorkspace() {
         try {
+            // The document workspace shares its context alias with the block workspace,
+            // so when this preview is nested inside another block we must pass beyond
+            // the nearer block workspace match to reach the document workspace.
             this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
                 if (context) {
                     this._workspaceContextResolved = true;
@@ -69,13 +78,19 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
                         }
                     );
                 }
-            });
+            }).passContextAliasMatches();
         } catch {
             this.observeBlockWorkspaceFallback();
         }
     }
 
+    #entryObserved = false;
+
     protected observeBlockValue(): void {
+        // Set up the entry-context subscription only once; it is now invoked both from
+        // setupContextObservers and (for the document-level case) from handleWorkspaceData.
+        if (this.#entryObserved) return;
+        this.#entryObserved = true;
         this.consumeContext(UMB_BLOCK_RTE_ENTRY_CONTEXT, (context) => {
             if (context != null) {
                 this.observe(
@@ -99,7 +114,10 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
                         this._blockContext.contentElementTypeAlias = contentElementTypeAlias ?? '';
                         this._blockContext.contentElementTypeKey = contentElementTypeKey ?? '';
 
-                        if (!this.#managerObserved) {
+                        // Only subscribe to manager context once contentUdi is known; subscribing with
+                        // an empty key causes the manager to filter contentData to [] on its first emit,
+                        // and the #managerObserved guard then blocks a corrective re-subscription.
+                        if (!this.#managerObserved && this._blockContext.contentUdi) {
                             this.#managerObserved = true;
                             await this.#observeBlockPropertyValue();
                         }
