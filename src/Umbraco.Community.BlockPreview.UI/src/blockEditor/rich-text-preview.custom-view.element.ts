@@ -59,6 +59,9 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
 
     #observeDocumentWorkspace() {
         try {
+            // The document workspace shares its context alias with the block workspace,
+            // so when this preview is nested inside another block we must pass beyond
+            // the nearer block workspace match to reach the document workspace.
             this.consumeContext(UMB_DOCUMENT_WORKSPACE_CONTEXT, (context) => {
                 if (context) {
                     this._workspaceContextResolved = true;
@@ -69,7 +72,7 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
                         }
                     );
                 }
-            });
+            }).passContextAliasMatches();
         } catch {
             this.observeBlockWorkspaceFallback();
         }
