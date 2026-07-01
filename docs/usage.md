@@ -48,7 +48,7 @@ You will also need to use `@await Html.GetPreviewBlockGridItemAreasHtmlAsync(Mod
     style="background-color: #@backgroundColor"
     @(noBackgroundColor ? "nobackgroundcolor" : null)
     @(hasBrightContrast ? "bright-contrast" : null)>
-+   await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)
++   @await Html.GetPreviewBlockGridItemAreasHtmlAsync(Model)
 </section>
 ```
 
