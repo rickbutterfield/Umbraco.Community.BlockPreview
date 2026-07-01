@@ -32,6 +32,15 @@ builder.AddBlockPreview(options =>
       ViewLocations = [],
       Stylesheets = []
   };
+
+  options.SingleBlock = new()
+  {
+      Enabled = true,
+      ContentTypes = [],
+      IgnoredContentTypes = [],
+      ViewLocations = [],
+      Stylesheets = []
+  };
 })
 ```
 
@@ -58,6 +67,13 @@ builder.AddBlockPreview(options =>
       "IgnoredContentTypes": [],
       "ViewLocations": [],
       "Stylesheets": []
+    },
+    "SingleBlock": {
+      "Enabled": false,
+      "ContentTypes": [],
+      "IgnoredContentTypes": [],
+      "ViewLocations": [],
+      "Stylesheets": []
     }
   }
 }
@@ -71,6 +87,7 @@ builder.AddBlockPreview(options =>
 | BlockGrid | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Block Grid previews |
 | BlockList | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Block List previews |
 | RichText  | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the Rich Text previews  |
+| SingleBlock | [`BlockTypeSettings`](#blocktypesettings) | Configure settings for the single Block property editor previews. Views default to the Block List Components path (`/Views/Partials/blocklist/Components/{0}.cshtml`). |
 
 ### BlockTypeSettings
 | Property            | Type                     | Description                                                                                                                                                                                                   |
