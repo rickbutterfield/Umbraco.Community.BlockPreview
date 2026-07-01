@@ -56,6 +56,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
 
     protected async setupContextObservers() {
         this.observePropertyDataset();
+        this.observeOwnerContentType();
         await this.#observeContentWorkspace();
     }
 
