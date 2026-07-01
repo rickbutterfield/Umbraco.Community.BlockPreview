@@ -99,8 +99,19 @@ async function waitForCondition(fn: () => boolean, timeout = 2000, interval = 20
     return fn();
 }
 
+/**
+ * Grid preview with stylesheet fetching stubbed out. Stylesheet loading is
+ * irrelevant to workspace / owner-type resolution and otherwise triggers a real
+ * HTTP request to the OpenAPI client default, making the test slow and flaky.
+ */
+class TestGridPreview extends BlockGridPreviewCustomView {
+    protected override async fetchStylesheets(): Promise<string[]> {
+        return [];
+    }
+}
+
 const scenarios = [
-    { name: 'block grid', previewTag: defineCE(class extends BlockGridPreviewCustomView {}) },
+    { name: 'block grid', previewTag: defineCE(class extends TestGridPreview {}) },
 ];
 
 scenarios.forEach(({ name, previewTag }) => {
@@ -177,7 +188,7 @@ scenarios.forEach(({ name, previewTag }) => {
  * workspace has already resolved.
  */
 describe('block grid preview owner content type resolution — content workspace resolves first', () => {
-    const previewTag = defineCE(class extends BlockGridPreviewCustomView {});
+    const previewTag = defineCE(class extends TestGridPreview {});
     let root: TestHostElement;
 
     afterEach(() => {

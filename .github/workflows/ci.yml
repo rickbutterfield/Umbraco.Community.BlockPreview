@@ -19,6 +19,10 @@ on:
       - "v6/main"
   workflow_dispatch:
 
+# Least-privilege token: the test job only needs to read the repo.
+permissions:
+  contents: read
+
 jobs:
   test:
     runs-on: windows-latest
