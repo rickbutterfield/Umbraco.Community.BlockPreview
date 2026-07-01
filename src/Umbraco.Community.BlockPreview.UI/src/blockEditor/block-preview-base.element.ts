@@ -22,6 +22,15 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     protected _blockPreviewContext?: BlockPreviewContext;
     protected _workspaceContextResolved: boolean = false;
 
+    /**
+     * The content type that OWNS the block-editor property being previewed.
+     * For a top-level block editor this is the document type; but when the block
+     * editor is nested inside an element type, the property is declared on that
+     * element type — from the nearest block workspace — not on the root document.
+     * Undefined until (and unless) a nearest block workspace is resolved.
+     */
+    protected _ownerContentTypeUnique?: string;
+
     @property({ attribute: false, hasChanged: (val: any, old: any) => JSON.stringify(val) !== JSON.stringify(old) })
     content?: UmbBlockDataType;
 
@@ -127,12 +136,41 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         this._blockContext.unique = unique?.toString() ?? '';
         this._blockPreviewContext?.setUnique(this._blockContext.unique);
 
-        this._blockContext.documentTypeUnique = documentTypeUnique;
+        // Prefer the owning element type (nested block editor) over the root document
+        // type, so the server can resolve the block-editor property on the type that
+        // actually declares it. Falls back to the document type for top-level editors.
+        this._blockContext.documentTypeUnique = this._ownerContentTypeUnique ?? documentTypeUnique;
         this._blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
         this._workspaceContextResolved = true;
 
         this.observeBlockValue();
         await this.fetchAndLoadStylesheets();
+    }
+
+    /**
+     * Observe the nearest block workspace to resolve the content type that owns the
+     * block-editor property. The document/node key still comes from the content
+     * workspace (see #297); only the owning content type differs when nested.
+     */
+    protected observeOwnerContentType() {
+        this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+            if (!context) return;
+            this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                const owner = contentTypeUniques?.[0];
+                if (!owner || owner === this._ownerContentTypeUnique) return;
+                this._ownerContentTypeUnique = owner;
+
+                if (this._blockContext.documentTypeUnique === owner) return;
+                this._blockContext.documentTypeUnique = owner;
+                this._blockPreviewContext?.setDocumentTypeUnique(owner);
+
+                // If the workspace already resolved with the (wrong) document type and
+                // rendered, re-render now that the owning type is known.
+                if (this._workspaceContextResolved) {
+                    this.renderBlockPreview();
+                }
+            });
+        });
     }
 
     /**
