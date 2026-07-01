@@ -27,8 +27,11 @@ using Umbraco.Community.BlockPreview.Enums;
 public class CustomBlockPreviewService : BlockPreviewService
 {
     private readonly IRazorViewEngine _razorViewEngine;
-    private readonly IUserPreferenceService _userPreferenceService;
 
+    // The first nine parameters are the dependencies of the base BlockPreviewService.
+    // You must accept them and forward them to the base constructor.
+    // Add any dependencies of your own after them — here IRazorViewEngine, which the
+    // GetViewResult override below uses to resolve a themed view.
     public CustomBlockPreviewService(
         IPublishedModelFactory publishedModelFactory,
         BlockEditorConverter blockEditorConverter,
@@ -39,14 +42,12 @@ public class CustomBlockPreviewService : BlockPreviewService
         IBlockDataConverter blockDataConverter,
         IBlockTypeCacheService blockTypeCacheService,
         IBlockPreviewViewResolver viewResolver,
-        IRazorViewEngine razorViewEngine,
-        IUserPreferenceService userPreferenceService)
+        IRazorViewEngine razorViewEngine)
         : base(publishedModelFactory, blockEditorConverter, options, jsonSerializer,
                blockModelFactory, blockViewRenderer, blockDataConverter,
                blockTypeCacheService, viewResolver)
     {
         _razorViewEngine = razorViewEngine;
-        _userPreferenceService = userPreferenceService;
     }
 
     // Override to provide dynamic stylesheet paths
@@ -103,9 +104,9 @@ public class CustomBlockPreviewService : BlockPreviewService
             viewData["theme"] = theme;
         }
 
-        // The async version lets you perform async operations like database lookups or API calls
-        var userPreferences = await _userPreferenceService.GetPreferencesAsync();
-        viewData["preferences"] = userPreferences;
+        // Because this override is async, you can await your own work here —
+        // for example a database lookup or API call to fetch additional view data,
+        // using any services you injected via the constructor.
 
         return viewData;
     }
@@ -127,7 +128,6 @@ You can access custom ViewData in your Razor views:
 
 @{
     var theme = ViewData["theme"] as string;
-    var preferences = ViewData["preferences"];
 }
 
 <div class="block block--@theme">
