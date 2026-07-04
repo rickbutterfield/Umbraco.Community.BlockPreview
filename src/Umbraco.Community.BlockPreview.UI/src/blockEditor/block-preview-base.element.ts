@@ -9,6 +9,31 @@ import { UMB_PROPERTY_DATASET_CONTEXT } from '@umbraco-cms/backoffice/property';
 import { UmbApiError } from '@umbraco-cms/backoffice/resources';
 import { UUIButtonElement } from '@umbraco-cms/backoffice/external/uui';
 
+/** Umbraco elements that make up a block's action bar / resize affordances. A click
+ *  whose composed path passes through one of these did not target the block body. */
+const BLOCK_ACTION_ELEMENTS = ['UUI-ACTION-BAR', 'UMB-BLOCK-ACTION', 'UMB-BLOCK-SCALE-HANDLER'];
+
+/**
+ * Decides whether a click should cancel the preview anchor's navigation.
+ *
+ * Each preview is wrapped in an `<a class="block-preview-edit">`; when a Block Grid
+ * block has areas, its child block entries — including their action bars — render
+ * *inside* that anchor. A click on a child action (delete/copy/…) must not follow
+ * the ancestor anchor's href (issue #312). Returns true when the click originated in
+ * a block action bar or resize handle, except for the edit button, which carries its
+ * own `block/edit` href and should be allowed through to open the block workspace.
+ */
+export function isBlockActionNavigation(path: EventTarget[]): boolean {
+    const inActionBar = path.some((x) => x instanceof Element && BLOCK_ACTION_ELEMENTS.includes(x.tagName));
+    if (!inActionBar) {
+        return false;
+    }
+    const isEditButton = path.some(
+        (x) => x instanceof Element && x.tagName === 'UUI-BUTTON' && (x.getAttribute('href') ?? '').includes('block/edit'),
+    );
+    return !isEditButton;
+}
+
 /**
  * Abstract base class for block preview custom view elements.
  * Extracts shared behavior (lifecycle, rendering, click handling, validation,
@@ -96,12 +121,28 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     override connectedCallback() {
         super.connectedCallback();
         this._isConnected = true;
+        // Capture phase: Umbraco 17.5+ wraps block actions in <umb-block-action>, which
+        // stops the click before it can bubble to this preview's <a>. Running in capture
+        // lets us cancel the unwanted ancestor navigation before propagation is stopped.
+        this.addEventListener('click', this._handleAnchorNavGuard, { capture: true });
     }
 
     override disconnectedCallback() {
         super.disconnectedCallback();
         this._isConnected = false;
+        this.removeEventListener('click', this._handleAnchorNavGuard, { capture: true });
     }
+
+    /**
+     * Cancels the preview anchor's default navigation when a click targets a nested
+     * block's action bar rather than the block body (issue #312). Does not stop
+     * propagation, so the action button's own handler still runs.
+     */
+    private _handleAnchorNavGuard = (event: Event) => {
+        if (isBlockActionNavigation(event.composedPath())) {
+            event.preventDefault();
+        }
+    };
 
     protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
         super.updated(_changedProperties);
