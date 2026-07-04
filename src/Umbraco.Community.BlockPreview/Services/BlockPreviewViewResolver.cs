@@ -100,6 +100,7 @@ namespace Umbraco.Community.BlockPreview.Services
                 return NotFoundSentinel;
 
             string appRoot = _webHostEnvironment.ContentRootPath;
+            var pascalAlias = contentAlias.ToPascalCase();
 
             foreach (var viewPath in viewPaths)
             {
@@ -107,29 +108,46 @@ namespace Umbraco.Community.BlockPreview.Services
 
                 // Try non-PascalCase first
                 var pathNonPascal = string.Format(baseViewPath, contentAlias);
-                var viewPathNonPascal = Path.Combine(appRoot, pathNonPascal);
+                if (TryResolveView(appRoot, pathNonPascal))
+                    return pathNonPascal;
 
-                if (File.Exists(viewPathNonPascal))
-                {
-                    var viewResult = _razorViewEngine.GetView("", pathNonPascal, false);
-                    if (viewResult.Success)
-                        return pathNonPascal;
-                }
-
-                // Try PascalCase
-                var pascalAlias = contentAlias.ToPascalCase();
+                // Then PascalCase (skip if identical to the non-PascalCase candidate)
                 var pathPascal = string.Format(baseViewPath, pascalAlias);
-                var viewPathPascal = Path.Combine(appRoot, pathPascal);
-
-                if (File.Exists(viewPathPascal))
-                {
-                    var viewResult = _razorViewEngine.GetView("", pathPascal, false);
-                    if (viewResult.Success)
-                        return pathPascal;
-                }
+                if (pathPascal != pathNonPascal && TryResolveView(appRoot, pathPascal))
+                    return pathPascal;
             }
 
             return NotFoundSentinel;
+        }
+
+        /// <summary>
+        /// Determines whether a view can be resolved at the given application-relative path.
+        /// </summary>
+        /// <remarks>
+        /// When the .cshtml file is present on disk it is safe to ask the Razor engine to
+        /// (runtime-)compile it. When it is not on disk the view may still be precompiled into
+        /// the assembly (e.g. <c>Runtime:Mode = Production</c>, see #273), so the engine is still
+        /// consulted - but guarded against the runtime compiler throwing when a view genuinely
+        /// cannot be read from disk (e.g. a case-sensitive file system miss, see #84).
+        /// </remarks>
+        /// <param name="appRoot">The application content root path.</param>
+        /// <param name="relativePath">The application-relative view path.</param>
+        /// <returns><see langword="true"/> if the view resolves successfully; otherwise <see langword="false"/>.</returns>
+        private bool TryResolveView(string appRoot, string relativePath)
+        {
+            var physicalPath = Path.Combine(appRoot, relativePath);
+
+            if (File.Exists(physicalPath))
+                return _razorViewEngine.GetView("", relativePath, false).Success;
+
+            try
+            {
+                return _razorViewEngine.GetView("", relativePath, false).Success;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
         }
     }
 }

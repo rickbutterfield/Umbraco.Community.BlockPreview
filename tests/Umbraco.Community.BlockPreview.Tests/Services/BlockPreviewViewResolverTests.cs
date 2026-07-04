@@ -1,3 +1,4 @@
+using System.IO;
 using Moq;
 using NUnit.Framework;
 using Microsoft.AspNetCore.Hosting;
@@ -41,6 +42,13 @@ public class BlockPreviewViewResolverTests
             }
         };
 
+        // Default: behave like a real Razor engine and report "not found" (Success == false)
+        // for any view path, rather than Moq's default of returning null. Individual tests
+        // override this for specific paths.
+        _razorViewEngineMock
+            .Setup(e => e.GetView(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+            .Returns((string _, string viewPath, bool _) => NotFound(viewPath));
+
         var optionsMonitorMock = new Mock<IOptionsMonitor<BlockPreviewOptions>>();
         optionsMonitorMock.Setup(o => o.CurrentValue).Returns(_options);
         optionsMonitorMock.Setup(o => o.OnChange(It.IsAny<Action<BlockPreviewOptions, string?>>()))
@@ -54,6 +62,74 @@ public class BlockPreviewViewResolverTests
         // Clear cache before each test
         _resolver.ClearCache();
     }
+
+    private static ViewEngineResult NotFound(string viewName)
+        => ViewEngineResult.NotFound(viewName, new[] { viewName });
+
+    private static ViewEngineResult Found(string viewName)
+        => ViewEngineResult.Found(viewName, Mock.Of<IView>());
+
+    #region Precompiled / runtime-mode resolution
+
+    [Test]
+    public void ResolveView_WhenViewIsPrecompiledButNotOnDisk_ResolvesView()
+    {
+        // Arrange - the .cshtml is NOT present on disk (as in a precompiled Production
+        // deployment, Runtime:Mode = Production), but the Razor engine reports it as an
+        // available compiled view. See issue #273.
+        const string expectedPath = "Views/Partials/blockgrid/Components/testBlock.cshtml";
+        _razorViewEngineMock
+            .Setup(e => e.GetView("", expectedPath, false))
+            .Returns(Found(expectedPath));
+
+        // Act
+        var result = _resolver.ResolveView("testBlock", BlockType.BlockGrid);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Success, Is.True);
+    }
+
+    [Test]
+    public void ResolveView_WhenRazorEngineThrowsIOException_ReturnsNullWithoutThrowing()
+    {
+        // Arrange - mimic the runtime view compiler throwing FileNotFoundException for a
+        // view that cannot be read from disk (see issue #84 stack trace).
+        _razorViewEngineMock
+            .Setup(e => e.GetView(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()))
+            .Throws(new FileNotFoundException("Could not find file."));
+
+        // Act & Assert
+        ViewEngineResult? result = null;
+        Assert.DoesNotThrow(() => result = _resolver.ResolveView("testBlock", BlockType.BlockGrid));
+        Assert.That(result, Is.Null);
+    }
+
+    [Test]
+    public void ResolveView_WhenOnlyPascalCaseViewAvailable_ResolvesPascalCaseView()
+    {
+        // Arrange - the lower-case candidate is unavailable and the runtime compiler throws
+        // (as it does on a case-sensitive file system, issue #84); the PascalCase candidate
+        // is available. Resolution must fall through to PascalCase without crashing.
+        const string nonPascalPath = "Views/Partials/blockgrid/Components/videoBlock.cshtml";
+        const string pascalPath = "Views/Partials/blockgrid/Components/VideoBlock.cshtml";
+
+        _razorViewEngineMock
+            .Setup(e => e.GetView("", nonPascalPath, false))
+            .Throws(new FileNotFoundException());
+        _razorViewEngineMock
+            .Setup(e => e.GetView("", pascalPath, false))
+            .Returns(Found(pascalPath));
+
+        // Act
+        var result = _resolver.ResolveView("videoBlock", BlockType.BlockGrid);
+
+        // Assert
+        Assert.That(result, Is.Not.Null);
+        Assert.That(result!.Success, Is.True);
+    }
+
+    #endregion
 
     #region ResolveView Tests
 
