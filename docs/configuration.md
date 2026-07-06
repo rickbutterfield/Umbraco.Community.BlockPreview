@@ -288,3 +288,37 @@ Alternatively, you can use the `ViewLocations` configuration option to specify c
   }
 }
 ```
+
+## Runtime mode and Production deployments
+
+BlockPreview renders your block views through the standard ASP.NET Core Razor view engine. For a view to render, it must be available to that engine in one of two ways:
+
+- **Runtime compilation** — the `.cshtml` is compiled on demand from disk, or
+- **Precompilation** — the view is compiled into an assembly at build/publish time.
+
+Umbraco only enables Razor **runtime compilation** in the `BackofficeDevelopment` runtime mode (the default for local development). In `Development` and `Production` runtime modes it is switched off.
+
+This means that when you deploy with:
+
+```json
+{
+  "Umbraco": {
+    "CMS": {
+      "Runtime": { "Mode": "Production" }
+    }
+  }
+}
+```
+
+your Razor views **must be precompiled**, otherwise nothing can render — this affects your whole site (front-end templates included), not just block previews. Enable precompilation in your web project:
+
+```xml
+<PropertyGroup>
+  <RazorCompileOnBuild>true</RazorCompileOnBuild>
+  <RazorCompileOnPublish>true</RazorCompileOnPublish>
+</PropertyGroup>
+```
+
+> The default Umbraco project template ships with `RazorCompileOnBuild` set to `false` (it relies on runtime compilation). If you switch to `Production` runtime mode without enabling precompilation, block previews will report *"view not found"* — as will your front-end.
+
+With precompilation enabled, BlockPreview resolves the compiled views whether or not the source `.cshtml` files are deployed alongside the app, so a lean publish (`.cshtml` files excluded) works correctly.
