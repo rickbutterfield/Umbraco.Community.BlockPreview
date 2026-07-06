@@ -6,7 +6,7 @@ How components look within the Block Grid before and after enabling BlockPreview
 
 | Before — default Umbraco block cards | After — with BlockPreview |
 | :---: | :---: |
-| ![Before: the Block Grid editor showing plain labelled cards](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v5/main/.github/assets/preview-before.png) | ![After: the Block Grid editor showing fully rendered block previews](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v5/main/.github/assets/preview-after.png) |
+| ![Before: the Block Grid editor showing plain labelled cards](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v5/dev/.github/assets/preview-before.png) | ![After: the Block Grid editor showing fully rendered block previews](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v5/dev/.github/assets/preview-after.png) |
 
 ## Grid-specific setup
 When using the new Block Grid, replace the references below in your default Grid template partial views, and and custom views that render areas:
