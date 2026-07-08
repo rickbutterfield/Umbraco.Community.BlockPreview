@@ -1,7 +1,6 @@
 using System.IO;
 using Moq;
 using NUnit.Framework;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Options;
@@ -15,7 +14,6 @@ namespace Umbraco.Community.BlockPreview.Tests.Services;
 public class BlockPreviewViewResolverTests
 {
     private Mock<IRazorViewEngine> _razorViewEngineMock = null!;
-    private Mock<IWebHostEnvironment> _webHostEnvironmentMock = null!;
     private BlockPreviewOptions _options = null!;
     private BlockPreviewViewResolver _resolver = null!;
 
@@ -23,8 +21,6 @@ public class BlockPreviewViewResolverTests
     public void SetUp()
     {
         _razorViewEngineMock = new Mock<IRazorViewEngine>();
-        _webHostEnvironmentMock = new Mock<IWebHostEnvironment>();
-        _webHostEnvironmentMock.Setup(e => e.ContentRootPath).Returns("C:\\TestApp");
 
         _options = new BlockPreviewOptions
         {
@@ -56,7 +52,6 @@ public class BlockPreviewViewResolverTests
 
         _resolver = new BlockPreviewViewResolver(
             _razorViewEngineMock.Object,
-            _webHostEnvironmentMock.Object,
             optionsMonitorMock.Object);
 
         // Clear cache before each test
