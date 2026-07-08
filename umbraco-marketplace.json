@@ -28,7 +28,7 @@
 	"PackageType": "Package",
 	"Screenshots": [
 		{
-			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v5/dev/.github/assets/preview-after.png",
+			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v6/dev/.github/assets/preview-after.png",
 			"Caption": "The Umbraco Block Grid editor with BlockPreview enabled, showing blocks rendered as real HTML directly in the backoffice"
 		}
 	],
