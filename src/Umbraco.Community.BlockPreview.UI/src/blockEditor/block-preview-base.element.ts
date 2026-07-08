@@ -113,6 +113,10 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         super();
         this.consumeContext(BLOCK_PREVIEW_CONTEXT, async (context) => {
             this._blockPreviewContext = context;
+            // Shared across all block types: resolve the owning content type from the
+            // nearest block workspace when nested, so no individual view can silently
+            // miss it. Harmless for top-level previews (no block workspace to observe).
+            this.observeOwnerContentType();
             await this.setupContextObservers();
         });
     }
