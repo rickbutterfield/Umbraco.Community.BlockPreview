@@ -7,7 +7,6 @@ import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewEle
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { UMB_PROPERTY_DATASET_CONTEXT } from '@umbraco-cms/backoffice/property';
 import { UmbApiError } from '@umbraco-cms/backoffice/resources';
-import { UUIButtonElement } from '@umbraco-cms/backoffice/external/uui';
 
 /** Umbraco elements that make up a block's action bar / resize affordances. A click
  *  whose composed path passes through one of these did not target the block body. */
@@ -370,18 +369,11 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
 
         const path = event.composedPath();
 
-        // Check for clicks on action bars or resize handlers.
-        const interactiveElements = ['UUI-ACTION-BAR', 'UMB-BLOCK-SCALE-HANDLER'];
-        if (path.some(x => x instanceof Element && interactiveElements.includes(x.tagName))) {
-            // Allow edit button clicks through — the <a> tag handles navigation.
-            const editButton = path.find(x => x instanceof UUIButtonElement && x.href?.includes('block/edit'));
-            if (editButton) {
-                return;
-            }
-
-            // Block all other action bar clicks (delete, copy, etc.) to prevent
-            // the parent block's <a> from navigating when interacting with
-            // child blocks inside areas.
+        // Cancel navigation for clicks on a nested block's action bar / resize handle
+        // (delete, copy, …) so the parent block's <a> doesn't navigate when interacting
+        // with child blocks inside areas. Shares its decision with the capture-phase
+        // guard; the edit button carries its own block/edit href and is allowed through.
+        if (isBlockActionNavigation(path)) {
             event.preventDefault();
             event.stopPropagation();
             return;
