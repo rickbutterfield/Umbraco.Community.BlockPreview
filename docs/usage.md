@@ -2,8 +2,11 @@
 
 This package installs a custom Web Component preview for the Block Grid, Block List and Rich Text editors in the backoffice.
 
-Before and after of how components look within the Block Grid:
-![Screenshot2](https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/screenshot2.png "Before and after of how components look within the Block Grid")
+How components look within the Block Grid before and after enabling BlockPreview:
+
+| Before — default Umbraco block cards | After — with BlockPreview |
+| :---: | :---: |
+| ![Before: the Block Grid editor showing plain labelled cards](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v5/dev/.github/assets/preview-before.png) | ![After: the Block Grid editor showing fully rendered block previews](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v5/dev/.github/assets/preview-after.png) |
 
 ## Grid-specific setup
 When using the new Block Grid, replace the references below in your default Grid template partial views, and and custom views that render areas:
