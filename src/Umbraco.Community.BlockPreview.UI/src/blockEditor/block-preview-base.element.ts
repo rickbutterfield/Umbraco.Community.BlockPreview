@@ -22,6 +22,14 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     protected _blockPreviewContext?: BlockPreviewContext;
     protected _workspaceContextResolved: boolean = false;
 
+    /**
+     * The content type that *owns* the block-editor property this preview belongs
+     * to, when the preview is nested inside another block. Empty for top-level
+     * previews. When set, it takes precedence over the document content type as
+     * `documentTypeUnique`. See {@link observeOwnerContentType}.
+     */
+    protected _ownerContentTypeUnique: string = '';
+
     @property({ attribute: false, hasChanged: (val: any, old: any) => JSON.stringify(val) !== JSON.stringify(old) })
     content?: UmbBlockDataType;
 
@@ -80,6 +88,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         super();
         this.consumeContext(BLOCK_PREVIEW_CONTEXT, async (context) => {
             this._blockPreviewContext = context;
+            this.observeOwnerContentType();
             await this.setupContextObservers();
         });
     }
@@ -127,7 +136,12 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         this._blockContext.unique = unique?.toString() ?? '';
         this._blockPreviewContext?.setUnique(this._blockContext.unique);
 
-        this._blockContext.documentTypeUnique = documentTypeUnique;
+        // `documentTypeUnique` here is the *document's* content type, because the
+        // workspace lookup deliberately reaches past the nearest block workspace to
+        // the document (needed for the node key — see #297/#298). When this preview
+        // is nested, the owning content type is the parent element type instead, so
+        // prefer the owner resolved by observeOwnerContentType() when available.
+        this._blockContext.documentTypeUnique = this._ownerContentTypeUnique || documentTypeUnique;
         this._blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
         this._workspaceContextResolved = true;
 
@@ -163,6 +177,49 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
                     await this.fetchAndLoadStylesheets();
                 });
             }
+        });
+    }
+
+    /**
+     * Resolves the content type that *owns* the block-editor property, i.e. the one
+     * the server must look the property up on (`documentTypeUnique`).
+     *
+     * When a preview is nested inside another block, the block-editor property it
+     * belongs to is defined on the parent *element type*, not on the document.
+     * handleWorkspaceData() reaches past the nearest block workspace to the document
+     * workspace to resolve the node key (see #297/#298), so on its own it reports the
+     * *document's* content type — and the server then fails to find the property,
+     * returning "The property type is invalid." for every nested block.
+     *
+     * The nearest block workspace, when present, exposes exactly the owning element
+     * type. Observe it and treat its content type as the authoritative
+     * `documentTypeUnique`. Top-level previews have no block workspace, so this never
+     * fires and the document content type from handleWorkspaceData() stands.
+     */
+    protected observeOwnerContentType() {
+        this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+            if (!context) {
+                return;
+            }
+
+            this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                const owner = contentTypeUniques?.[0];
+                if (!owner || owner === this._ownerContentTypeUnique) {
+                    return;
+                }
+
+                this._ownerContentTypeUnique = owner;
+                this._blockContext.documentTypeUnique = owner;
+
+                // If the preview already resolved (and possibly rendered) using the
+                // document's content type, re-fetch stylesheets and re-render now that
+                // the owning element type is known.
+                if (this._workspaceContextResolved) {
+                    this._stylesheetsAdopted = false;
+                    void this.fetchAndLoadStylesheets();
+                    void this.renderBlockPreview();
+                }
+            });
         });
     }
 
