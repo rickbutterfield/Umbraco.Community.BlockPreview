@@ -1,5 +1,4 @@
 using System.Collections.Concurrent;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.Extensions.Options;
@@ -22,22 +21,18 @@ namespace Umbraco.Community.BlockPreview.Services
         private static readonly ConcurrentDictionary<string, string> _pathCache = new();
 
         private readonly IRazorViewEngine _razorViewEngine;
-        private readonly IWebHostEnvironment _webHostEnvironment;
         private readonly IOptionsMonitor<BlockPreviewOptions> _optionsMonitor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="BlockPreviewViewResolver"/> class.
         /// </summary>
         /// <param name="razorViewEngine">The Razor view engine.</param>
-        /// <param name="webHostEnvironment">The web host environment.</param>
         /// <param name="optionsMonitor">The block preview options monitor.</param>
         public BlockPreviewViewResolver(
             IRazorViewEngine razorViewEngine,
-            IWebHostEnvironment webHostEnvironment,
             IOptionsMonitor<BlockPreviewOptions> optionsMonitor)
         {
             _razorViewEngine = razorViewEngine;
-            _webHostEnvironment = webHostEnvironment;
             _optionsMonitor = optionsMonitor;
             _optionsMonitor.OnChange(_ => ClearCache());
         }
@@ -99,7 +94,7 @@ namespace Umbraco.Community.BlockPreview.Services
             if (viewPaths == null || viewPaths.Count == 0)
                 return NotFoundSentinel;
 
-            string appRoot = _webHostEnvironment.ContentRootPath;
+            var pascalAlias = contentAlias.ToPascalCase();
 
             foreach (var viewPath in viewPaths)
             {
@@ -107,29 +102,41 @@ namespace Umbraco.Community.BlockPreview.Services
 
                 // Try non-PascalCase first
                 var pathNonPascal = string.Format(baseViewPath, contentAlias);
-                var viewPathNonPascal = Path.Combine(appRoot, pathNonPascal);
+                if (TryResolveView(pathNonPascal))
+                    return pathNonPascal;
 
-                if (File.Exists(viewPathNonPascal))
-                {
-                    var viewResult = _razorViewEngine.GetView("", pathNonPascal, false);
-                    if (viewResult.Success)
-                        return pathNonPascal;
-                }
-
-                // Try PascalCase
-                var pascalAlias = contentAlias.ToPascalCase();
+                // Then PascalCase (skip if identical to the non-PascalCase candidate)
                 var pathPascal = string.Format(baseViewPath, pascalAlias);
-                var viewPathPascal = Path.Combine(appRoot, pathPascal);
-
-                if (File.Exists(viewPathPascal))
-                {
-                    var viewResult = _razorViewEngine.GetView("", pathPascal, false);
-                    if (viewResult.Success)
-                        return pathPascal;
-                }
+                if (pathPascal != pathNonPascal && TryResolveView(pathPascal))
+                    return pathPascal;
             }
 
             return NotFoundSentinel;
+        }
+
+        /// <summary>
+        /// Determines whether a view can be resolved at the given application-relative path.
+        /// </summary>
+        /// <remarks>
+        /// The Razor engine is asked to resolve the view regardless of whether the source
+        /// <c>.cshtml</c> is present on disk, because the view may be precompiled into the
+        /// assembly (e.g. <c>Runtime:Mode = Production</c>, see #273). The call is guarded
+        /// against the runtime compiler throwing when a view genuinely cannot be read from
+        /// disk (e.g. a case-sensitive file system miss, see #84), which is treated as
+        /// "not resolvable" rather than being allowed to propagate.
+        /// </remarks>
+        /// <param name="relativePath">The application-relative view path.</param>
+        /// <returns><see langword="true"/> if the view resolves successfully; otherwise <see langword="false"/>.</returns>
+        private bool TryResolveView(string relativePath)
+        {
+            try
+            {
+                return _razorViewEngine.GetView("", relativePath, false).Success;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
         }
     }
 }
