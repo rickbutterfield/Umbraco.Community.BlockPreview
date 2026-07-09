@@ -690,7 +690,7 @@ class k extends _t {
     super(), this._workspaceContextResolved = !1, this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._stylesheetsAdopted = !1, this._requestId = 0, this._isConnected = !1, this._pointerStartPos = null, this._handleAnchorNavGuard = (e) => {
       Re(e.composedPath()) && e.preventDefault();
     }, this.consumeContext(Je, async (e) => {
-      this._blockPreviewContext = e, await this.setupContextObservers();
+      this._blockPreviewContext = e, this.observeOwnerContentType(), await this.setupContextObservers();
     });
   }
   connectedCallback() {
@@ -1006,7 +1006,7 @@ let G = class extends k {
     return this._blockGridValue;
   }
   async setupContextObservers() {
-    this.observePropertyDataset(), this.observeOwnerContentType(), await R(this, q, Ze).call(this);
+    this.observePropertyDataset(), await R(this, q, Ze).call(this);
   }
   observeBlockValue() {
     this.consumeContext(vt, async (t) => {
