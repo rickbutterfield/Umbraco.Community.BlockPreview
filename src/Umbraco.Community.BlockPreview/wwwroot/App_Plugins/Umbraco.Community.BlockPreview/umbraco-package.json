@@ -9,7 +9,7 @@
       "name": "Umbraco.Community.BlockPreview.EntryPoint",
       "alias": "Umbraco.Community.BlockPreview.EntryPoint",
       "type": "backofficeEntryPoint",
-      "js": "/App_Plugins/Umbraco.Community.BlockPreview/index.js?v=5.5.0-alpha"
+      "js": "/App_Plugins/Umbraco.Community.BlockPreview/index.js?v=5.5.0"
     }
   ]
 }

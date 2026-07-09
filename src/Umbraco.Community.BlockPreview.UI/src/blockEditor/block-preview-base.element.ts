@@ -7,7 +7,31 @@ import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewEle
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { UMB_PROPERTY_DATASET_CONTEXT } from '@umbraco-cms/backoffice/property';
 import { UmbApiError } from '@umbraco-cms/backoffice/resources';
-import { UUIButtonElement } from '@umbraco-cms/backoffice/external/uui';
+
+/** Umbraco elements that make up a block's action bar / resize affordances. A click
+ *  whose composed path passes through one of these did not target the block body. */
+const BLOCK_ACTION_ELEMENTS = ['UUI-ACTION-BAR', 'UMB-BLOCK-ACTION', 'UMB-BLOCK-SCALE-HANDLER'];
+
+/**
+ * Decides whether a click should cancel the preview anchor's navigation.
+ *
+ * Each preview is wrapped in an `<a class="block-preview-edit">`; when a Block Grid
+ * block has areas, its child block entries — including their action bars — render
+ * *inside* that anchor. A click on a child action (delete/copy/…) must not follow
+ * the ancestor anchor's href (issue #312). Returns true when the click originated in
+ * a block action bar or resize handle, except for the edit button, which carries its
+ * own `block/edit` href and should be allowed through to open the block workspace.
+ */
+export function isBlockActionNavigation(path: EventTarget[]): boolean {
+    const inActionBar = path.some((x) => x instanceof Element && BLOCK_ACTION_ELEMENTS.includes(x.tagName));
+    if (!inActionBar) {
+        return false;
+    }
+    const isEditButton = path.some(
+        (x) => x instanceof Element && x.tagName === 'UUI-BUTTON' && (x.getAttribute('href') ?? '').includes('block/edit'),
+    );
+    return !isEditButton;
+}
 
 /**
  * Abstract base class for block preview custom view elements.
@@ -21,6 +45,15 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
 
     protected _blockPreviewContext?: BlockPreviewContext;
     protected _workspaceContextResolved: boolean = false;
+
+    /**
+     * The content type that OWNS the block-editor property being previewed.
+     * For a top-level block editor this is the document type; but when the block
+     * editor is nested inside an element type, the property is declared on that
+     * element type — from the nearest block workspace — not on the root document.
+     * Undefined until (and unless) a nearest block workspace is resolved.
+     */
+    protected _ownerContentTypeUnique?: string;
 
     @property({ attribute: false, hasChanged: (val: any, old: any) => JSON.stringify(val) !== JSON.stringify(old) })
     content?: UmbBlockDataType;
@@ -80,6 +113,10 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         super();
         this.consumeContext(BLOCK_PREVIEW_CONTEXT, async (context) => {
             this._blockPreviewContext = context;
+            // Shared across all block types: resolve the owning content type from the
+            // nearest block workspace when nested, so no individual view can silently
+            // miss it. Harmless for top-level previews (no block workspace to observe).
+            this.observeOwnerContentType();
             await this.setupContextObservers();
         });
     }
@@ -87,12 +124,28 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     override connectedCallback() {
         super.connectedCallback();
         this._isConnected = true;
+        // Capture phase: Umbraco 17.5+ wraps block actions in <umb-block-action>, which
+        // stops the click before it can bubble to this preview's <a>. Running in capture
+        // lets us cancel the unwanted ancestor navigation before propagation is stopped.
+        this.addEventListener('click', this._handleAnchorNavGuard, { capture: true });
     }
 
     override disconnectedCallback() {
         super.disconnectedCallback();
         this._isConnected = false;
+        this.removeEventListener('click', this._handleAnchorNavGuard, { capture: true });
     }
+
+    /**
+     * Cancels the preview anchor's default navigation when a click targets a nested
+     * block's action bar rather than the block body (issue #312). Does not stop
+     * propagation, so the action button's own handler still runs.
+     */
+    private _handleAnchorNavGuard = (event: Event) => {
+        if (isBlockActionNavigation(event.composedPath())) {
+            event.preventDefault();
+        }
+    };
 
     protected override updated(_changedProperties: PropertyValueMap<any> | Map<PropertyKey, unknown>) {
         super.updated(_changedProperties);
@@ -127,12 +180,41 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
         this._blockContext.unique = unique?.toString() ?? '';
         this._blockPreviewContext?.setUnique(this._blockContext.unique);
 
-        this._blockContext.documentTypeUnique = documentTypeUnique;
+        // Prefer the owning element type (nested block editor) over the root document
+        // type, so the server can resolve the block-editor property on the type that
+        // actually declares it. Falls back to the document type for top-level editors.
+        this._blockContext.documentTypeUnique = this._ownerContentTypeUnique ?? documentTypeUnique;
         this._blockPreviewContext?.setDocumentTypeUnique(this._blockContext.documentTypeUnique);
         this._workspaceContextResolved = true;
 
         this.observeBlockValue();
         await this.fetchAndLoadStylesheets();
+    }
+
+    /**
+     * Observe the nearest block workspace to resolve the content type that owns the
+     * block-editor property. The document/node key still comes from the content
+     * workspace (see #297); only the owning content type differs when nested.
+     */
+    protected observeOwnerContentType() {
+        this.consumeContext(UMB_BLOCK_WORKSPACE_CONTEXT, (context) => {
+            if (!context) return;
+            this.observe(context.content.structure.contentTypeUniques, (contentTypeUniques) => {
+                const owner = contentTypeUniques?.[0];
+                if (!owner || owner === this._ownerContentTypeUnique) return;
+                this._ownerContentTypeUnique = owner;
+
+                if (this._blockContext.documentTypeUnique === owner) return;
+                this._blockContext.documentTypeUnique = owner;
+                this._blockPreviewContext?.setDocumentTypeUnique(owner);
+
+                // If the workspace already resolved with the (wrong) document type and
+                // rendered, re-render now that the owning type is known.
+                if (this._workspaceContextResolved) {
+                    this.renderBlockPreview();
+                }
+            });
+        });
     }
 
     /**
@@ -291,18 +373,11 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
 
         const path = event.composedPath();
 
-        // Check for clicks on action bars or resize handlers.
-        const interactiveElements = ['UUI-ACTION-BAR', 'UMB-BLOCK-SCALE-HANDLER'];
-        if (path.some(x => x instanceof Element && interactiveElements.includes(x.tagName))) {
-            // Allow edit button clicks through — the <a> tag handles navigation.
-            const editButton = path.find(x => x instanceof UUIButtonElement && x.href?.includes('block/edit'));
-            if (editButton) {
-                return;
-            }
-
-            // Block all other action bar clicks (delete, copy, etc.) to prevent
-            // the parent block's <a> from navigating when interacting with
-            // child blocks inside areas.
+        // Cancel navigation for clicks on a nested block's action bar / resize handle
+        // (delete, copy, …) so the parent block's <a> doesn't navigate when interacting
+        // with child blocks inside areas. Shares its decision with the capture-phase
+        // guard; the edit button carries its own block/edit href and is allowed through.
+        if (isBlockActionNavigation(path)) {
             event.preventDefault();
             event.stopPropagation();
             return;
