@@ -7,6 +7,14 @@
 
 <img src="https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/develop/.github/assets/icon.png" alt="Umbraco.Community.BlockPreview icon" height="150" align="right">
 
+## See it in action
+
+Without BlockPreview, editors see each block as a plain labelled card. With it, every block renders as real HTML directly in the backoffice — using your own Razor views and stylesheets.
+
+| Before — default Umbraco block cards | After — with BlockPreview |
+| :---: | :---: |
+| [![Before: the Block Grid editor showing plain labelled cards](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v6/dev/.github/assets/preview-before.png)](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v6/dev/.github/assets/preview-before.png) | [![After: the Block Grid editor showing fully rendered block previews](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v6/dev/.github/assets/preview-after.png)](https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v6/dev/.github/assets/preview-after.png) |
+
 ## Supported Versions
 > [!NOTE]
 > **v5.x** supports Umbraco v17

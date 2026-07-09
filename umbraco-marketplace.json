@@ -28,8 +28,8 @@
 	"PackageType": "Package",
 	"Screenshots": [
 		{
-			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/Umbraco.Community.BlockPreview/main/.github/assets/screenshot1.png",
-			"Caption": "The Umbraco backoffice showing a panel titled 'Select view', with two HTML files in a list available for selection"
+			"ImageUrl": "https://raw.githubusercontent.com/rickbutterfield/BlockPreview/v6/dev/.github/assets/preview-after.png",
+			"Caption": "The Umbraco Block Grid editor with BlockPreview enabled, showing blocks rendered as real HTML directly in the backoffice"
 		}
 	],
   "Title": "BlockPreview"
