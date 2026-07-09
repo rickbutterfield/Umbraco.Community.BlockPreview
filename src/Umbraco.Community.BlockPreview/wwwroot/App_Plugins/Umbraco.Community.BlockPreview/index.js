@@ -724,7 +724,7 @@ class p extends yt {
     super(), this._workspaceContextResolved = !1, this._htmlMarkup = "", this._isLoading = !1, this._error = null, this._stylesheetsAdopted = !1, this._requestId = 0, this._isConnected = !1, this._pointerStartPos = null, this._handleAnchorNavGuard = (e) => {
       $e(e.composedPath()) && e.preventDefault();
     }, this.consumeContext(Fe, async (e) => {
-      this._blockPreviewContext = e, await this.setupContextObservers();
+      this._blockPreviewContext = e, this.observeOwnerContentType(), await this.setupContextObservers();
     });
   }
   connectedCallback() {
@@ -1040,7 +1040,7 @@ let G = class extends p {
     return this._blockGridValue;
   }
   async setupContextObservers() {
-    this.observePropertyDataset(), this.observeOwnerContentType(), await M(this, B, Qe).call(this);
+    this.observePropertyDataset(), await M(this, B, Qe).call(this);
   }
   observeBlockValue() {
     this.consumeContext(wt, async (t) => {
