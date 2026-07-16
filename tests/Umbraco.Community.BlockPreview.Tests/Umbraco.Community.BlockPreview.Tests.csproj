@@ -31,4 +31,15 @@
     <ProjectReference Include="..\..\src\Umbraco.Community.BlockPreview\Umbraco.Community.BlockPreview.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageVersion Update="Umbraco.JsonSchema.Extensions" Version="0.4.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="Umbraco.JsonSchema.Extensions">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
+  </ItemGroup>
+
 </Project>

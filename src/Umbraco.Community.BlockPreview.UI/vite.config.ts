@@ -1,5 +1,4 @@
 import { defineConfig, Plugin } from 'vite';
-import { glob } from 'glob';
 import { readFileSync, writeFileSync } from 'fs';
 import { resolve } from 'path';
 
