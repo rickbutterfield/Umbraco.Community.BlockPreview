@@ -1,36 +1,33 @@
 {
   "name": "block-preview",
   "private": true,
-  "version": "6.1.1",
+  "version": "6.1.1-rc",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview",
+    "preview (obsolete?)": "vite preview",
     "watch": "vite build --watch",
-    "generate": "openapi-ts --file openapi-ts.config.ts",
+    "generate": "node scripts/generate-openapi.js https://localhost:44370/umbraco/openapi/block-preview.json",
     "test": "web-test-runner",
     "test:watch": "web-test-runner --watch"
   },
-  "dependencies": {
-    "lit": "^3.1.0"
-  },
-  "engines": {
-    "node": ">=22.12.0"
-  },
   "devDependencies": {
-    "@hey-api/openapi-ts": "0.97.3",
     "@open-wc/testing": "^4.0.0",
     "@types/mocha": "^10.0.10",
-    "@umbraco-cms/backoffice": "^18.1.0-rc",
     "@web/dev-server-esbuild": "^1.0.5",
     "@web/test-runner": "^0.20.2",
-    "@web/test-runner-playwright": "^0.11.1",
-    "typescript": "^7.0.2",
-    "vite": "^6.4.3"
+    "@web/test-runner-playwright": "^0.11.1",    
+    "@hey-api/openapi-ts": "^0.97.0",
+    "@umbraco-cms/backoffice": "^18.0.2",
+    "chalk": "^5.6.2",
+    "cross-env": "^10.1.0",
+    "node-fetch": "^3.3.2",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.1"
   },
   "allowScripts": {
-    "esbuild@0.25.12": true,
-    "esbuild@0.27.7": true
+    "esbuild@0.27.7": true,
+    "esbuild@0.28.1": true
   }
 }

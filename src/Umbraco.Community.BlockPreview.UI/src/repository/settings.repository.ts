@@ -7,7 +7,7 @@ export class SettingsRepository extends UmbControllerBase {
 
     constructor(host: UmbControllerHost) {
         super(host);
-        this.#settingsDataSource = new SettingsDataSource(host);
+        this.#settingsDataSource = new SettingsDataSource();
     }
 
     async getSettings() {

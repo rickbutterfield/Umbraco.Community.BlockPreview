@@ -11,7 +11,7 @@
     "moduleResolution": "Bundler",
     "allowImportingTsExtensions": true,
     "resolveJsonModule": true,
-    "isolatedModules": true,
+    "moduleDetection": "force",
     "noEmit": true,
 
     /* Linting */
@@ -19,13 +19,9 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-    
-    "paths": { 
-      "@*": [
-        "./src/*"
-      ]
-    }
+
+    "types": [ "@umbraco-cms/backoffice/extension-types" ]
   },
-  "include": ["./src"],
-  "exclude": ["./src/**/*.test.ts"]
+  "include": ["src"],
+  "exclude": ["src/**/*.test.ts"]
 }

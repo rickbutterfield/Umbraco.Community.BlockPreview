@@ -1,20 +1,17 @@
-﻿import { UmbDataSourceResponse } from "@umbraco-cms/backoffice/repository";
-import { BlockPreviewService, type BlockPreviewOptions } from "../api";
-import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
-import { tryExecute } from "@umbraco-cms/backoffice/resources";
+﻿import { GetSettingsData, GetSettingsResponses } from "../api/types.gen";
+import { RequestResult } from "../api/client";
+import { getSettings as getSettingsApi } from "../api/sdk.gen.js";
 
 export interface ISettingsDataSource {
-    getSettings(): Promise<UmbDataSourceResponse<BlockPreviewOptions>>
+    getSettings<ThrowOnError extends boolean = false>(throwOnError?: ThrowOnError):
+        RequestResult<GetSettingsResponses, unknown, ThrowOnError>;
 }
 
 export class SettingsDataSource implements ISettingsDataSource {
-    #host: UmbControllerHost;
-
-    constructor(host: UmbControllerHost) {
-        this.#host = host;
-    }
-
-    async getSettings(): Promise<UmbDataSourceResponse<BlockPreviewOptions>> {
-        return await tryExecute(this.#host, BlockPreviewService.getSettings());
+    
+    getSettings<ThrowOnError extends boolean = false>(throwOnError?: ThrowOnError):
+        RequestResult<GetSettingsResponses, unknown, ThrowOnError> {
+        const data = {} as GetSettingsData;
+        return getSettingsApi({ ...data, throwOnError });
     }
 }

@@ -1,7 +1,32 @@
-import { UmbDataSourceResponse } from "@umbraco-cms/backoffice/repository";
-import { BlockPreviewService } from "../api";
-import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
-import { tryExecute } from "@umbraco-cms/backoffice/resources";
+import { RequestResult } from "../api/client/types.gen.js";
+import {
+    previewGridBlock as previewGridBlockApi,
+    previewListBlock as previewListBlockApi,
+    previewSingleBlock as previewSingleBlockApi,
+    previewRichTextMarkup as previewRichTextMarkupApi,
+    getGridStylesheets as getGridStylesheetsApi,
+    getSingleBlockStylesheets as getSingleBlockStylesheetsApi,
+    getListStylesheets as getListStylesheetsApi,
+    getRteStylesheets as getRteStylesheetsApi
+} from "../api/sdk.gen.js";
+import {
+    GetGridStylesheetsResponses,
+    GetListStylesheetsResponses,
+    PreviewGridBlockData,
+    PreviewGridBlockResponses,
+    PreviewListBlockData,
+    PreviewRichTextMarkupResponses,
+    GetRteStylesheetsResponses,
+    GetRteStylesheetsData,
+    GetListStylesheetsData,
+    GetGridStylesheetsData,
+    GetSingleBlockStylesheetsData,
+    GetSingleBlockStylesheetsResponses,
+    PreviewSingleBlockData,
+    PreviewRichTextMarkupData,
+    PreviewListBlockResponses,
+    PreviewSingleBlockResponses
+} from "../api/index.js";
 
 // Query type definitions
 export interface BlockPreviewQuery {
@@ -29,52 +54,138 @@ export interface StylesheetQuery {
 }
 
 export interface IPreviewDataSource {
-    previewGridBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>>;
-    previewListBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>>;
-    previewSingleBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>>;
-    previewRichTextMarkup(body: string, query: RtePreviewQuery): Promise<UmbDataSourceResponse<string>>;
-    getGridStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
-    getListStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
-    getSingleBlockStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
-    getRteStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
+    previewGridBlock<ThrowOnError extends boolean = false>(body: string, query: BlockPreviewQuery, throwOnError?: ThrowOnError):
+        RequestResult<PreviewGridBlockResponses, unknown, ThrowOnError>;
+    previewListBlock<ThrowOnError extends boolean = false>(body: string, query: BlockPreviewQuery, throwOnError?: ThrowOnError):
+        RequestResult<PreviewListBlockData, unknown, ThrowOnError>;
+
+    previewSingleBlock<ThrowOnError extends boolean = false>(body: string, query: BlockPreviewQuery, throwOnError?: ThrowOnError):
+        RequestResult<PreviewSingleBlockData, unknown, ThrowOnError>;
+    previewRichTextMarkup<ThrowOnError extends boolean = false>(body: string, query: RtePreviewQuery, throwOnError?: ThrowOnError):
+        RequestResult<PreviewRichTextMarkupResponses, unknown, ThrowOnError>;
+
+    getSingleBlockStylesheets<ThrowOnError extends boolean = false>(query: StylesheetQuery, throwOnError?: ThrowOnError):
+        RequestResult<GetSingleBlockStylesheetsResponses, unknown, ThrowOnError>;
+    getGridStylesheets<ThrowOnError extends boolean = false>(query: StylesheetQuery, throwOnError?: ThrowOnError):
+        RequestResult<GetGridStylesheetsResponses, unknown, ThrowOnError>;
+    getListStylesheets<ThrowOnError extends boolean = false>(query: StylesheetQuery, throwOnError?: ThrowOnError):
+        RequestResult<GetListStylesheetsResponses, unknown, ThrowOnError>;
+    getRteStylesheets<ThrowOnError extends boolean = false>(query: StylesheetQuery, throwOnError?: ThrowOnError):
+        RequestResult<GetRteStylesheetsResponses, unknown, ThrowOnError>;
 }
 
 export class PreviewDataSource implements IPreviewDataSource {
-    #host: UmbControllerHost;
 
-    constructor(host: UmbControllerHost) {
-        this.#host = host;
+    previewGridBlock<ThrowOnError extends boolean = false>(body: string, query: BlockPreviewQuery, throwOnError?: ThrowOnError):
+        RequestResult<PreviewGridBlockResponses, unknown, ThrowOnError> {
+        const data = {
+            body: body,
+            query: {
+                nodeKey: query.nodeKey,
+                blockEditorAlias: query.blockEditorAlias,
+                contentElementAlias: query.contentElementAlias,
+                documentTypeUnique: query.documentTypeUnique,
+                contentUdi: query.contentUdi,
+                settingsUdi: query.settingsUdi,
+                culture: query.culture,
+                blockIndex: query.blockIndex
+            }
+        } as PreviewGridBlockData;
+        return previewGridBlockApi<ThrowOnError>({ ...data, throwOnError });
     }
 
-    async previewGridBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>> {
-        return await tryExecute(this.#host, BlockPreviewService.previewGridBlock({ body, query }));
+    previewListBlock<ThrowOnError extends boolean = false>(body: string, query: BlockPreviewQuery, throwOnError?: ThrowOnError):
+        RequestResult<PreviewListBlockResponses, unknown, ThrowOnError> {
+        const data = {
+            body: body,
+            query: {
+                nodeKey: query.nodeKey,
+                blockEditorAlias: query.blockEditorAlias,
+                contentElementAlias: query.contentElementAlias,
+                documentTypeUnique: query.documentTypeUnique,
+                contentUdi: query.contentUdi,
+                settingsUdi: query.settingsUdi,
+                culture: query.culture,
+                blockIndex: query.blockIndex
+            }
+        } as PreviewListBlockData;
+        return previewListBlockApi<ThrowOnError>({ ...data, throwOnError });
     }
 
-    async previewListBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>> {
-        return await tryExecute(this.#host, BlockPreviewService.previewListBlock({ body, query }));
+    previewSingleBlock<ThrowOnError extends boolean = false>(body: string, query: BlockPreviewQuery, throwOnError?: ThrowOnError):
+        RequestResult<PreviewSingleBlockResponses, unknown, ThrowOnError> {
+        const data = {
+            body: body,
+            query: {
+                nodeKey: query.nodeKey,
+                blockEditorAlias: query.blockEditorAlias,
+                contentElementAlias: query.contentElementAlias,
+                documentTypeUnique: query.documentTypeUnique,
+                contentUdi: query.contentUdi,
+                settingsUdi: query.settingsUdi,
+                culture: query.culture,
+                blockIndex: query.blockIndex
+            }
+        } as PreviewSingleBlockData;
+        return previewSingleBlockApi<ThrowOnError>({ ...data, throwOnError });
     }
 
-    async previewSingleBlock(body: string, query: BlockPreviewQuery): Promise<UmbDataSourceResponse<string>> {
-        return await tryExecute(this.#host, BlockPreviewService.previewSingleBlock({ body, query }));
+    previewRichTextMarkup<ThrowOnError extends boolean = false>(body: string, query: RtePreviewQuery, throwOnError?: ThrowOnError):
+        RequestResult<PreviewRichTextMarkupResponses, unknown, ThrowOnError> {
+        const data = {
+            body: body,
+            query: {
+                nodeKey: query.nodeKey,
+                blockEditorAlias: query.blockEditorAlias,
+                contentElementAlias: query.contentElementAlias,
+                documentTypeUnique: query.documentTypeUnique,
+                culture: query.culture
+            }
+        } as PreviewRichTextMarkupData;
+        return previewRichTextMarkupApi<ThrowOnError>({ ...data, throwOnError });
     }
 
-    async previewRichTextMarkup(body: string, query: RtePreviewQuery): Promise<UmbDataSourceResponse<string>> {
-        return await tryExecute(this.#host, BlockPreviewService.previewRichTextMarkup({ body, query }));
+    getSingleBlockStylesheets<ThrowOnError extends boolean = false>(query: StylesheetQuery, throwOnError?: ThrowOnError):
+        RequestResult<GetSingleBlockStylesheetsResponses, unknown, ThrowOnError> {
+        const data = {
+            query: {
+                nodeKey: query.nodeKey,
+                documentTypeUnique: query.documentTypeUnique
+            }
+        } as GetSingleBlockStylesheetsData;
+        return getSingleBlockStylesheetsApi<ThrowOnError>({ ...data, throwOnError });
     }
 
-    async getGridStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {
-        return await tryExecute(this.#host, BlockPreviewService.getGridStylesheets({ query }));
+    getGridStylesheets<ThrowOnError extends boolean = false>(query: StylesheetQuery, throwOnError?: ThrowOnError):
+        RequestResult<GetGridStylesheetsResponses, unknown, ThrowOnError> {
+        const data = {
+            query: {
+                nodeKey: query.nodeKey,
+                documentTypeUnique: query.documentTypeUnique
+            }
+        } as GetGridStylesheetsData;
+        return getGridStylesheetsApi<ThrowOnError>({ ...data, throwOnError });
     }
 
-    async getListStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {
-        return await tryExecute(this.#host, BlockPreviewService.getListStylesheets({ query }));
+    getListStylesheets<ThrowOnError extends boolean = false>(query: StylesheetQuery, throwOnError?: ThrowOnError):
+        RequestResult<GetListStylesheetsResponses, unknown, ThrowOnError> {
+        const data = {
+            query: {
+                nodeKey: query.nodeKey,
+                documentTypeUnique: query.documentTypeUnique
+            }
+        } as GetListStylesheetsData;
+        return getListStylesheetsApi<ThrowOnError>({ ...data, throwOnError });
     }
 
-    async getSingleBlockStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {
-        return await tryExecute(this.#host, BlockPreviewService.getSingleBlockStylesheets({ query }));
-    }
-
-    async getRteStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {
-        return await tryExecute(this.#host, BlockPreviewService.getRteStylesheets({ query }));
+    getRteStylesheets<ThrowOnError extends boolean = false>(query: StylesheetQuery, throwOnError?: ThrowOnError):
+        RequestResult<GetRteStylesheetsResponses, unknown, ThrowOnError> {
+        const data = {
+            query: {
+                nodeKey: query.nodeKey,
+                documentTypeUnique: query.documentTypeUnique
+            }
+        } as GetRteStylesheetsData;
+        return getRteStylesheetsApi<ThrowOnError>({ ...data, throwOnError });
     }
 }

@@ -2,7 +2,7 @@ import { UMB_AUTH_CONTEXT } from '@umbraco-cms/backoffice/auth';
 import { ManifestBlockEditorCustomView } from '@umbraco-cms/backoffice/block-custom-view';
 import { UmbEntryPointOnInit } from '@umbraco-cms/backoffice/extension-api';
 
-import { client } from './api/index.ts';
+import { client } from './api/client.gen.js';
 import { BlockGridPreviewCustomView, BlockListPreviewCustomView, BlockSinglePreviewCustomView, RichTextPreviewCustomView } from './blockEditor';
 import { BLOCK_PREVIEW_CONTEXT } from './context/block-preview.context-token.ts';
 import BlockPreviewContext from './context/block-preview.context.ts';

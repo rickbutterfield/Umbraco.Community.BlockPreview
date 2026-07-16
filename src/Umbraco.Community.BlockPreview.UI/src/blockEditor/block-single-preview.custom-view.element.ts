@@ -15,7 +15,7 @@ export class BlockSinglePreviewCustomView extends BlockPreviewBaseElement<BlockC
 
     constructor() {
         super();
-        this.#previewDataSource = new PreviewDataSource(this);
+        this.#previewDataSource = new PreviewDataSource();
     }
 
     protected _blockContext: BlockContext = {
@@ -155,8 +155,8 @@ export class BlockSinglePreviewCustomView extends BlockPreviewBaseElement<BlockC
         });
     }
 
-    protected async callPreviewApi() {
-        return await this.#previewDataSource.previewSingleBlock(
+    protected callPreviewApi() {
+        return this.#previewDataSource.previewSingleBlock(
             JSON.stringify(this.blockSingleValue),
             {
                 blockEditorAlias: this._blockContext.blockEditorAlias,
@@ -171,12 +171,11 @@ export class BlockSinglePreviewCustomView extends BlockPreviewBaseElement<BlockC
         );
     }
 
-    protected async fetchStylesheets() {
-        const { data } = await this.#previewDataSource.getSingleBlockStylesheets({
+    protected fetchStylesheets() {
+        return this.#previewDataSource.getSingleBlockStylesheets({
             documentTypeUnique: this._blockContext.documentTypeUnique,
             nodeKey: this._blockContext.unique
         });
-        return data;
     }
 
     protected override validatePreviewData(): boolean {

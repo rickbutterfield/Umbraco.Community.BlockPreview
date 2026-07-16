@@ -7,6 +7,7 @@ import type { UmbBlockEditorCustomViewConfiguration, UmbBlockEditorCustomViewEle
 import { UmbLitElement } from '@umbraco-cms/backoffice/lit-element';
 import { UMB_PROPERTY_DATASET_CONTEXT } from '@umbraco-cms/backoffice/property';
 import { UmbApiError } from '@umbraco-cms/backoffice/resources';
+import { RequestResult } from '../api/client';
 
 /** Umbraco elements that make up a block's action bar / resize affordances. A click
  *  whose composed path passes through one of these did not target the block body. */
@@ -103,11 +104,12 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
     /** Observe the block entry context for content/settings keys and element type info. */
     protected abstract observeBlockValue(): void;
 
+   
     /** Call the appropriate BlockPreviewService API method and return the result. */
-    protected abstract callPreviewApi(): Promise<{ data?: string | null; error?: unknown }>;
+    protected abstract callPreviewApi(): RequestResult<string | undefined, unknown, false>;
 
     /** Fetch stylesheet paths from the appropriate BlockPreviewService endpoint. */
-    protected abstract fetchStylesheets(): Promise<string[] | undefined>;
+    protected abstract fetchStylesheets(): RequestResult<string[] | undefined>;
 
     constructor() {
         super();
@@ -250,7 +252,7 @@ export abstract class BlockPreviewBaseElement<TContext extends BlockContext = Bl
 
     protected async fetchAndLoadStylesheets() {
         if (this._stylesheetsAdopted || !this._blockPreviewContext) return;
-        const data = await this.fetchStylesheets();
+        const { data } = await this.fetchStylesheets();
         if (data && data.length > 0) {
             const sheets = await Promise.all(
                 data.map(href => this._blockPreviewContext!.getOrCreateStylesheet(href))
