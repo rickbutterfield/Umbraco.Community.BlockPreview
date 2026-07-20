@@ -3,7 +3,7 @@
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
-    <Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise, Dirk Seefeld</Authors>
+    <Authors>Rick Butterfield, Dave Woestenborghs, Matthew Wise</Authors>
     <Copyright>$([System.DateTime]::UtcNow.ToString(`yyyy`)) © Rick Butterfield</Copyright>
     <PackageProjectUrl>https://github.com/rickbutterfield/BlockPreview</PackageProjectUrl>
     <RepositoryUrl>https://github.com/rickbutterfield/BlockPreview</RepositoryUrl>
