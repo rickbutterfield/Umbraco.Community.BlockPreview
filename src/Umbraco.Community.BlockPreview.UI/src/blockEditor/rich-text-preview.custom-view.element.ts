@@ -15,7 +15,7 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
 
     constructor() {
         super();
-        this.#previewDataSource = new PreviewDataSource(this);
+        this.#previewDataSource = new PreviewDataSource();
     }
 
     protected _blockContext: BlockContext = {
@@ -164,8 +164,8 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
         });
     }
 
-    protected async callPreviewApi() {
-        return await this.#previewDataSource.previewRichTextMarkup(
+    protected callPreviewApi() {
+        return this.#previewDataSource.previewRichTextMarkup(
             JSON.stringify(this.blockRteValue),
             {
                 blockEditorAlias: this._blockContext.blockEditorAlias,
@@ -177,12 +177,11 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
         );
     }
 
-    protected async fetchStylesheets() {
-        const { data } = await this.#previewDataSource.getRteStylesheets({
+    protected fetchStylesheets() {
+        return this.#previewDataSource.getRteStylesheets({
             documentTypeUnique: this._blockContext.documentTypeUnique,
             nodeKey: this._blockContext.unique
         });
-        return data;
     }
 }
 

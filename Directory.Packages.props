@@ -24,7 +24,7 @@
   </ItemGroup>
   <!-- Third-party packages -->
   <ItemGroup>
-    <PackageVersion Include="uSync" Version="18.0.0" />
+    <PackageVersion Include="uSync" Version="18.0.2" />
   </ItemGroup>
   <!-- Test packages -->
   <ItemGroup>

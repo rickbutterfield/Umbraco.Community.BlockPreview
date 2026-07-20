@@ -6,10 +6,10 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Umbraco.Cms" VersionOverride="18.0.0" />
-        <PackageReference Include="Umbraco.Cms.Core" VersionOverride="18.0.0" />
-        <PackageReference Include="Umbraco.Cms.StaticAssets" VersionOverride="18.0.0" />
-        <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" VersionOverride="18.0.0" />
+        <PackageReference Include="Umbraco.Cms" VersionOverride="18.0.2" />
+        <PackageReference Include="Umbraco.Cms.Core" VersionOverride="18.0.2" />
+        <PackageReference Include="Umbraco.Cms.StaticAssets" VersionOverride="18.0.2" />
+        <PackageReference Include="Umbraco.Cms.DevelopmentMode.Backoffice" VersionOverride="18.0.2" />
         <PackageReference Include="uSync" />
     </ItemGroup>
 
@@ -38,6 +38,18 @@
     <PropertyGroup>
         <RazorCompileOnBuild>false</RazorCompileOnBuild>
         <RazorCompileOnPublish>false</RazorCompileOnPublish>
+        <UserSecretsId>d07a1189-4fe4-4f8e-9b31-ad2cf8aba66c</UserSecretsId>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageVersion Update="Umbraco.JsonSchema.Extensions" Version="0.4.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Update="Umbraco.JsonSchema.Extensions">
+        <PrivateAssets>all</PrivateAssets>
+        <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+      </PackageReference>
+    </ItemGroup>
 
 </Project>

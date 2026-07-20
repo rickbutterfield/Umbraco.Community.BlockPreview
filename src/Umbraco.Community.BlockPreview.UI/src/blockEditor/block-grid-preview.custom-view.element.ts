@@ -15,7 +15,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
 
     constructor() {
         super();
-        this.#previewDataSource = new PreviewDataSource(this);
+        this.#previewDataSource = new PreviewDataSource();
     }
 
     protected _blockContext: BlockGridContext = {
@@ -213,8 +213,8 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
         return layoutModel;
     }
 
-    protected async callPreviewApi() {
-        return await this.#previewDataSource.previewGridBlock(
+    protected callPreviewApi() {
+        return this.#previewDataSource.previewGridBlock(
             JSON.stringify(this.blockGridValue),
             {
                 blockEditorAlias: this._blockContext.blockEditorAlias,
@@ -229,8 +229,8 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
         );
     }
 
-    protected async fetchStylesheets() {
-        const { data } = await this.#previewDataSource.getGridStylesheets({
+    protected fetchStylesheets() {
+        const data = this.#previewDataSource.getGridStylesheets({
             documentTypeUnique: this._blockContext.documentTypeUnique,
             nodeKey: this._blockContext.unique
         });
