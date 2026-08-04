@@ -10,6 +10,13 @@
   </Suppression>
   <Suppression>
     <DiagnosticId>CP0002</DiagnosticId>
+    <Target>M:Umbraco.Community.BlockPreview.Controllers.BlockPreviewApiController.#ctor(Umbraco.Cms.Core.Routing.IPublishedRouter,Microsoft.Extensions.Logging.ILogger{Umbraco.Community.BlockPreview.Controllers.BlockPreviewApiController},Umbraco.Cms.Core.Web.IUmbracoContextAccessor,Umbraco.Community.BlockPreview.Services.ContextCultureService,Umbraco.Community.BlockPreview.Interfaces.IBlockPreviewService,Umbraco.Cms.Core.Services.ILanguageService,Microsoft.Extensions.Options.IOptions{Umbraco.Community.BlockPreview.BlockPreviewOptions},Umbraco.Cms.Core.Composing.ITypeFinder,Umbraco.Cms.Core.Cache.AppCaches,Umbraco.Cms.Infrastructure.HybridCache.IElementsCache,Umbraco.Cms.Core.PublishedCache.IDocumentCacheService,Umbraco.Cms.Core.PublishedCache.IPublishedContentTypeCache,Umbraco.Cms.Infrastructure.Scoping.IScopeProvider,Umbraco.Community.BlockPreview.Interfaces.IBlockPreviewRequestEnricher)</Target>
+    <Left>lib/net10.0/Umbraco.Community.BlockPreview.dll</Left>
+    <Right>lib/net10.0/Umbraco.Community.BlockPreview.dll</Right>
+    <IsBaselineSuppression>true</IsBaselineSuppression>
+  </Suppression>
+  <Suppression>
+    <DiagnosticId>CP0002</DiagnosticId>
     <Target>M:Umbraco.Community.BlockPreview.Extensions.BlockPreviewUmbracoBuilderExtensions.AddInternal(Umbraco.Cms.Core.DependencyInjection.IUmbracoBuilder,System.Action{Microsoft.Extensions.Options.OptionsBuilder{Umbraco.Community.BlockPreview.BlockPreviewOptions}})</Target>
     <Left>lib/net10.0/Umbraco.Community.BlockPreview.dll</Left>
     <Right>lib/net10.0/Umbraco.Community.BlockPreview.dll</Right>
