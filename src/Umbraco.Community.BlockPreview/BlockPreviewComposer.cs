@@ -48,6 +48,7 @@ namespace Umbraco.Community.BlockPreview
                 ActivatorUtilities.CreateInstance<BlockPreviewService>(sp));
             builder.Services.AddScoped<IBlockPreviewRequestEnricher, NoopBlockPreviewRequestEnricher>();
             builder.Services.AddScoped<IBlockPreviewResponseEnricher, NoopBlockPreviewResponseEnricher>();
+            builder.Services.AddScoped<IMarkupSanitizer, MarkupSanitizer>();
 
             builder.Services.AddScoped<ContextCultureService>();
 
