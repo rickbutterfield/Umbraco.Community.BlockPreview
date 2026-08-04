@@ -60,6 +60,11 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
         await this.#observeContentWorkspace();
     }
 
+    override disconnectedCallback() {
+        super.disconnectedCallback();
+        this.#resizeDebouncer.cancel();
+    }
+
     async #observeContentWorkspace() {
         try {
             // The content workspace shares its context alias with the block workspace,

@@ -51,6 +51,19 @@ describe('decideGridRenderTrigger (issue #293/#294)', () => {
 
         expect(decideGridRenderTrigger(prev, next, readyState)).to.deep.equal({ kind: 'none' });
     });
+
+    it('renders (not debounce) when layoutAreas arrives on the same emission as a span change', () => {
+        // Both conditions are true here: layoutAreas just arrived (prev undefined ->
+        // next defined, block has areas, manager observed, not loading) AND the layout
+        // span changed (hasMarkup true, prev.layout undefined -> next.layout has a
+        // defined columnSpan/rowSpan, so both differ from prev). The old two-`if`-block
+        // caller would have fired an immediate render AND scheduled a 300ms debounce;
+        // the pure function must report only 'render'.
+        const prev = { layoutAreas: undefined, layout: undefined };
+        const next = { areas: [{ key: 'a' }], layoutAreas: [{ key: 'a', items: [] }], layout: { columnSpan: 6, rowSpan: 1 } };
+
+        expect(decideGridRenderTrigger(prev, next, readyState)).to.deep.equal({ kind: 'render', reason: 'layout-areas-arrived' });
+    });
 });
 
 describe('shouldDeferInitialGridRender', () => {
