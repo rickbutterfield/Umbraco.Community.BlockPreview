@@ -28,6 +28,13 @@ export function decideGridRenderTrigger(
     const hasAreas = (next.areas?.length ?? 0) > 0;
     const layoutAreasJustArrived = !prev.layoutAreas && !!next.layoutAreas;
 
+    // Render takes precedence over debounce when both conditions hold on the same
+    // emission. Before this function existed, the caller ran two independent `if`
+    // blocks, so an emission where layoutAreas arrived *and* the layout span changed
+    // fired an immediate render plus a redundant 300ms-later debounced render. This
+    // intentionally collapses that into a single immediate render: the freshly-updated
+    // layout/areas data used here is the same data the debounced branch would have used
+    // moments later, so the second render added nothing but a delayed duplicate.
     if (hasAreas && layoutAreasJustArrived && state.managerObserved && !state.isLoading) {
         return { kind: 'render', reason: 'layout-areas-arrived' };
     }
