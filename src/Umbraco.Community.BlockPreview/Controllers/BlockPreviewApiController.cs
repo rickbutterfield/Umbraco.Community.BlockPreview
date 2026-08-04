@@ -194,18 +194,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <returns>A list of stylesheet paths if configured; otherwise, an empty list.</returns>
         [HttpGet("preview/single/stylesheets")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
-        public async Task<IActionResult> GetSingleBlockStylesheets(
+        public Task<IActionResult> GetSingleBlockStylesheets(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
-        {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
-
-            await _requestEnricher.EnrichAsync(HttpContext, content);
-
-            var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.SingleBlock, content!, ControllerContext);
-
-            return Ok(stylesheetPaths);
-        }
+            => GetStylesheets(BlockType.SingleBlock, nodeKey, documentTypeUnique);
 
         /// <summary>
         /// Loads the in-memory settings from appsettings.json
@@ -273,6 +265,29 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
 
         /// <summary>
+        /// Retrieves the stylesheet paths for a block preview of the given type.
+        /// </summary>
+        /// <param name="blockType">The block editor type.</param>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="documentTypeUnique">The unique identifier for the document type.</param>
+        /// <returns>A list of stylesheet paths if configured; otherwise, an empty list.</returns>
+        [HttpGet("preview/stylesheets")]
+        [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
+        public async Task<IActionResult> GetStylesheets(
+            [FromQuery] BlockType blockType,
+            [FromQuery] Guid nodeKey = default,
+            [FromQuery] Guid documentTypeUnique = default)
+        {
+            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
+
+            await _requestEnricher.EnrichAsync(HttpContext, content);
+
+            var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(blockType, content!, ControllerContext);
+
+            return Ok(stylesheetPaths);
+        }
+
+        /// <summary>
         /// Retrieves the stylesheet path for a grid block preview.
         /// </summary>
         /// <param name="nodeKey">The key of the node.</param>
@@ -308,18 +323,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <returns>A list of stylesheet paths if configured; otherwise, a 404 response.</returns>
         [HttpGet("preview/grid/stylesheets")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
-        public async Task<IActionResult> GetGridStylesheets(
+        public Task<IActionResult> GetGridStylesheets(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
-        {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
-
-            await _requestEnricher.EnrichAsync(HttpContext, content);
-
-            var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockGrid, content!, ControllerContext);
-
-            return Ok(stylesheetPaths);
-        }
+            => GetStylesheets(BlockType.BlockGrid, nodeKey, documentTypeUnique);
 
         /// <summary>
         /// Retrieves the stylesheet path for a list block preview.
@@ -357,18 +364,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <returns>A list of stylesheet paths if configured; otherwise, a 404 response.</returns>
         [HttpGet("preview/list/stylesheets")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
-        public async Task<IActionResult> GetListStylesheets(
+        public Task<IActionResult> GetListStylesheets(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
-        {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
-
-            await _requestEnricher.EnrichAsync(HttpContext, content);
-
-            var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.BlockList, content!, ControllerContext);
-
-            return Ok(stylesheetPaths);
-        }
+            => GetStylesheets(BlockType.BlockList, nodeKey, documentTypeUnique);
 
         /// <summary>
         /// Retrieves the stylesheet path for a rich text block preview.
@@ -406,18 +405,10 @@ namespace Umbraco.Community.BlockPreview.Controllers
         /// <returns>A list of stylesheet paths if configured; otherwise, a 404 response.</returns>
         [HttpGet("preview/rte/stylesheets")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
-        public async Task<IActionResult> GetRteStylesheets(
+        public Task<IActionResult> GetRteStylesheets(
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
-        {
-            IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
-
-            await _requestEnricher.EnrichAsync(HttpContext, content);
-
-            var stylesheetPaths = await _blockPreviewService.GetStylesheetPaths(BlockType.RichText, content!, ControllerContext);
-
-            return Ok(stylesheetPaths);
-        }
+            => GetStylesheets(BlockType.RichText, nodeKey, documentTypeUnique);
         #endregion
 
         #region Private

@@ -171,14 +171,27 @@ public class BlockPreviewApiControllerTests
     }
 
     [Test]
-    public async Task GetGridStylesheets_ResolvesContentViaContentResolverThenAsksBlockPreviewService()
+    public async Task GetStylesheets_ForBlockGrid_ReturnsPathsFromBlockPreviewService()
+    {
+        _blockPreviewService
+            .Setup(s => s.GetStylesheetPaths(BlockType.BlockGrid, It.IsAny<IPublishedContent>(), It.IsAny<ControllerContext>()))
+            .ReturnsAsync(new List<string> { "/css/grid.css" });
+
+        var result = await _controller.GetStylesheets(BlockType.BlockGrid, Guid.NewGuid(), Guid.NewGuid());
+
+        var ok = result as OkObjectResult;
+        Assert.That(ok, Is.Not.Null);
+        Assert.That(ok!.Value, Is.EqualTo(new List<string> { "/css/grid.css" }));
+    }
+
+    [Test]
+    public async Task GetGridStylesheets_DelegatesToGetStylesheetsWithBlockGrid()
     {
         var nodeKey = Guid.NewGuid();
         var docType = Guid.NewGuid();
         var content = Mock.Of<IPublishedContent>();
         // IPreviewContentResolver.Resolve's 3rd parameter is `out bool isActualContent`, not an
-        // out IPublishedContent — the resolved content comes back via the return value instead
-        // (matches Task 3's PreviewRequestExecutorTests.cs usage of the same interface).
+        // out IPublishedContent — the resolved content comes back via the return value instead.
         bool isActualContent = true;
         _contentResolver.Setup(r => r.Resolve(nodeKey, docType, out isActualContent)).Returns(content);
         _blockPreviewService
@@ -191,5 +204,66 @@ public class BlockPreviewApiControllerTests
         Assert.That(ok, Is.Not.Null);
         Assert.That(ok!.Value, Is.EqualTo(new List<string> { "/css/grid.css" }));
         _contentResolver.Verify(r => r.Resolve(nodeKey, docType, out isActualContent), Times.Once);
+        _blockPreviewService.Verify(s => s.GetStylesheetPaths(BlockType.BlockGrid, content, It.IsAny<ControllerContext>()), Times.Once);
+    }
+
+    [Test]
+    public async Task GetListStylesheets_DelegatesToGetStylesheetsWithBlockList()
+    {
+        var nodeKey = Guid.NewGuid();
+        var docType = Guid.NewGuid();
+        var content = Mock.Of<IPublishedContent>();
+        bool isActualContent = true;
+        _contentResolver.Setup(r => r.Resolve(nodeKey, docType, out isActualContent)).Returns(content);
+        _blockPreviewService
+            .Setup(s => s.GetStylesheetPaths(BlockType.BlockList, content, It.IsAny<ControllerContext>()))
+            .ReturnsAsync(new List<string> { "/css/list.css" });
+
+        var result = await _controller.GetListStylesheets(nodeKey, docType);
+
+        var ok = result as OkObjectResult;
+        Assert.That(ok!.Value, Is.EqualTo(new List<string> { "/css/list.css" }));
+        _contentResolver.Verify(r => r.Resolve(nodeKey, docType, out isActualContent), Times.Once);
+        _blockPreviewService.Verify(s => s.GetStylesheetPaths(BlockType.BlockList, content, It.IsAny<ControllerContext>()), Times.Once);
+    }
+
+    [Test]
+    public async Task GetRteStylesheets_DelegatesToGetStylesheetsWithRichText()
+    {
+        var nodeKey = Guid.NewGuid();
+        var docType = Guid.NewGuid();
+        var content = Mock.Of<IPublishedContent>();
+        bool isActualContent = true;
+        _contentResolver.Setup(r => r.Resolve(nodeKey, docType, out isActualContent)).Returns(content);
+        _blockPreviewService
+            .Setup(s => s.GetStylesheetPaths(BlockType.RichText, content, It.IsAny<ControllerContext>()))
+            .ReturnsAsync(new List<string> { "/css/rte.css" });
+
+        var result = await _controller.GetRteStylesheets(nodeKey, docType);
+
+        var ok = result as OkObjectResult;
+        Assert.That(ok!.Value, Is.EqualTo(new List<string> { "/css/rte.css" }));
+        _contentResolver.Verify(r => r.Resolve(nodeKey, docType, out isActualContent), Times.Once);
+        _blockPreviewService.Verify(s => s.GetStylesheetPaths(BlockType.RichText, content, It.IsAny<ControllerContext>()), Times.Once);
+    }
+
+    [Test]
+    public async Task GetSingleBlockStylesheets_DelegatesToGetStylesheetsWithSingleBlock()
+    {
+        var nodeKey = Guid.NewGuid();
+        var docType = Guid.NewGuid();
+        var content = Mock.Of<IPublishedContent>();
+        bool isActualContent = true;
+        _contentResolver.Setup(r => r.Resolve(nodeKey, docType, out isActualContent)).Returns(content);
+        _blockPreviewService
+            .Setup(s => s.GetStylesheetPaths(BlockType.SingleBlock, content, It.IsAny<ControllerContext>()))
+            .ReturnsAsync(new List<string> { "/css/single.css" });
+
+        var result = await _controller.GetSingleBlockStylesheets(nodeKey, docType);
+
+        var ok = result as OkObjectResult;
+        Assert.That(ok!.Value, Is.EqualTo(new List<string> { "/css/single.css" }));
+        _contentResolver.Verify(r => r.Resolve(nodeKey, docType, out isActualContent), Times.Once);
+        _blockPreviewService.Verify(s => s.GetStylesheetPaths(BlockType.SingleBlock, content, It.IsAny<ControllerContext>()), Times.Once);
     }
 }
