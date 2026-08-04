@@ -134,4 +134,110 @@ public class BlockPreviewServiceTests
 
         Assert.That(result, Does.Contain(Constants.ErrorMessages.InvalidContentData));
     }
+
+    [Test]
+    public async Task RenderGridBlock_WithMatchingLayout_AppliesRowAndColumnSpanBeforeRendering()
+    {
+        // Exercises the `configure` callback wired up in RenderGridBlock (BlockPreviewService.cs),
+        // which threads GetMatchingGridLayout's matched RowSpan/ColumnSpan onto the created block
+        // instance. This path had zero test coverage before, because it requires a real BlockGridItem
+        // instance (not mockable) and previously required the real, unmockable BlockEditorConverter to
+        // reach FindBlockType. FindBlockType is now `protected virtual` (source/binary compatible change)
+        // specifically so TestableBlockPreviewService below can bypass it.
+        var contentTypeKey = Guid.NewGuid();
+        var documentTypeUnique = Guid.NewGuid();
+        var dataTypeKey = Guid.NewGuid();
+        const string blockEditorAlias = "myGrid";
+
+        var layoutItem = new BlockGridLayoutItem(_contentKey) { RowSpan = 3, ColumnSpan = 6 };
+        var blockGridValue = new BlockGridValue(new[] { layoutItem })
+        {
+            ContentData = new List<BlockItemData> { new(_contentKey, contentTypeKey, "myElement") }
+        };
+        var blockEditorData = new BlockEditorData<BlockGridValue, BlockGridLayoutItem>(
+            Array.Empty<ContentAndSettingsReference>(), blockGridValue);
+
+        _blockDataConverter.Setup(c => c.DeserializeBlockGrid(It.IsAny<string>())).Returns(blockEditorData);
+
+        var blockGridConfig = new BlockGridConfiguration
+        {
+            Blocks = new[]
+            {
+                new BlockGridConfiguration.BlockGridBlockConfiguration
+                {
+                    ContentElementTypeKey = contentTypeKey,
+                    Areas = Array.Empty<BlockGridConfiguration.BlockGridAreaConfiguration>()
+                }
+            }
+        };
+
+        var propertyType = Mock.Of<IPropertyType>(p => p.Alias == blockEditorAlias && p.DataTypeKey == dataTypeKey);
+        var documentType = Mock.Of<IContentType>(c =>
+            c.PropertyTypes == new List<IPropertyType> { propertyType } &&
+            c.CompositionPropertyTypes == new List<IPropertyType>());
+        var dataType = Mock.Of<IDataType>(d => d.ConfigurationObject == (object)blockGridConfig);
+
+        _blockTypeCacheService.Setup(s => s.GetContentType(documentTypeUnique)).ReturnsAsync(documentType);
+        _blockTypeCacheService.Setup(s => s.GetDataType(dataTypeKey)).ReturnsAsync(dataType);
+
+        var blockInstance = new BlockGridItem(_contentKey, _contentElement, null, null);
+        _blockModelFactory
+            .Setup(f => f.CreateBlockInstance(BlockType.BlockGrid, typeof(object), _contentElement, null, null, _contentKey, null))
+            .Returns(blockInstance);
+
+        BlockPreviewContext? capturedContext = null;
+        _blockViewRenderer
+            .Setup(r => r.RenderAsync(It.IsAny<BlockPreviewContext>(), It.IsAny<ViewEngineResult?>()))
+            .Callback<BlockPreviewContext, ViewEngineResult?>((ctx, _) => capturedContext = ctx)
+            .ReturnsAsync("<div>grid</div>");
+
+        var service = new TestableBlockPreviewService(
+            _publishedModelFactory.Object,
+            blockEditorConverter: null!,
+            Microsoft.Extensions.Options.Options.Create(new BlockPreviewOptions()),
+            _jsonSerializer.Object,
+            _blockModelFactory.Object,
+            _blockViewRenderer.Object,
+            _blockDataConverter.Object,
+            _blockTypeCacheService.Object,
+            _viewResolver.Object);
+
+        var result = await service.RenderGridBlock(
+            "{}", _content, new ControllerContext(), blockEditorAlias, documentTypeUnique,
+            contentKey: _contentKey.ToString());
+
+        Assert.That(result, Is.EqualTo("<div>grid</div>"));
+        Assert.That(capturedContext, Is.Not.Null);
+        var renderedInstance = capturedContext!.ViewData?.Model as BlockGridItem;
+        Assert.That(renderedInstance, Is.Not.Null);
+        Assert.That(renderedInstance!.RowSpan, Is.EqualTo(3));
+        Assert.That(renderedInstance!.ColumnSpan, Is.EqualTo(6));
+    }
+
+    /// <summary>
+    /// Subclass that bypasses the real (unmockable, sealed) <see cref="BlockEditorConverter"/> by
+    /// overriding the now-<c>protected virtual</c> <c>FindBlockType</c> to always return a known
+    /// type, so tests can drive the rest of the render pipeline (including the Block Grid
+    /// `configure` callback) without a running Umbraco host.
+    /// </summary>
+    private class TestableBlockPreviewService : BlockPreviewService
+    {
+        public TestableBlockPreviewService(
+            IPublishedModelFactory publishedModelFactory,
+            BlockEditorConverter blockEditorConverter,
+            Microsoft.Extensions.Options.IOptions<BlockPreviewOptions> options,
+            IJsonSerializer jsonSerializer,
+            IBlockModelFactory blockModelFactory,
+            IBlockViewRenderer blockViewRenderer,
+            IBlockDataConverter blockDataConverter,
+            IBlockTypeCacheService blockTypeCacheService,
+            IBlockPreviewViewResolver viewResolver)
+            : base(
+                publishedModelFactory, blockEditorConverter, options, jsonSerializer, blockModelFactory,
+                blockViewRenderer, blockDataConverter, blockTypeCacheService, viewResolver)
+        {
+        }
+
+        protected override Type? FindBlockType(IPublishedContentType? contentType) => typeof(object);
+    }
 }

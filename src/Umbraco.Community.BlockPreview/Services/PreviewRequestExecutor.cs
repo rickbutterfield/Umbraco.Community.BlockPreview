@@ -52,10 +52,11 @@ namespace Umbraco.Community.BlockPreview.Services
             {
                 IPublishedContent? content = _contentResolver.Resolve(request.NodeKey, request.DocumentTypeUnique, out bool isActualContent);
 
-                string? currentCulture = await _contentResolver.ResolveCultureAsync(request.Culture, content);
+                // The resolved culture is applied as a side effect on ContextCultureService;
+                // downstream rendering picks it up from there rather than from a return value.
+                await _contentResolver.ResolveCultureAsync(request.Culture, content);
 
                 await _contentResolver.SetupPublishedRequestAsync(
-                    currentCulture,
                     isActualContent ? content : null,
                     new Uri(request.HttpContext.Request.GetDisplayUrl()));
 

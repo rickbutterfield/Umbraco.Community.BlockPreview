@@ -25,6 +25,9 @@ namespace Umbraco.Community.BlockPreview.Services
 
         private static readonly TimeSpan CacheDuration = TimeSpan.FromHours(1);
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="PreviewContentResolver"/> class.
+        /// </summary>
         public PreviewContentResolver(
             IUmbracoContextAccessor umbracoContextAccessor,
             IPublishedRouter publishedRouter,
@@ -105,7 +108,7 @@ namespace Umbraco.Community.BlockPreview.Services
         }
 
         /// <inheritdoc />
-        public async Task SetupPublishedRequestAsync(string? culture, IPublishedContent? content, Uri requestUrl)
+        public async Task SetupPublishedRequestAsync(IPublishedContent? content, Uri requestUrl)
         {
             if (!_umbracoContextAccessor.TryGetUmbracoContext(out IUmbracoContext? context))
                 return;

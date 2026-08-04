@@ -1,16 +1,13 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Cache;
-using Umbraco.Cms.Core.Composing;
 using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Cms.Core.Services;
 using Umbraco.Community.BlockPreview.Enums;
 using Umbraco.Community.BlockPreview.Interfaces;
-using Umbraco.Community.BlockPreview.Services;
 using Umbraco.Extensions;
 
 namespace Umbraco.Community.BlockPreview.Controllers
@@ -56,6 +53,19 @@ namespace Umbraco.Community.BlockPreview.Controllers
 
         #region Public
 
+        /// <summary>
+        /// Renders a preview for a grid block using the associated Razor view or ViewComponent.
+        /// </summary>
+        /// <param name="blockData">The JSON content data of the block.</param>
+        /// <param name="nodeKey">The <see cref="Guid"/> that represents the Umbraco node.</param>
+        /// <param name="blockEditorAlias">The alias of the block editor</param>
+        /// <param name="contentElementAlias">The alias of the content being rendered</param>
+        /// <param name="culture">The current culture</param>
+        /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node</param>
+        /// <param name="contentUdi">The <see cref="Cms.Core.Udi"/> that represents the content element</param>
+        /// <param name="settingsUdi">The <see cref="Cms.Core.Udi"/> that represents the settings element</param>
+        /// <param name="blockIndex">The <see cref="int"/> that represents the block index</param>
+        /// <returns>The markup to render in the preview.</returns>
         [HttpPost("preview/grid")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(typeof(string), 200)]
@@ -72,6 +82,19 @@ namespace Umbraco.Community.BlockPreview.Controllers
             => RunPreviewAsync(blockData, nodeKey, blockEditorAlias, contentElementAlias, culture,
                 documentTypeUnique, contentUdi, settingsUdi, blockIndex, _blockPreviewService.RenderGridBlock);
 
+        /// <summary>
+        /// Renders a preview for a block list block using the associated Razor view or ViewComponent.
+        /// </summary>
+        /// <param name="blockData">The JSON content data of the block.</param>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="blockEditorAlias">The alias of the block editor</param>
+        /// <param name="contentElementAlias">The alias of the content being rendered</param>
+        /// <param name="culture">The current culture</param>
+        /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node</param>
+        /// <param name="contentUdi">The <see cref="Cms.Core.Udi"/> that represents the content element</param>
+        /// <param name="settingsUdi">The <see cref="Cms.Core.Udi"/> that represents the settings element</param>
+        /// <param name="blockIndex">The <see cref="int"/> that represents the block index</param>
+        /// <returns>The markup to render in the preview.</returns>
         [HttpPost("preview/list")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(typeof(string), 200)]
@@ -88,6 +111,19 @@ namespace Umbraco.Community.BlockPreview.Controllers
             => RunPreviewAsync(blockData, nodeKey, blockEditorAlias, contentElementAlias, culture,
                 documentTypeUnique, contentUdi, settingsUdi, blockIndex, _blockPreviewService.RenderListBlock);
 
+        /// <summary>
+        /// Renders a preview for a single block using the associated Razor view or ViewComponent.
+        /// </summary>
+        /// <param name="blockData">The JSON content data of the block.</param>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="blockEditorAlias">The alias of the block editor</param>
+        /// <param name="contentElementAlias">The alias of the content being rendered</param>
+        /// <param name="culture">The current culture</param>
+        /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node</param>
+        /// <param name="contentUdi">The <see cref="Cms.Core.Udi"/> that represents the content element</param>
+        /// <param name="settingsUdi">The <see cref="Cms.Core.Udi"/> that represents the settings element</param>
+        /// <param name="blockIndex">The <see cref="int"/> that represents the block index</param>
+        /// <returns>The markup to render in the preview.</returns>
         [HttpPost("preview/single")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(typeof(string), 200)]
@@ -104,6 +140,16 @@ namespace Umbraco.Community.BlockPreview.Controllers
             => RunPreviewAsync(blockData, nodeKey, blockEditorAlias, contentElementAlias, culture,
                 documentTypeUnique, contentUdi, settingsUdi, blockIndex, _blockPreviewService.RenderSingleBlock);
 
+        /// <summary>
+        /// Renders a preview for a rich text block using the associated Razor view or ViewComponent.
+        /// </summary>
+        /// <param name="blockData">The JSON content data of the block.</param>
+        /// <param name="nodeKey">The key of the node.</param>
+        /// <param name="blockEditorAlias">The alias of the block editor</param>
+        /// <param name="contentElementAlias">The alias of the content being rendered</param>
+        /// <param name="culture">The current culture</param>
+        /// <param name="documentTypeUnique">The <see cref="Guid"/> that represents the Umbraco node</param>
+        /// <returns>The markup to render in the preview.</returns>
         [HttpPost("preview/rte")]
         [MapToApiVersion("1.0")]
         [ProducesResponseType(typeof(string), 200)]

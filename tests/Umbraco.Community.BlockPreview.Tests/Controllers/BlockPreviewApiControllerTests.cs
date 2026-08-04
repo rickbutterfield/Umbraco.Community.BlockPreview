@@ -73,6 +73,81 @@ public class BlockPreviewApiControllerTests
     }
 
     [Test]
+    public async Task PreviewGridBlock_PassesRenderDelegateThatCallsRenderGridBlock()
+    {
+        // Guards against a method-name swap between PreviewGridBlock/PreviewListBlock/PreviewSingleBlock:
+        // PreviewGridBlock_SanitizesExecutorOutputAndReturnsOk above only checks sanitization, which would
+        // still pass even if the controller wired up the wrong IBlockPreviewService method as the render delegate.
+        Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>? captured = null;
+        _executor
+            .Setup(e => e.ExecuteAsync(It.IsAny<PreviewRenderRequest>(),
+                It.IsAny<Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>>()))
+            .Callback<PreviewRenderRequest, Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>>(
+                (_, render) => captured = render)
+            .ReturnsAsync("<div>grid</div>");
+
+        var content = Mock.Of<IPublishedContent>();
+        _blockPreviewService
+            .Setup(s => s.RenderGridBlock("{}", content, It.IsAny<ControllerContext>(), "ignored", Guid.Empty, "ignored", null, null))
+            .ReturnsAsync("<div>grid-direct</div>");
+
+        await _controller.PreviewGridBlock("{}", Guid.NewGuid(), "myGrid", "myElement");
+
+        Assert.That(captured, Is.Not.Null);
+        var direct = await captured!("{}", content, new ControllerContext(), "ignored", Guid.Empty, "ignored", null, null);
+        Assert.That(direct, Is.EqualTo("<div>grid-direct</div>"));
+        _blockPreviewService.Verify(s => s.RenderGridBlock("{}", content, It.IsAny<ControllerContext>(), "ignored", Guid.Empty, "ignored", null, null), Times.Once);
+    }
+
+    [Test]
+    public async Task PreviewListBlock_PassesRenderDelegateThatCallsRenderListBlock()
+    {
+        Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>? captured = null;
+        _executor
+            .Setup(e => e.ExecuteAsync(It.IsAny<PreviewRenderRequest>(),
+                It.IsAny<Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>>()))
+            .Callback<PreviewRenderRequest, Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>>(
+                (_, render) => captured = render)
+            .ReturnsAsync("<div>list</div>");
+
+        var content = Mock.Of<IPublishedContent>();
+        _blockPreviewService
+            .Setup(s => s.RenderListBlock("{}", content, It.IsAny<ControllerContext>(), "ignored", Guid.Empty, "ignored", null, null))
+            .ReturnsAsync("<div>list-direct</div>");
+
+        await _controller.PreviewListBlock("{}", Guid.NewGuid(), "myList", "myElement");
+
+        Assert.That(captured, Is.Not.Null);
+        var direct = await captured!("{}", content, new ControllerContext(), "ignored", Guid.Empty, "ignored", null, null);
+        Assert.That(direct, Is.EqualTo("<div>list-direct</div>"));
+        _blockPreviewService.Verify(s => s.RenderListBlock("{}", content, It.IsAny<ControllerContext>(), "ignored", Guid.Empty, "ignored", null, null), Times.Once);
+    }
+
+    [Test]
+    public async Task PreviewSingleBlock_PassesRenderDelegateThatCallsRenderSingleBlock()
+    {
+        Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>? captured = null;
+        _executor
+            .Setup(e => e.ExecuteAsync(It.IsAny<PreviewRenderRequest>(),
+                It.IsAny<Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>>()))
+            .Callback<PreviewRenderRequest, Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>>(
+                (_, render) => captured = render)
+            .ReturnsAsync("<div>single</div>");
+
+        var content = Mock.Of<IPublishedContent>();
+        _blockPreviewService
+            .Setup(s => s.RenderSingleBlock("{}", content, It.IsAny<ControllerContext>(), "ignored", Guid.Empty, "ignored", null, null))
+            .ReturnsAsync("<div>single-direct</div>");
+
+        await _controller.PreviewSingleBlock("{}", Guid.NewGuid(), "mySingle", "myElement");
+
+        Assert.That(captured, Is.Not.Null);
+        var direct = await captured!("{}", content, new ControllerContext(), "ignored", Guid.Empty, "ignored", null, null);
+        Assert.That(direct, Is.EqualTo("<div>single-direct</div>"));
+        _blockPreviewService.Verify(s => s.RenderSingleBlock("{}", content, It.IsAny<ControllerContext>(), "ignored", Guid.Empty, "ignored", null, null), Times.Once);
+    }
+
+    [Test]
     public async Task PreviewRichTextMarkup_PassesRenderDelegateThatCallsRenderRichTextBlock()
     {
         Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>>? captured = null;

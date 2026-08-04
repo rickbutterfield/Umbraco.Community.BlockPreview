@@ -22,8 +22,8 @@ namespace Umbraco.Community.BlockPreview.Interfaces
 
         /// <summary>
         /// Builds and assigns a <c>PublishedRequest</c> on the current Umbraco context so
-        /// downstream rendering sees the given culture and content.
+        /// downstream rendering sees the given content.
         /// </summary>
-        Task SetupPublishedRequestAsync(string? culture, IPublishedContent? content, Uri requestUrl);
+        Task SetupPublishedRequestAsync(IPublishedContent? content, Uri requestUrl);
     }
 }

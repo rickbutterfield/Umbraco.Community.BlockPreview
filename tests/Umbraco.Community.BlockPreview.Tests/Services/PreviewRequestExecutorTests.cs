@@ -147,8 +147,13 @@ public class PreviewRequestExecutorTests
         var result = await _executor.ExecuteAsync(BuildRequest(), (_, _, _, _, _, _, _, _) =>
             throw new InvalidOperationException("boom"));
 
-        Assert.That(result, Does.Contain("Something went wrong rendering a preview"));
-        Assert.That(result, Does.Contain("boom"));
+        Assert.That(result, Does.Contain(string.Format(Constants.ErrorMessages.RenderError, "boom")));
+        _logger.Verify(l => l.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()), Times.Once);
     }
 
     [Test]

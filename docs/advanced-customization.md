@@ -267,13 +267,16 @@ builder.Services.AddUnique<IBlockPreviewResponseEnricher, BlockPreviewResponseEn
 
 ## Replaceable Services
 
-BlockPreview's internal rendering pipeline is split into three focused services that can each be replaced independently. All three are registered as scoped services (per-request), so you can safely inject other scoped services like `IPublishedContentQuery` or access `HttpContext`.
+BlockPreview's internal rendering pipeline is split into six focused services that can each be replaced independently. All six are registered as scoped services (per-request), so you can safely inject other scoped services like `IPublishedContentQuery` or access `HttpContext`.
 
 | Interface | Default | Responsibility | Lifecycle |
 |-----------|---------|----------------|-----------|
 | `IBlockModelFactory` | `BlockModelFactory` | Creates typed content/settings models and block item instances (BlockGridItem, BlockListItem, etc.) | Scoped |
 | `IBlockViewRenderer` | `BlockViewRenderer` | Renders block previews using either ViewComponents or partial views | Scoped |
 | `IBlockDataConverter` | `BlockDataConverter` | Deserializes raw block JSON and converts block item data to published elements | Scoped |
+| `IPreviewContentResolver` | `PreviewContentResolver` | Resolves the published content, culture, and published request for a block preview | Scoped |
+| `IPreviewRequestExecutor` | `PreviewRequestExecutor` | Runs the shared preview request pipeline used by all four preview endpoints: verifies generated models exist, resolves content/culture, enriches the request, invokes the block-type-specific renderer, enriches the response, and formats errors | Scoped |
+| `IMarkupSanitizer` | `MarkupSanitizer` | Sanitizes rendered block preview markup before it is sent to the backoffice (rewrites anchor hrefs to no-ops, disables form controls) | Scoped |
 
 ### IBlockModelFactory
 
@@ -446,6 +449,124 @@ public class CustomBlockDataConverter : IBlockDataConverter
 }
 ```
 
+### IPreviewContentResolver
+
+Resolves the published content, culture, and published request that a block preview renders against. Override this to change how content is located (e.g. a different placeholder strategy for unsaved nodes) or how culture is chosen.
+
+```cs
+using Umbraco.Cms.Core.Models.PublishedContent;
+using Umbraco.Cms.Core.Services;
+using Umbraco.Cms.Core.Web;
+using Umbraco.Community.BlockPreview.Interfaces;
+
+public class CustomPreviewContentResolver : IPreviewContentResolver
+{
+    private readonly IUmbracoContextAccessor _umbracoContextAccessor;
+    private readonly ILanguageService _languageService;
+
+    public CustomPreviewContentResolver(
+        IUmbracoContextAccessor umbracoContextAccessor,
+        ILanguageService languageService)
+    {
+        _umbracoContextAccessor = umbracoContextAccessor;
+        _languageService = languageService;
+    }
+
+    public IPublishedContent? Resolve(Guid? nodeKey, Guid? documentTypeUnique, out bool isActualContent)
+    {
+        isActualContent = false;
+
+        if (!_umbracoContextAccessor.TryGetUmbracoContext(out var context))
+            return null;
+
+        // Try an actual node first, then fall back to your own placeholder-resolution
+        // strategy instead of the default type-cache scan.
+        var content = nodeKey.HasValue ? context.Content?.GetById(preview: true, nodeKey.Value) : null;
+        if (content != null)
+        {
+            isActualContent = true;
+            return content;
+        }
+
+        return /* your placeholder-resolution logic */;
+    }
+
+    public async Task<string?> ResolveCultureAsync(string? requestedCulture, IPublishedContent? content)
+    {
+        // e.g. always prefer the requested culture and skip the domain-culture fallback
+        if (!string.IsNullOrWhiteSpace(requestedCulture) && requestedCulture != "undefined")
+            return requestedCulture;
+
+        return await _languageService.GetDefaultIsoCodeAsync();
+    }
+
+    public Task SetupPublishedRequestAsync(IPublishedContent? content, Uri requestUrl)
+    {
+        // Build and assign your own PublishedRequest, or leave this a no-op if your
+        // custom views don't rely on the ambient PublishedRequest.
+        return Task.CompletedTask;
+    }
+}
+```
+
+### IPreviewRequestExecutor
+
+Runs the shared preview request pipeline used by all four preview endpoints (`preview/grid`, `preview/list`, `preview/single`, `preview/rte`): it verifies generated models exist, resolves content and culture via `IPreviewContentResolver`, enriches the request, invokes the block-type-specific renderer passed in by the controller, enriches the response, and falls back to an error template on failure. Because it wraps so much behaviour, the most practical way to customise it is to decorate the default implementation rather than reimplement it from scratch — for example, to add timing or telemetry around every preview render.
+
+```cs
+using System.Diagnostics;
+using Microsoft.Extensions.Logging;
+using Umbraco.Community.BlockPreview.Interfaces;
+using Umbraco.Community.BlockPreview.Services;
+
+public class CustomPreviewRequestExecutor : IPreviewRequestExecutor
+{
+    private readonly PreviewRequestExecutor _inner;
+    private readonly ILogger<CustomPreviewRequestExecutor> _logger;
+
+    public CustomPreviewRequestExecutor(PreviewRequestExecutor inner, ILogger<CustomPreviewRequestExecutor> logger)
+    {
+        _inner = inner;
+        _logger = logger;
+    }
+
+    public async Task<string> ExecuteAsync(
+        PreviewRenderRequest request,
+        Func<string, IPublishedContent, ControllerContext, string, Guid, string, string?, int?, Task<string>> render)
+    {
+        var stopwatch = Stopwatch.StartNew();
+        var markup = await _inner.ExecuteAsync(request, render);
+        _logger.LogInformation("Rendered preview for {Alias} in {ElapsedMs}ms", request.ContentElementAlias, stopwatch.ElapsedMilliseconds);
+        return markup;
+    }
+}
+```
+
+Because the decorator needs access to the default implementation, register the concrete `PreviewRequestExecutor` class alongside your decorator:
+
+```cs
+builder.Services.AddScoped<PreviewRequestExecutor>();
+builder.Services.AddScoped<IPreviewRequestExecutor, CustomPreviewRequestExecutor>();
+```
+
+### IMarkupSanitizer
+
+Sanitizes rendered block preview markup before it is sent to the backoffice. The default implementation rewrites anchor `href` attributes to no-ops and disables form controls, so the preview can't navigate away from or submit data within the backoffice. Override this to add your own rules, e.g. stripping `<script>` tags entirely.
+
+```cs
+using Umbraco.Community.BlockPreview.Interfaces;
+
+public class CustomMarkupSanitizer : IMarkupSanitizer
+{
+    public string CleanUp(string markup)
+    {
+        // Disable scripts in addition to the default anchor/form-control sanitization.
+        return markup.Replace("<script", "<!--script", StringComparison.OrdinalIgnoreCase)
+                      .Replace("</script>", "</script-->", StringComparison.OrdinalIgnoreCase);
+    }
+}
+```
+
 ### Registering Custom Services
 
 Replace any service in `Program.cs` after calling `AddBlockPreview`:
@@ -463,4 +584,11 @@ builder.CreateUmbracoBuilder()
 builder.Services.AddScoped<IBlockModelFactory, CustomBlockModelFactory>();
 builder.Services.AddScoped<IBlockViewRenderer, CustomBlockViewRenderer>();
 builder.Services.AddScoped<IBlockDataConverter, CustomBlockDataConverter>();
+builder.Services.AddScoped<IPreviewContentResolver, CustomPreviewContentResolver>();
+builder.Services.AddScoped<IMarkupSanitizer, CustomMarkupSanitizer>();
+
+// IPreviewRequestExecutor's default implementation is decorated rather than replaced outright
+// (see the IPreviewRequestExecutor section above), so both registrations are needed:
+builder.Services.AddScoped<PreviewRequestExecutor>();
+builder.Services.AddScoped<IPreviewRequestExecutor, CustomPreviewRequestExecutor>();
 ```

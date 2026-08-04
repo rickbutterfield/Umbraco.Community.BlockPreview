@@ -447,7 +447,17 @@ namespace Umbraco.Community.BlockPreview.Services
         #endregion
 
         #region Private
-        private Type? FindBlockType(IPublishedContentType? contentType)
+        /// <summary>
+        /// Resolves the strongly-typed model type for a published content type, via
+        /// <see cref="BlockEditorConverter.GetModelType"/>.
+        /// </summary>
+        /// <param name="contentType">The published content type to resolve a model type for.</param>
+        /// <returns>The resolved model type, or <see langword="null"/> if no generated model exists.</returns>
+        /// <remarks>
+        /// Protected and virtual so tests can override this without going through the real
+        /// (unmockable, <c>sealed</c>) <see cref="BlockEditorConverter"/>.
+        /// </remarks>
+        protected virtual Type? FindBlockType(IPublishedContentType? contentType)
         {
             if (contentType == null)
                 return null;
