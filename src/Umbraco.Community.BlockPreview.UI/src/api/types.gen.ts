@@ -11,6 +11,13 @@ export type BlockPreviewOptions = {
     singleBlock: BlockTypeSettings;
 };
 
+export enum BlockType {
+    BLOCK_GRID = 'BlockGrid',
+    BLOCK_LIST = 'BlockList',
+    RICH_TEXT = 'RichText',
+    SINGLE_BLOCK = 'SingleBlock'
+}
+
 export type BlockTypeSettings = {
     enabled: boolean;
     viewLocations?: Array<string> | null;
@@ -252,6 +259,26 @@ export type GetSingleBlockStylesheetsResponses = {
 };
 
 export type GetSingleBlockStylesheetsResponse = GetSingleBlockStylesheetsResponses[keyof GetSingleBlockStylesheetsResponses];
+
+export type GetStylesheetsData = {
+    body?: never;
+    path?: never;
+    query?: {
+        blockType?: BlockType;
+        nodeKey?: string;
+        documentTypeUnique?: string;
+    };
+    url: '/umbraco/block-preview/api/v1/preview/stylesheets';
+};
+
+export type GetStylesheetsResponses = {
+    /**
+     * OK
+     */
+    200: Array<string>;
+};
+
+export type GetStylesheetsResponse = GetStylesheetsResponses[keyof GetStylesheetsResponses];
 
 export type GetSettingsData = {
     body?: never;
