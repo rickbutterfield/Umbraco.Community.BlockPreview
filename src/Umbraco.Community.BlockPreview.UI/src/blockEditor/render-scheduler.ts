@@ -1,0 +1,63 @@
+/**
+ * Extracted from BlockGridPreviewCustomView so the render-timing decision behind
+ * issues #293/#294 (Block Grid area previews rendering blank or before layoutAreas
+ * was available) is a pure function instead of four fields read at two call sites.
+ */
+
+export interface GridLayoutSpan {
+    columnSpan?: number;
+    rowSpan?: number;
+}
+
+export const GRID_RESIZE_DEBOUNCE_MS = 300;
+
+export type GridRenderTrigger =
+    | { kind: 'none' }
+    | { kind: 'render'; reason: 'layout-areas-arrived' }
+    | { kind: 'debounce'; reason: 'resized'; delayMs: number };
+
+/**
+ * Decides whether an already-rendered (or render-pending) Block Grid preview should
+ * re-render in response to an observed layout/layoutAreas update.
+ */
+export function decideGridRenderTrigger(
+    prev: { layoutAreas: unknown[] | undefined; layout: GridLayoutSpan | undefined },
+    next: { areas: unknown[] | undefined; layoutAreas: unknown[] | undefined; layout: GridLayoutSpan | undefined },
+    state: { hasMarkup: boolean; isLoading: boolean; managerObserved: boolean },
+): GridRenderTrigger {
+    const hasAreas = (next.areas?.length ?? 0) > 0;
+    const layoutAreasJustArrived = !prev.layoutAreas && !!next.layoutAreas;
+
+    if (hasAreas && layoutAreasJustArrived && state.managerObserved && !state.isLoading) {
+        return { kind: 'render', reason: 'layout-areas-arrived' };
+    }
+
+    const resized = state.hasMarkup && !!next.layout && (
+        next.layout.columnSpan !== prev.layout?.columnSpan ||
+        next.layout.rowSpan !== prev.layout?.rowSpan
+    );
+    if (resized) {
+        return { kind: 'debounce', reason: 'resized', delayMs: GRID_RESIZE_DEBOUNCE_MS };
+    }
+
+    return { kind: 'none' };
+}
+
+/** Should the first render be deferred until layoutAreas is known? */
+export function shouldDeferInitialGridRender(areas: unknown[] | undefined, layoutAreas: unknown[] | undefined): boolean {
+    return (areas?.length ?? 0) > 0 && !layoutAreas;
+}
+
+/** Replaces an inline `setTimeout`/`clearTimeout` pair with a named, testable debounce. */
+export class ResizeDebouncer {
+    #timer?: ReturnType<typeof setTimeout>;
+
+    schedule(delayMs: number, fn: () => void): void {
+        clearTimeout(this.#timer);
+        this.#timer = setTimeout(fn, delayMs);
+    }
+
+    cancel(): void {
+        clearTimeout(this.#timer);
+    }
+}
