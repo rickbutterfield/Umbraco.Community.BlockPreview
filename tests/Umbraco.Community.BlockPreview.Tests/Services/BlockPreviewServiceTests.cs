@@ -52,15 +52,15 @@ public class BlockPreviewServiceTests
             .ReturnsAsync("<div>rendered</div>");
 
         // BlockEditorConverter can't be mocked directly (concrete Umbraco type with internal
-        // dependencies not exposed via any interface) and is passed null here. None of the five
-        // tests below reach FindBlockType (each returns from an earlier guard clause — invalid
+        // dependencies not exposed via any interface) and is passed null here. Five of the six
+        // tests below never reach FindBlockType (each returns from an earlier guard clause — invalid
         // block data, invalid content key, or an unresolvable element), so this is safe for what
-        // they test. The "no generated models" branch (FindBlockType returning null) genuinely
-        // isn't unit-testable without a real BlockEditorConverter or a running Umbraco host —
-        // it stays covered only by the manual smoke test in Task 4's Step 6, matching how the
-        // pre-refactor BlockPreviewService (zero tests before this task) covered it. Do not
-        // "fix" this by constructing a real BlockEditorConverter; that needs an IPublishedModelFactory
-        // + content-cache dependency graph well beyond this task's scope.
+        // they test. The sixth test (RenderGridBlock_WithMatchingLayout_AppliesRowAndColumnSpanBeforeRendering)
+        // needs FindBlockType and uses the TestableBlockPreviewService subclass below to bypass the real,
+        // unmockable BlockEditorConverter instead of constructing one. The "no generated models" branch
+        // (FindBlockType returning null) genuinely isn't unit-testable without a real BlockEditorConverter or a
+        // running Umbraco host — it stays covered only by the manual smoke test in Task 4's Step 6, matching
+        // how the pre-refactor BlockPreviewService (zero tests before this task) covered it.
         _service = new BlockPreviewService(
             _publishedModelFactory.Object,
             blockEditorConverter: null!,

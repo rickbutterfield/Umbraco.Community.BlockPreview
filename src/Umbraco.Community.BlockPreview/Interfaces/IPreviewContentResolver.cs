@@ -16,7 +16,7 @@ namespace Umbraco.Community.BlockPreview.Interfaces
         /// <summary>
         /// Resolves the culture to render with: the requested culture, then the content's
         /// domain culture, then the sole configured language, then the default language.
-        /// Also sets the resolved culture on <see cref="ContextCultureService"/>.
+        /// Also sets the resolved culture on <see cref="Umbraco.Community.BlockPreview.Services.ContextCultureService"/>.
         /// </summary>
         Task<string?> ResolveCultureAsync(string? requestedCulture, IPublishedContent? content);
 

@@ -463,13 +463,16 @@ public class CustomPreviewContentResolver : IPreviewContentResolver
 {
     private readonly IUmbracoContextAccessor _umbracoContextAccessor;
     private readonly ILanguageService _languageService;
+    private readonly ContextCultureService _contextCultureService;
 
     public CustomPreviewContentResolver(
         IUmbracoContextAccessor umbracoContextAccessor,
-        ILanguageService languageService)
+        ILanguageService languageService,
+        ContextCultureService contextCultureService)
     {
         _umbracoContextAccessor = umbracoContextAccessor;
         _languageService = languageService;
+        _contextCultureService = contextCultureService;
     }
 
     public IPublishedContent? Resolve(Guid? nodeKey, Guid? documentTypeUnique, out bool isActualContent)
@@ -494,10 +497,13 @@ public class CustomPreviewContentResolver : IPreviewContentResolver
     public async Task<string?> ResolveCultureAsync(string? requestedCulture, IPublishedContent? content)
     {
         // e.g. always prefer the requested culture and skip the domain-culture fallback
-        if (!string.IsNullOrWhiteSpace(requestedCulture) && requestedCulture != "undefined")
-            return requestedCulture;
+        var currentCulture = !string.IsNullOrWhiteSpace(requestedCulture) && requestedCulture != "undefined"
+            ? requestedCulture
+            : await _languageService.GetDefaultIsoCodeAsync();
 
-        return await _languageService.GetDefaultIsoCodeAsync();
+        // Calling SetCulture is required: the return value alone does not apply the culture to Umbraco's context.
+        _contextCultureService.SetCulture(currentCulture);
+        return currentCulture;
     }
 
     public Task SetupPublishedRequestAsync(IPublishedContent? content, Uri requestUrl)
@@ -515,7 +521,9 @@ Runs the shared preview request pipeline used by all four preview endpoints (`pr
 
 ```cs
 using System.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Umbraco.Cms.Core.Models.PublishedContent;
 using Umbraco.Community.BlockPreview.Interfaces;
 using Umbraco.Community.BlockPreview.Services;
 
