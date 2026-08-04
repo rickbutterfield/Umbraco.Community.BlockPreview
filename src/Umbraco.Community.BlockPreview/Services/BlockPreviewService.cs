@@ -209,34 +209,12 @@ namespace Umbraco.Community.BlockPreview.Services
 
             bool hasNestedBlockGrid = contentData.Values.Any(x => x.EditorAlias == PropertyEditors.Aliases.BlockGrid);
 
-            IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
-            if (contentElement == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
-
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
 
-            IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
-
-            Type? contentBlockType = FindBlockType(contentElement.ContentType);
-            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
-
-            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
-                return GetNoModelsErrorMessage();
-
-            BlockGridItem? blockInstance = _blockModelFactory.CreateBlockInstance(
-                BlockType.BlockGrid,
-                contentBlockType, contentElement,
-                settingsBlockType, settingsElement,
-                contentData.Key, settingsData?.Key
-            ) as BlockGridItem;
-
-            if (blockInstance == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
-
             var layoutItems = blockValue?.BlockValue?.GetLayouts();
-            BlockGridLayoutItem? matchingLayout = GetMatchingGridLayout(layoutItems!, blockInstance);
+            BlockGridLayoutItem? matchingLayout = GetMatchingGridLayout(layoutItems!, contentData.Key, out int? matchedRowSpan, out int? matchedColumnSpan);
 
             IContentType? documentType = await _blockTypeCacheService.GetContentType(documentTypeUnique);
             if (documentType == null)
@@ -263,18 +241,21 @@ namespace Umbraco.Community.BlockPreview.Services
             if (matchingBlockConfig == null)
                 return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidMatchingBlockGridConfiguration);
 
-            BlockPreviewContext previewContext = new BlockPreviewContext(
-               controllerContext,
-               content,
-               contentElement.ContentType.Alias,
-               BlockType.BlockGrid,
-               blockIndex,
-               matchingBlockConfig);
+            return await RenderTypedBlockAsync<BlockGridItem>(
+                BlockType.BlockGrid, contentData, settingsData, content, controllerContext, blockIndex,
+                blockGridBlockConfig: matchingBlockConfig, hasNestedBlockGrid: hasNestedBlockGrid,
+                configure: instance =>
+                {
+                    // Preserves GetMatchingGridLayout's previous side effect of mutating the block
+                    // instance's RowSpan/ColumnSpan directly (now that instance creation happens
+                    // inside the shared helper, the matched spans are threaded through here instead).
+                    if (matchedRowSpan.HasValue)
+                        instance.RowSpan = matchedRowSpan.Value;
+                    if (matchedColumnSpan.HasValue)
+                        instance.ColumnSpan = matchedColumnSpan.Value;
 
-            ConfigureBlockInstanceAreas(blockValue!, blockInstance, config, matchingBlockConfig, matchingLayout!, content);
-
-            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext, hasNestedBlockGrid);
-            return await GetMarkup(previewContext);
+                    ConfigureBlockInstanceAreas(blockValue!, instance, config, matchingBlockConfig, matchingLayout!, content);
+                });
         }
 
         /// <summary>
@@ -315,44 +296,12 @@ namespace Umbraco.Community.BlockPreview.Services
             Guid.TryParse(settingsKey!, out Guid settingsGuidParsed);
 
             BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault(x => x.Key == contentGuidParsed);
-            if (contentData == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
-
-            IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
-            if (contentElement == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
-
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
 
-            IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
-
-            Type? contentBlockType = FindBlockType(contentElement.ContentType);
-            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
-
-            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
-                return GetNoModelsErrorMessage();
-
-            BlockListItem? blockInstance = _blockModelFactory.CreateBlockInstance(
-                BlockType.BlockList,
-                contentBlockType, contentElement,
-                settingsBlockType, settingsElement,
-                contentData.Key, settingsData?.Key
-            ) as BlockListItem;
-
-            if (blockInstance == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
-
-            BlockPreviewContext previewContext = new BlockPreviewContext(
-               controllerContext,
-               content,
-               contentElement.ContentType.Alias,
-               BlockType.BlockList,
-               blockIndex);
-
-            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext);
-            return await GetMarkup(previewContext);
+            return await RenderTypedBlockAsync<BlockListItem>(
+                BlockType.BlockList, contentData, settingsData, content, controllerContext, blockIndex);
         }
 
         /// <summary>
@@ -393,44 +342,13 @@ namespace Umbraco.Community.BlockPreview.Services
             Guid.TryParse(settingsKey!, out Guid settingsGuidParsed);
 
             BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault(x => x.Key == contentGuidParsed);
-            if (contentData == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
-
-            IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
-            if (contentElement == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
-
             BlockItemData? settingsData = settingsGuidParsed != Guid.Empty
                 ? blockValue?.BlockValue?.SettingsData.FirstOrDefault(x => x.Key == settingsGuidParsed)
                 : null;
 
-            IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
-
-            Type? contentBlockType = FindBlockType(contentElement.ContentType);
-            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
-
-            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
-                return GetNoModelsErrorMessage();
-
-            BlockListItem? blockInstance = _blockModelFactory.CreateBlockInstance(
-                BlockType.SingleBlock,
-                contentBlockType, contentElement,
-                settingsBlockType, settingsElement,
-                contentData.Key, settingsData?.Key
-            ) as BlockListItem;
-
-            if (blockInstance == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
-
-            BlockPreviewContext previewContext = new BlockPreviewContext(
-               controllerContext,
-               content,
-               contentElement.ContentType.Alias,
-               BlockType.SingleBlock,
-               blockIndex);
-
-            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext);
-            return await GetMarkup(previewContext);
+            // Historically cast to BlockListItem (Single Block reuses the List model shape) — preserved.
+            return await RenderTypedBlockAsync<BlockListItem>(
+                BlockType.SingleBlock, contentData, settingsData, content, controllerContext, blockIndex);
         }
 
         /// <summary>
@@ -456,40 +374,10 @@ namespace Umbraco.Community.BlockPreview.Services
             }
 
             BlockItemData? contentData = blockValue?.BlockValue?.ContentData.FirstOrDefault();
-            if (contentData == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
-
-            IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
-            if (contentElement == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
-
             BlockItemData? settingsData = blockValue?.BlockValue.SettingsData.FirstOrDefault();
-            IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
 
-            Type? contentBlockType = FindBlockType(contentElement.ContentType);
-            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
-
-            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
-                return GetNoModelsErrorMessage();
-
-            RichTextBlockItem? blockInstance = _blockModelFactory.CreateBlockInstance(
-                BlockType.RichText,
-                contentBlockType, contentElement,
-                settingsBlockType, settingsElement,
-                contentData.Key, settingsData?.Key
-            ) as RichTextBlockItem;
-
-            if (blockInstance == null)
-                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
-
-            BlockPreviewContext previewContext = new BlockPreviewContext(
-                controllerContext,
-                content,
-                contentElement.ContentType.Alias,
-                BlockType.RichText);
-
-            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext);
-            return await GetMarkup(previewContext);
+            return await RenderTypedBlockAsync<RichTextBlockItem>(
+                BlockType.RichText, contentData, settingsData, content, controllerContext, blockIndex: null);
         }
 
         /// <inheritdoc/>
@@ -579,17 +467,27 @@ namespace Umbraco.Community.BlockPreview.Services
             return string.Format(Constants.ErrorMessages.WarningTemplate, errorMessage);
         }
 
-        private BlockGridLayoutItem? GetMatchingGridLayout(IEnumerable<BlockGridLayoutItem> layoutItems, BlockGridItem? blockInstance)
+        /// <summary>
+        /// Finds the layout item matching <paramref name="contentKey"/> — either a top-level layout
+        /// item or one nested inside an area — and reports the row/column span that should be applied
+        /// to the corresponding block instance. Only set when a match is found (mirroring the previous
+        /// behavior of mutating the block instance directly, before the block instance existed at this
+        /// point in the pipeline).
+        /// </summary>
+        private BlockGridLayoutItem? GetMatchingGridLayout(IEnumerable<BlockGridLayoutItem> layoutItems, Guid contentKey, out int? matchedRowSpan, out int? matchedColumnSpan)
         {
-            if (layoutItems == null || blockInstance == null)
+            matchedRowSpan = null;
+            matchedColumnSpan = null;
+
+            if (layoutItems == null)
                 return null;
 
             foreach (var layoutItem in layoutItems)
             {
-                if (layoutItem.ContentKey == blockInstance.ContentKey)
+                if (layoutItem.ContentKey == contentKey)
                 {
-                    blockInstance.RowSpan = layoutItem.RowSpan ?? 1;
-                    blockInstance.ColumnSpan = layoutItem.ColumnSpan ?? 12;
+                    matchedRowSpan = layoutItem.RowSpan ?? 1;
+                    matchedColumnSpan = layoutItem.ColumnSpan ?? 12;
                     return layoutItem;
                 }
                 else
@@ -598,9 +496,9 @@ namespace Umbraco.Community.BlockPreview.Services
                     {
                         foreach (var item in area.Items)
                         {
-                            if (item.ContentKey != blockInstance.ContentKey) continue;
-                            blockInstance.RowSpan = item.RowSpan ?? 1;
-                            blockInstance.ColumnSpan = item.ColumnSpan ?? layoutItem.ColumnSpan ?? 12;
+                            if (item.ContentKey != contentKey) continue;
+                            matchedRowSpan = item.RowSpan ?? 1;
+                            matchedColumnSpan = item.ColumnSpan ?? layoutItem.ColumnSpan ?? 12;
                             return layoutItem;
                         }
                     }
@@ -672,6 +570,66 @@ namespace Umbraco.Community.BlockPreview.Services
             // Try custom view resolution first (via virtual GetViewResult for extensibility)
             var viewResult = GetViewResult(context);
             return await _blockViewRenderer.RenderAsync(context, viewResult);
+        }
+
+        /// <summary>
+        /// Shared tail for all block render methods: converts content/settings data to published
+        /// elements, resolves their model types, creates the typed block instance, optionally
+        /// mutates it (e.g. Block Grid area configuration), builds the view data, and renders markup.
+        /// </summary>
+        /// <typeparam name="TBlockItem">The typed block item to cast the created instance to.</typeparam>
+        /// <param name="blockType">The type of block editor being rendered.</param>
+        /// <param name="contentData">The block's content data, or null if not found.</param>
+        /// <param name="settingsData">The block's settings data, or null if there is none.</param>
+        /// <param name="content">The published content associated with the block.</param>
+        /// <param name="controllerContext">The controller context for the current request.</param>
+        /// <param name="blockIndex">The index of the block within its container, if applicable.</param>
+        /// <param name="blockGridBlockConfig">The Block Grid block configuration, if applicable.</param>
+        /// <param name="hasNestedBlockGrid">Indicates whether the block contains a nested block grid.</param>
+        /// <param name="configure">An optional callback to mutate the block instance before view data is built (e.g. <see cref="ConfigureBlockInstanceAreas"/>).</param>
+        /// <returns>The rendered HTML, or an error message if any step fails.</returns>
+        private async Task<string> RenderTypedBlockAsync<TBlockItem>(
+            BlockType blockType,
+            BlockItemData? contentData,
+            BlockItemData? settingsData,
+            IPublishedContent content,
+            ControllerContext controllerContext,
+            int? blockIndex,
+            BlockGridConfiguration.BlockGridBlockConfiguration? blockGridBlockConfig = null,
+            bool hasNestedBlockGrid = false,
+            Action<TBlockItem>? configure = null)
+            where TBlockItem : class
+        {
+            if (contentData == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
+
+            IPublishedElement? contentElement = _blockDataConverter.ConvertToElement(contentData, content);
+            if (contentElement == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidContentData);
+
+            IPublishedElement? settingsElement = settingsData != null ? _blockDataConverter.ConvertToElement(settingsData, content) : default;
+
+            Type? contentBlockType = FindBlockType(contentElement.ContentType);
+            Type? settingsBlockType = settingsElement != null ? FindBlockType(settingsElement.ContentType) : default;
+
+            if (contentBlockType == null || (settingsElement != null && settingsBlockType == null))
+                return GetNoModelsErrorMessage();
+
+            TBlockItem? blockInstance = _blockModelFactory.CreateBlockInstance(
+                blockType, contentBlockType, contentElement, settingsBlockType, settingsElement,
+                contentData.Key, settingsData?.Key
+            ) as TBlockItem;
+
+            if (blockInstance == null)
+                return string.Format(Constants.ErrorMessages.ErrorTemplate, Constants.ErrorMessages.InvalidBlockInstance);
+
+            configure?.Invoke(blockInstance);
+
+            BlockPreviewContext previewContext = new BlockPreviewContext(
+                controllerContext, content, contentElement.ContentType.Alias, blockType, blockIndex, blockGridBlockConfig);
+
+            previewContext.ViewData = await CreateViewDataAsync(blockInstance, previewContext, hasNestedBlockGrid);
+            return await GetMarkup(previewContext);
         }
 
         private void ConfigureBlockInstanceAreas(
