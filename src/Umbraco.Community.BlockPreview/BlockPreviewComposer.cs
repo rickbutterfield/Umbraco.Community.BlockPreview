@@ -50,6 +50,7 @@ namespace Umbraco.Community.BlockPreview
             builder.Services.AddScoped<IBlockPreviewResponseEnricher, NoopBlockPreviewResponseEnricher>();
             builder.Services.AddScoped<IMarkupSanitizer, MarkupSanitizer>();
             builder.Services.AddScoped<IPreviewContentResolver, PreviewContentResolver>();
+            builder.Services.AddScoped<IPreviewRequestExecutor, PreviewRequestExecutor>();
 
             builder.Services.AddScoped<ContextCultureService>();
 
