@@ -1,6 +1,7 @@
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockContext } from './types';
 import { PreviewDataSource } from '../repository';
+import { BlockType } from '../api';
 import { css, customElement, property, state } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_SINGLE_ENTRY_CONTEXT, UMB_BLOCK_SINGLE_MANAGER_CONTEXT, UmbBlockSingleValueModel } from "@umbraco-cms/backoffice/block-single";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
@@ -172,7 +173,7 @@ export class BlockSinglePreviewCustomView extends BlockPreviewBaseElement<BlockC
     }
 
     protected async fetchStylesheets() {
-        const { data } = await this.#previewDataSource.getSingleBlockStylesheets({
+        const { data } = await this.#previewDataSource.getStylesheets(BlockType.SINGLE_BLOCK, {
             documentTypeUnique: this._blockContext.documentTypeUnique,
             nodeKey: this._blockContext.unique
         });

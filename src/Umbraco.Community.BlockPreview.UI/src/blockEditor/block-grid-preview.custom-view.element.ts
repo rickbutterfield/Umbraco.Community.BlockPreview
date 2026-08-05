@@ -1,6 +1,7 @@
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockGridContext } from './types';
 import { PreviewDataSource } from '../repository';
+import { BlockType } from '../api';
 import { css, customElement, property } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
@@ -230,7 +231,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
     }
 
     protected async fetchStylesheets() {
-        const { data } = await this.#previewDataSource.getGridStylesheets({
+        const { data } = await this.#previewDataSource.getStylesheets(BlockType.BLOCK_GRID, {
             documentTypeUnique: this._blockContext.documentTypeUnique,
             nodeKey: this._blockContext.unique
         });

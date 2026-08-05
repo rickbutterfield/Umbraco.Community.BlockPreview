@@ -1,6 +1,7 @@
 import { BlockPreviewBaseElement } from './block-preview-base.element';
 import { BlockContext } from './types';
 import { PreviewDataSource } from '../repository';
+import { BlockType } from '../api';
 import { customElement, property, state } from "@umbraco-cms/backoffice/external/lit";
 import { UMB_BLOCK_RTE_ENTRY_CONTEXT, UMB_BLOCK_RTE_MANAGER_CONTEXT, UmbBlockRteValueModel } from "@umbraco-cms/backoffice/block-rte";
 import { UMB_DOCUMENT_WORKSPACE_CONTEXT } from '@umbraco-cms/backoffice/document';
@@ -178,7 +179,7 @@ export class RichTextPreviewCustomView extends BlockPreviewBaseElement<BlockCont
     }
 
     protected async fetchStylesheets() {
-        const { data } = await this.#previewDataSource.getRteStylesheets({
+        const { data } = await this.#previewDataSource.getStylesheets(BlockType.RICH_TEXT, {
             documentTypeUnique: this._blockContext.documentTypeUnique,
             nodeKey: this._blockContext.unique
         });
