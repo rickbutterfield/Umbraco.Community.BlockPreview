@@ -263,8 +263,8 @@ export type GetSingleBlockStylesheetsResponse = GetSingleBlockStylesheetsRespons
 export type GetStylesheetsData = {
     body?: never;
     path?: never;
-    query?: {
-        blockType?: BlockType;
+    query: {
+        blockType: BlockType;
         nodeKey?: string;
         documentTypeUnique?: string;
     };

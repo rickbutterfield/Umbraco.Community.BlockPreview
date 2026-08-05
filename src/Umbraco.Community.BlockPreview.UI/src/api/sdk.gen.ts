@@ -121,8 +121,8 @@ export class BlockPreviewService {
         });
     }
     
-    public static getStylesheets<ThrowOnError extends boolean = true>(options?: Options<GetStylesheetsData, ThrowOnError>) {
-        return (options?.client ?? client).get<GetStylesheetsResponses, unknown, ThrowOnError>({
+    public static getStylesheets<ThrowOnError extends boolean = true>(options: Options<GetStylesheetsData, ThrowOnError>) {
+        return (options.client ?? client).get<GetStylesheetsResponses, unknown, ThrowOnError>({
             url: '/umbraco/block-preview/api/v1/preview/stylesheets',
             ...options
         });
