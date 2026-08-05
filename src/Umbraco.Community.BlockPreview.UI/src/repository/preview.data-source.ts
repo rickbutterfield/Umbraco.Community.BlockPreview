@@ -80,6 +80,6 @@ export class PreviewDataSource implements IPreviewDataSource {
     }
 
     async getStylesheets(blockType: BlockType, query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {
-        return await tryExecute(this.#host, BlockPreviewService.getStylesheets({ query: { blockType, ...query } }));
+        return await tryExecute(this.#host, BlockPreviewService.getStylesheets({ query: { ...query, blockType } }));
     }
 }

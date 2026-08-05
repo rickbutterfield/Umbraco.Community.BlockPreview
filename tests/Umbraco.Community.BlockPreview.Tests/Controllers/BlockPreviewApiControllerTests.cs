@@ -185,6 +185,17 @@ public class BlockPreviewApiControllerTests
     }
 
     [Test]
+    public async Task GetStylesheets_WithUndefinedBlockType_ReturnsBadRequest()
+    {
+        var result = await _controller.GetStylesheets((BlockType)99, Guid.NewGuid(), Guid.NewGuid());
+
+        Assert.That(result, Is.InstanceOf<BadRequestObjectResult>());
+        _blockPreviewService.Verify(
+            s => s.GetStylesheetPaths(It.IsAny<BlockType>(), It.IsAny<IPublishedContent>(), It.IsAny<ControllerContext>()),
+            Times.Never);
+    }
+
+    [Test]
     public async Task GetGridStylesheets_DelegatesToGetStylesheetsWithBlockGrid()
     {
         var nodeKey = Guid.NewGuid();

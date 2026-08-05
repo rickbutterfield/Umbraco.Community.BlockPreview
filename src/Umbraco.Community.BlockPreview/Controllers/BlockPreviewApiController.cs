@@ -1,6 +1,7 @@
 ﻿using Asp.Versioning;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Umbraco.Cms.Core.Cache;
@@ -274,10 +275,15 @@ namespace Umbraco.Community.BlockPreview.Controllers
         [HttpGet("preview/stylesheets")]
         [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IEnumerable<string>))]
         public async Task<IActionResult> GetStylesheets(
-            [FromQuery] BlockType blockType,
+            [FromQuery][BindRequired] BlockType blockType,
             [FromQuery] Guid nodeKey = default,
             [FromQuery] Guid documentTypeUnique = default)
         {
+            if (!Enum.IsDefined(typeof(BlockType), blockType))
+            {
+                return BadRequest("Invalid blockType.");
+            }
+
             IPublishedContent? content = GetPublishedContent(nodeKey, documentTypeUnique);
 
             await _requestEnricher.EnrichAsync(HttpContext, content);
