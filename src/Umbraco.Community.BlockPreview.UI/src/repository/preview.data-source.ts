@@ -1,5 +1,5 @@
 import { UmbDataSourceResponse } from "@umbraco-cms/backoffice/repository";
-import { BlockPreviewService } from "../api";
+import { BlockPreviewService, BlockType } from "../api";
 import { UmbControllerHost } from "@umbraco-cms/backoffice/controller-api";
 import { tryExecute } from "@umbraco-cms/backoffice/resources";
 
@@ -37,6 +37,7 @@ export interface IPreviewDataSource {
     getListStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
     getSingleBlockStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
     getRteStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
+    getStylesheets(blockType: BlockType, query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>>;
 }
 
 export class PreviewDataSource implements IPreviewDataSource {
@@ -76,5 +77,9 @@ export class PreviewDataSource implements IPreviewDataSource {
 
     async getRteStylesheets(query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {
         return await tryExecute(this.#host, BlockPreviewService.getRteStylesheets({ query }));
+    }
+
+    async getStylesheets(blockType: BlockType, query: StylesheetQuery): Promise<UmbDataSourceResponse<string[]>> {
+        return await tryExecute(this.#host, BlockPreviewService.getStylesheets({ query: { blockType, ...query } }));
     }
 }
