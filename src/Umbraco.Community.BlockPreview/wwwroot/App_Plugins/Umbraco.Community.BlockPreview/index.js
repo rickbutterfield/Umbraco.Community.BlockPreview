@@ -1139,8 +1139,6 @@ Ze = async function() {
           expose: s ?? [],
           layout: { "Umbraco.BlockGrid": M(this, B, ne).call(this) }
         }, this._blockContext.blockIndex = (e ?? []).findIndex((n) => n.key === this._blockContext.contentUdi), !this._htmlMarkup && !this._isLoading) {
-          if ((this._blockContext.areas?.length ?? 0) > 0 && !this._blockContext.layoutAreas)
-            return;
           this.renderBlockPreview();
         }
       }

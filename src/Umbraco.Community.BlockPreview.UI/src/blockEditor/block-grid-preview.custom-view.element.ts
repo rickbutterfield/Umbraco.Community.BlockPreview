@@ -177,11 +177,12 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                         };
                         this._blockContext.blockIndex = (contents ?? []).findIndex(x => x.key === this._blockContext.contentUdi);
                         if (!this._htmlMarkup && !this._isLoading) {
-                            // Defer render if areas are expected but layoutAreas haven't arrived yet;
-                            // observeBlockValue will trigger the render once layoutAreas are available.
-                            if ((this._blockContext.areas?.length ?? 0) > 0 && !this._blockContext.layoutAreas) {
-                                return;
-                            }
+                            // Don't defer on missing layoutAreas: a newly added, unsaved block has
+                            // no `areas` entry on its layout at all (#322) and layoutAreas never
+                            // arrives until content is added to an area or the document is saved.
+                            // #filterLayouts() already defaults each area's items to [], so this
+                            // renders correctly empty; observeBlockValue re-renders once real
+                            // layoutAreas data does arrive (#293).
                             this.renderBlockPreview();
                         }
                     }
