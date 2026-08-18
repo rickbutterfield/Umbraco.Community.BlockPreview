@@ -1,4 +1,4 @@
-# CLAUDE.md - BlockPreview v5
+# CLAUDE.md - BlockPreview v6
 
 ## Overview
 
@@ -9,7 +9,7 @@
 - TypeScript/Lit - Frontend UI components (Umbraco backoffice extension)
 - Vite - Frontend build tooling
 
-**Target Platform:** Umbraco CMS v17+
+**Target Platform:** Umbraco CMS v18+
 
 **Package:** [Umbraco.Community.BlockPreview on NuGet](https://www.nuget.org/packages/Umbraco.Community.BlockPreview)
 
@@ -22,7 +22,7 @@
   /Umbraco.Community.BlockPreview       - Main .NET library (RCL)
   /Umbraco.Community.BlockPreview.UI    - TypeScript frontend (Lit components)
 /examples               - Example/test sites
-  /Umbraco.Community.BlockPreview.TestSite  - Umbraco 17 test site
+  /Umbraco.Community.BlockPreview.TestSite  - Umbraco 18 test site
 /tools                  - Build utilities
   /Umbraco.Community.BlockPreview.SchemaGenerator - JSON schema generator
 /docs                   - Documentation
@@ -77,21 +77,30 @@ Test site credentials:
 
 Uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) for automatic versioning.
 
-- Version defined in `version.json` (currently `5.0.0`)
-- Release tags: `release-{version}` (e.g., `release-5.0.0`)
+- Version defined in `version.json`
+- Release tags: `release-{version}` (e.g., `release-6.1.1`)
 - Release branches: `release/{version}`
+
+**Cutting a release:**
+1. Branch `release/{version}` off `v6/dev`.
+2. Set the version in `version.json`, `src/Umbraco.Community.BlockPreview.UI/package.json`, and `package-lock.json`. Run `npm run build` so the package manifest restamps.
+3. PR that branch into `v6/main` and merge.
+4. Tag `release-{version}` on `v6/main` and push the tag. **The tag is what publishes.**
+
+The published version comes from `version.json` on the tagged commit, not from the tag name. Keep the two in step.
 
 ---
 
 ## Teamwork & Collaboration
 
 **Branching:**
-- Main branch: `v5/main`
-- Development branch: `v5/dev`
-- Feature branches merged via PR to `v5/dev`
+- Main branch: `v6/main`
+- Development branch: `v6/dev`
+- Feature branches merged via PR to `v6/dev`
+- The `v5/*` branches are a parallel line for Umbraco 17. Fixes that apply to both are ported across.
 
 **CI/CD:**
-- `release.yml` - Builds and pushes to NuGet on `release-*` tags or `release/*` branches
+- `release.yml` - Builds and pushes to NuGet. Triggers on `release-*` **tags only**, plus manual dispatch. Pushing a `release/*` branch does *not* publish; that trigger was removed in 6a4fc7c because cutting a release created both a branch and a tag and fired the publish twice.
 - `codeql.yml` - Security scanning
 
 **Contributing:** See `.github/CONTRIBUTING.md`
