@@ -12,10 +12,21 @@ import { BLOCK_PREVIEW_CONTEXT } from '../context/block-preview.context-token';
 import { BlockGridPreviewCustomView } from './block-grid-preview.custom-view.element';
 
 /**
- * Element-level regression test for issues #293/#294. render-scheduler.test.ts
- * covers the decision in isolation; this proves BlockGridPreviewCustomView is
- * actually wired to it — that a block with areas defers its first render until
- * layoutAreas arrives, and that a resize after the first render debounces.
+ * Element-level regression tests for the Block Grid preview's render timing.
+ * render-scheduler.test.ts covers the decision in isolation; this proves
+ * BlockGridPreviewCustomView is actually wired to it.
+ *
+ * Two issues pull in opposite directions and are both pinned here:
+ *
+ *  - #322: a newly added, unsaved block has no `areas` key on its layout entry at
+ *    all, so `layoutAreas` never arrives. Deferring the first render on missing
+ *    layoutAreas left those blocks permanently blank.
+ *  - #293: a saved block's `layoutAreas` can arrive after the first preview request
+ *    has already gone out, so the first render carries empty areas and the preview
+ *    must re-render once the real area data lands.
+ *
+ * Rendering immediately (#322) is only safe because the layoutAreas-arrived
+ * re-render is guaranteed to fire even mid-request (#293).
  */
 
 const DOC_KEY = 'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa';
@@ -23,14 +34,20 @@ const DOC_TYPE_KEY = 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb';
 const CONTENT_KEY = 'cccccccc-cccc-cccc-cccc-cccccccccccc';
 const ELEMENT_TYPE_KEY = 'dddddddd-dddd-dddd-dddd-dddddddddddd';
 const AREA_KEY = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee';
+const NESTED_CONTENT_KEY = 'ffffffff-ffff-ffff-ffff-ffffffffffff';
 
 class TestHostElement extends UmbLitElement {}
 const testHostTag = defineCE(TestHostElement);
 
 class SpyGridPreview extends BlockGridPreviewCustomView {
     public renderCalls: string[] = [];
+    /** Holds each preview request open so a test can act while one is in flight. */
+    public apiDelayMs = 0;
     protected override async callPreviewApi() {
         this.renderCalls.push(JSON.stringify(this.blockGridValue.layout));
+        if (this.apiDelayMs > 0) {
+            await new Promise((r) => setTimeout(r, this.apiDelayMs));
+        }
         return { data: '<div>preview</div>' };
     }
     protected override async fetchStylesheets() {
@@ -96,15 +113,20 @@ async function waitForCondition(fn: () => boolean, timeout = 2000, interval = 20
     return fn();
 }
 
-describe('block grid preview render timing (issue #293/#294)', () => {
+describe('block grid preview render timing (issues #293/#294/#322)', () => {
     let root: TestHostElement;
 
     afterEach(() => root?.remove());
 
-    it('defers the initial render until layoutAreas arrives for a block with areas', async () => {
-        root = await fixture<TestHostElement>(`<${testHostTag}></${testHostTag}>`);
-        root.provideContext(BLOCK_PREVIEW_CONTEXT, createBlockPreviewContextFake(root) as never);
-        root.provideContext(UMB_CONTENT_WORKSPACE_CONTEXT, createContentWorkspaceFake(root) as never);
+    async function mountHost() {
+        const host = await fixture<TestHostElement>(`<${testHostTag}></${testHostTag}>`);
+        host.provideContext(BLOCK_PREVIEW_CONTEXT, createBlockPreviewContextFake(host) as never);
+        host.provideContext(UMB_CONTENT_WORKSPACE_CONTEXT, createContentWorkspaceFake(host) as never);
+        return host;
+    }
+
+    it('renders a block with areas immediately, before layoutAreas arrives (issue #322)', async () => {
+        root = await mountHost();
 
         const layoutAreasState = new UmbBasicState<UmbBlockGridLayoutAreaItemModel[] | undefined>(undefined);
         root.provideContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, createGridEntryFake(root, layoutAreasState, true) as never);
@@ -112,22 +134,43 @@ describe('block grid preview render timing (issue #293/#294)', () => {
 
         const el = document.createElement(previewTag) as SpyGridPreview;
         root.appendChild(el);
-        await el.updateComplete;
-        await new Promise((r) => setTimeout(r, 50));
 
-        expect(el.renderCalls.length, 'should not render before layoutAreas arrives').to.equal(0);
-
-        layoutAreasState.setValue([{ key: AREA_KEY, items: [] }]);
+        // A newly added block never receives layoutAreas, so nothing may be waited on.
         const rendered = await waitForCondition(() => el.renderCalls.length > 0);
 
-        expect(rendered, 'should render once layoutAreas arrives').to.be.true;
+        expect(rendered, 'a new block with areas must render without waiting for layoutAreas').to.be.true;
         expect(el.renderCalls.length).to.equal(1);
+        // The area must still be present in the payload, with no items, so the server
+        // renders the area container and its "Add new Layout" button.
+        expect(JSON.parse(el.renderCalls[0])['Umbraco.BlockGrid'][0].areas).to.deep.equal([{ key: AREA_KEY, items: [] }]);
+    });
+
+    it('re-renders with area content when layoutAreas arrives mid-request (issue #293)', async () => {
+        root = await mountHost();
+
+        const layoutAreasState = new UmbBasicState<UmbBlockGridLayoutAreaItemModel[] | undefined>(undefined);
+        root.provideContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, createGridEntryFake(root, layoutAreasState, true) as never);
+        root.provideContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, createGridManagerFake(root) as never);
+
+        const el = document.createElement(previewTag) as SpyGridPreview;
+        el.apiDelayMs = 300;
+        root.appendChild(el);
+
+        await waitForCondition(() => el.renderCalls.length === 1);
+
+        // layoutAreas lands while the first request is still open. The re-render must
+        // not be suppressed by the in-flight request: prevLayoutAreas is consumed on
+        // this emission, so a render skipped here is never retried.
+        layoutAreasState.setValue([{ key: AREA_KEY, items: [{ contentKey: NESTED_CONTENT_KEY }] }] as never);
+
+        const rerendered = await waitForCondition(() => el.renderCalls.length === 2);
+
+        expect(rerendered, 'layoutAreas arriving mid-request must still trigger a re-render').to.be.true;
+        expect(el.renderCalls[1], 'the re-render must carry the nested area content').to.contain(NESTED_CONTENT_KEY);
     });
 
     it('renders immediately for a block with no areas, regardless of layoutAreas', async () => {
-        root = await fixture<TestHostElement>(`<${testHostTag}></${testHostTag}>`);
-        root.provideContext(BLOCK_PREVIEW_CONTEXT, createBlockPreviewContextFake(root) as never);
-        root.provideContext(UMB_CONTENT_WORKSPACE_CONTEXT, createContentWorkspaceFake(root) as never);
+        root = await mountHost();
 
         root.provideContext(UMB_BLOCK_GRID_ENTRY_CONTEXT, createGridEntryFake(root, new UmbBasicState(undefined), false) as never);
         root.provideContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, createGridManagerFake(root) as never);
@@ -142,9 +185,7 @@ describe('block grid preview render timing (issue #293/#294)', () => {
     });
 
     it('debounces a re-render when the block is resized after the first render', async () => {
-        root = await fixture<TestHostElement>(`<${testHostTag}></${testHostTag}>`);
-        root.provideContext(BLOCK_PREVIEW_CONTEXT, createBlockPreviewContextFake(root) as never);
-        root.provideContext(UMB_CONTENT_WORKSPACE_CONTEXT, createContentWorkspaceFake(root) as never);
+        root = await mountHost();
 
         const entryFake = createGridEntryFake(root, new UmbBasicState(undefined), false);
         const layoutState = new UmbBasicState<UmbBlockGridLayoutModel>({ contentKey: CONTENT_KEY, columnSpan: 6, rowSpan: 1, areas: [] });

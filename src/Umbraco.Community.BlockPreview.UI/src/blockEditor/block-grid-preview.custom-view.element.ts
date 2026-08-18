@@ -5,7 +5,7 @@ import { css, customElement, property } from "@umbraco-cms/backoffice/external/l
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
-import { decideGridRenderTrigger, shouldDeferInitialGridRender, ResizeDebouncer } from './render-scheduler';
+import { decideGridRenderTrigger, ResizeDebouncer } from './render-scheduler';
 
 const elementName = "block-grid-preview";
 
@@ -131,7 +131,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                         const trigger = decideGridRenderTrigger(
                             { layoutAreas: prevLayoutAreas, layout: { columnSpan: prevColumnSpan, rowSpan: prevRowSpan } },
                             { areas, layoutAreas, layout },
-                            { hasMarkup: !!this._htmlMarkup, isLoading: this._isLoading, managerObserved: this.#managerObserved },
+                            { hasMarkup: !!this._htmlMarkup, managerObserved: this.#managerObserved },
                         );
 
                         if (trigger.kind === 'render') {
@@ -176,9 +176,15 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                         };
                         this._blockContext.blockIndex = (contents ?? []).findIndex(x => x.key === this._blockContext.contentUdi);
                         if (!this._htmlMarkup && !this._isLoading) {
-                            if (shouldDeferInitialGridRender(this._blockContext.areas, this._blockContext.layoutAreas)) {
-                                return;
-                            }
+                            // Render straight away, even when the block has areas whose
+                            // layoutAreas has not arrived. A newly added, unsaved block is
+                            // created with an empty partialLayoutEntry, so its layout has no
+                            // `areas` key and layoutAreas never arrives at all -- deferring
+                            // left those blocks permanently blank, with the area's "Add new
+                            // Layout" button unreachable (#322). #filterLayouts() already
+                            // defaults each area's items to [], so this renders a correct
+                            // empty grid, and decideGridRenderTrigger re-renders if real
+                            // layoutAreas does show up later (#293).
                             this.renderBlockPreview();
                         }
                     }

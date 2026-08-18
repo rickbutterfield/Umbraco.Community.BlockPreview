@@ -23,11 +23,19 @@ export type GridRenderTrigger =
 export function decideGridRenderTrigger(
     prev: { layoutAreas: unknown[] | undefined; layout: GridLayoutSpan | undefined },
     next: { areas: unknown[] | undefined; layoutAreas: unknown[] | undefined; layout: GridLayoutSpan | undefined },
-    state: { hasMarkup: boolean; isLoading: boolean; managerObserved: boolean },
+    state: { hasMarkup: boolean; managerObserved: boolean },
 ): GridRenderTrigger {
     const hasAreas = (next.areas?.length ?? 0) > 0;
     const layoutAreasJustArrived = !prev.layoutAreas && !!next.layoutAreas;
 
+    // Deliberately not gated on an in-flight request. `layoutAreasJustArrived` is a
+    // one-shot: the caller reads prevLayoutAreas from state it overwrites on the same
+    // emission, so a render skipped here is never retried and the preview keeps its
+    // empty-area markup for good (#293). Since the first render now goes out before
+    // layoutAreas is known (#322), that request is very often still open at this
+    // point. Superseding it is safe -- renderBlockPreview() bumps _requestId and
+    // discards the stale response.
+    //
     // Render takes precedence over debounce when both conditions hold on the same
     // emission. Before this function existed, the caller ran two independent `if`
     // blocks, so an emission where layoutAreas arrived *and* the layout span changed
@@ -35,7 +43,7 @@ export function decideGridRenderTrigger(
     // intentionally collapses that into a single immediate render: the freshly-updated
     // layout/areas data used here is the same data the debounced branch would have used
     // moments later, so the second render added nothing but a delayed duplicate.
-    if (hasAreas && layoutAreasJustArrived && state.managerObserved && !state.isLoading) {
+    if (hasAreas && layoutAreasJustArrived && state.managerObserved) {
         return { kind: 'render', reason: 'layout-areas-arrived' };
     }
 
@@ -48,11 +56,6 @@ export function decideGridRenderTrigger(
     }
 
     return { kind: 'none' };
-}
-
-/** Should the first render be deferred until layoutAreas is known? */
-export function shouldDeferInitialGridRender(areas: unknown[] | undefined, layoutAreas: unknown[] | undefined): boolean {
-    return (areas?.length ?? 0) > 0 && !layoutAreas;
 }
 
 /** Replaces an inline `setTimeout`/`clearTimeout` pair with a named, testable debounce. */
