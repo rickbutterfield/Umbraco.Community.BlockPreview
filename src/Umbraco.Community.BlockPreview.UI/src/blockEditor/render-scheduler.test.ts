@@ -1,5 +1,5 @@
 import { expect } from '@open-wc/testing';
-import { decideGridRenderTrigger, shouldDeferInitialGridRender, ResizeDebouncer, GRID_RESIZE_DEBOUNCE_MS } from './render-scheduler';
+import { decideGridRenderTrigger, ResizeDebouncer, GRID_RESIZE_DEBOUNCE_MS } from './render-scheduler';
 
 /**
  * Unit tests for the Block Grid preview's render-timing decision, extracted from
@@ -8,7 +8,7 @@ import { decideGridRenderTrigger, shouldDeferInitialGridRender, ResizeDebouncer,
  */
 describe('decideGridRenderTrigger (issue #293/#294)', () => {
     const noAreas = { areas: [] as { key: string }[], layoutAreas: undefined, layout: undefined };
-    const readyState = { hasMarkup: true, isLoading: false, managerObserved: true };
+    const readyState = { hasMarkup: true, managerObserved: true };
 
     it('renders when layoutAreas arrives for the first time and the manager is observed', () => {
         const prev = { layoutAreas: undefined, layout: undefined };
@@ -63,20 +63,6 @@ describe('decideGridRenderTrigger (issue #293/#294)', () => {
         const next = { areas: [{ key: 'a' }], layoutAreas: [{ key: 'a', items: [] }], layout: { columnSpan: 6, rowSpan: 1 } };
 
         expect(decideGridRenderTrigger(prev, next, readyState)).to.deep.equal({ kind: 'render', reason: 'layout-areas-arrived' });
-    });
-});
-
-describe('shouldDeferInitialGridRender', () => {
-    it('defers when the block has areas but layoutAreas has not arrived yet', () => {
-        expect(shouldDeferInitialGridRender([{ key: 'a' }], undefined)).to.be.true;
-    });
-
-    it('does not defer when the block has no areas', () => {
-        expect(shouldDeferInitialGridRender([], undefined)).to.be.false;
-    });
-
-    it('does not defer once layoutAreas has arrived', () => {
-        expect(shouldDeferInitialGridRender([{ key: 'a' }], [{ key: 'a', items: [] }])).to.be.false;
     });
 });
 
