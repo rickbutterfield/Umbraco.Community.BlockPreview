@@ -77,9 +77,17 @@ Test site credentials:
 
 Uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) for automatic versioning.
 
-- Version defined in `version.json` (currently `5.0.0`)
-- Release tags: `release-{version}` (e.g., `release-5.0.0`)
+- Version defined in `version.json`
+- Release tags: `release-{version}` (e.g., `release-5.5.1`)
 - Release branches: `release/{version}`
+
+**Cutting a release:**
+1. Branch `release/{version}` off `vX/dev`.
+2. Set the version in `version.json`, `src/Umbraco.Community.BlockPreview.UI/package.json`, and `package-lock.json`. Run `npm run build` so the package manifest restamps.
+3. PR that branch into `vX/main` and merge.
+4. Tag `release-{version}` on `vX/main` and push the tag. **The tag is what publishes.**
+
+The published version comes from `version.json` on the tagged commit, not from the tag name. Keep the two in step.
 
 ---
 
@@ -91,7 +99,7 @@ Uses [Nerdbank.GitVersioning](https://github.com/dotnet/Nerdbank.GitVersioning) 
 - Feature branches merged via PR to `v5/dev`
 
 **CI/CD:**
-- `release.yml` - Builds and pushes to NuGet on `release-*` tags or `release/*` branches
+- `release.yml` - Builds and pushes to NuGet. Triggers on `release-*` **tags only**, plus manual dispatch. Pushing a `release/*` branch does *not* publish; that trigger was removed in 9556dec because cutting a release created both a branch and a tag and fired the publish twice.
 - `codeql.yml` - Security scanning
 
 **Contributing:** See `.github/CONTRIBUTING.md`
