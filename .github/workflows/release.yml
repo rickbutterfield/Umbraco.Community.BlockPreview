@@ -6,8 +6,6 @@ on:
   push:
     tags:
       - "release-*"
-    branches:
-      - "release/*"
   workflow_dispatch:
 
 jobs:
