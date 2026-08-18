@@ -5,6 +5,7 @@ import { css, customElement, property } from "@umbraco-cms/backoffice/external/l
 import { UMB_BLOCK_GRID_ENTRY_CONTEXT, UMB_BLOCK_GRID_MANAGER_CONTEXT, UmbBlockGridLayoutModel, UmbBlockGridValueModel, UmbBlockGridLayoutAreaItemModel } from "@umbraco-cms/backoffice/block-grid";
 import { UMB_CONTENT_WORKSPACE_CONTEXT } from "@umbraco-cms/backoffice/content";
 import { observeMultiple } from "@umbraco-cms/backoffice/observable-api";
+import { decideGridRenderTrigger, ResizeDebouncer } from './render-scheduler';
 
 const elementName = "block-grid-preview";
 
@@ -57,6 +58,11 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
     protected async setupContextObservers() {
         this.observePropertyDataset();
         await this.#observeContentWorkspace();
+    }
+
+    override disconnectedCallback() {
+        super.disconnectedCallback();
+        this.#resizeDebouncer.cancel();
     }
 
     async #observeContentWorkspace() {
@@ -122,31 +128,24 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                             await this.#observeBlockPropertyValue();
                         }
 
-                        // Re-render when layoutAreas first arrive for a block with areas.
-                        // Covers both the deferred case (_htmlMarkup empty) and the early-render
-                        // case (_htmlMarkup set from an incomplete render). blockGridValue.layout
-                        // must be rebuilt here so callPreviewApi() sends the updated area data.
-                        if (!prevLayoutAreas && layoutAreas && (areas?.length ?? 0) > 0 && this.#managerObserved && !this._isLoading) {
+                        const trigger = decideGridRenderTrigger(
+                            { layoutAreas: prevLayoutAreas, layout: { columnSpan: prevColumnSpan, rowSpan: prevRowSpan } },
+                            { areas, layoutAreas, layout },
+                            { hasMarkup: !!this._htmlMarkup, managerObserved: this.#managerObserved },
+                        );
+
+                        if (trigger.kind === 'render') {
                             this.blockGridValue = {
                                 ...this._blockGridValue,
                                 layout: { ['Umbraco.BlockGrid']: this.#filterLayouts() }
                             };
                             this.renderBlockPreview();
-                        }
-
-                        // Re-render when layout dimensions change (resize)
-                        if (this._htmlMarkup && layout && (
-                            layout.columnSpan !== prevColumnSpan ||
-                            layout.rowSpan !== prevRowSpan
-                        )) {
+                        } else if (trigger.kind === 'debounce') {
                             this.blockGridValue = {
                                 ...this._blockGridValue,
                                 layout: { ['Umbraco.BlockGrid']: this.#filterLayouts() }
                             };
-                            clearTimeout(this.#layoutResizeTimer);
-                            this.#layoutResizeTimer = setTimeout(() => {
-                                this.renderBlockPreview();
-                            }, 300);
+                            this.#resizeDebouncer.schedule(trigger.delayMs, () => this.renderBlockPreview());
                         }
                     }
                 );
@@ -155,7 +154,7 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
     }
 
     #managerObserved = false;
-    #layoutResizeTimer?: ReturnType<typeof setTimeout>;
+    #resizeDebouncer = new ResizeDebouncer();
 
     async #observeBlockPropertyValue() {
         this.consumeContext(UMB_BLOCK_GRID_MANAGER_CONTEXT, (context) => {
@@ -177,11 +176,15 @@ export class BlockGridPreviewCustomView extends BlockPreviewBaseElement<BlockGri
                         };
                         this._blockContext.blockIndex = (contents ?? []).findIndex(x => x.key === this._blockContext.contentUdi);
                         if (!this._htmlMarkup && !this._isLoading) {
-                            // Defer render if areas are expected but layoutAreas haven't arrived yet;
-                            // observeBlockValue will trigger the render once layoutAreas are available.
-                            if ((this._blockContext.areas?.length ?? 0) > 0 && !this._blockContext.layoutAreas) {
-                                return;
-                            }
+                            // Render straight away, even when the block has areas whose
+                            // layoutAreas has not arrived. A newly added, unsaved block is
+                            // created with an empty partialLayoutEntry, so its layout has no
+                            // `areas` key and layoutAreas never arrives at all -- deferring
+                            // left those blocks permanently blank, with the area's "Add new
+                            // Layout" button unreachable (#322). #filterLayouts() already
+                            // defaults each area's items to [], so this renders a correct
+                            // empty grid, and decideGridRenderTrigger re-renders if real
+                            // layoutAreas does show up later (#293).
                             this.renderBlockPreview();
                         }
                     }
